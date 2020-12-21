@@ -16,9 +16,9 @@
       "dom"
     ],
     "paths": {
-      "ng-a-date-picker": [
-        "dist/ng-a-date-picker/ng-a-date-picker",
-        "dist/ng-a-date-picker"
+      "ng-datepicker": [
+        "dist/ng-datepicker/ng-datepicker",
+        "dist/ng-datepicker"
       ]
     }
   }

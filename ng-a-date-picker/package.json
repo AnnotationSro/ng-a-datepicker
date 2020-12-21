@@ -2,13 +2,13 @@
   "name": "ng-a-date-picker",
   "version": "0.0.0",
   "scripts": {
-    "libProd": "ng build vsd-base-fe --prod",
+    "libProd": "ng build ng-datepicker --prod",
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
     "test": "ng test",
     "lint": "ng lint",
-    "packagr": "ng-packagr -p projects/ng-a-date-picker/ng-package.json"
+    "packagr": "ng-packagr -p projects/ng-datepicker/ng-package.json"
   },
   "private": true,
   "dependencies": {
