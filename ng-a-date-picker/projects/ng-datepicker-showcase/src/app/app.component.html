@@ -1,0 +1,17 @@
+<h1>Showcase</h1>
+
+TEST1
+<a-date [value]="123" ></a-date>
+TEST2
+
+
+<br />
+<input type="checkbox" [(ngModel)]="enabled1" /> Value 1 = {{value1}} <br />
+<input type="text" [(ngModel)]="value1" aDateTest [disabled]="!enabled1" /> <br />
+<input type="date" [(ngModel)]="value1" [disabled]="!enabled1" /> <br />
+<input type="text" [(ngModel)]="value1" /> <br />
+
+<br />
+<input type="checkbox" [(ngModel)]="enabled2" /> Value 2 = {{value2}} <br />
+<input type="text" [(ngModel)]="value2" aDateTest [disabled]="!enabled2" [ngModelOptions]="{updateOn: 'blur'}" /> <br />
+<input type="text" [(ngModel)]="value2" /> <br />

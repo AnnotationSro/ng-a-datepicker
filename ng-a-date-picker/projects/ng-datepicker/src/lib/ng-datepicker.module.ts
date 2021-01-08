@@ -1,9 +1,10 @@
 import { NgModule } from '@angular/core';
 import { NgDatepickerComponent } from './ng-datepicker/ng-datepicker.component';
+import { TestDirectiveDirective } from './directives/test-directive.directive';
 
 @NgModule({
-  declarations: [NgDatepickerComponent],
+  declarations: [NgDatepickerComponent, TestDirectiveDirective],
   imports: [],
-  exports: [NgDatepickerComponent],
+  exports: [NgDatepickerComponent, TestDirectiveDirective],
 })
-export class NgDatepicker {}
+export class NgDatepickerModule {}
