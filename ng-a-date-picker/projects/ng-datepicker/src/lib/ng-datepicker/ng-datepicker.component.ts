@@ -10,7 +10,7 @@ export class NgDatepickerComponent implements OnInit {
   constructor() {}
 
   @Input()
-  value: string | number | Date;
+  value: string | number | Date = new Date();
 
   @Input()
   format: string = null;
