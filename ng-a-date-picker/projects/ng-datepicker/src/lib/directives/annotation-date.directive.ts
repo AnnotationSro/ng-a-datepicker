@@ -1,4 +1,3 @@
-/* eslint-disable */
 import {ɵgetDOM as getDOM} from '@angular/common';
 import {Directive, ElementRef, forwardRef, HostListener, Inject, OnInit, Optional, Renderer2} from '@angular/core';
 import {COMPOSITION_BUFFER_MODE, ControlValueAccessor, NG_VALUE_ACCESSOR, NgModel} from "@angular/forms";
@@ -15,18 +14,13 @@ function _isAndroid(): boolean {
 
 export const MY_VALUE_ACCESSOR: any = {
   provide: NG_VALUE_ACCESSOR,
-  useExisting: forwardRef(() => TestDirectiveDirective),
+  useExisting: forwardRef(() => AnnotationDateDirective),
   multi: true
 };
+
+
 @Directive({
-//  'input:not([type=checkbox])[formControlName],
-//  textarea[formControlName],
-//  input:not([type=checkbox])[formControl],
-//  textarea[formControl],
-//  input:not([type=checkbox])[ngModel],
-//  textarea[ngModel],
-//  [ngDefaultControl]',
-  selector: '[aDateTest]',
+  selector: '[a-datetime]',
   host: {
     '(input)': '$any(this)._handleInput($event.target.value)',
     '(blur)': '$any(this)._handleBlur()',
@@ -35,7 +29,7 @@ export const MY_VALUE_ACCESSOR: any = {
   },
   providers: [MY_VALUE_ACCESSOR]
 })
-export class TestDirectiveDirective implements ControlValueAccessor {
+export class AnnotationDateDirective implements ControlValueAccessor {
 
   private _composing = false;
   constructor(private _renderer: Renderer2, private _elementRef: ElementRef, @Optional() @Inject(COMPOSITION_BUFFER_MODE) private _compositionMode: boolean) {
@@ -89,7 +83,7 @@ export class TestDirectiveDirective implements ControlValueAccessor {
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   /// Value formatter & parsers
   static cnt = 1;
-  private i : number = TestDirectiveDirective.cnt++;
+  private i : number = AnnotationDateDirective.cnt++;
   // value sender
   valueFormatter(value: any): string {
     const normalizedValue = value == null ? '' : value;

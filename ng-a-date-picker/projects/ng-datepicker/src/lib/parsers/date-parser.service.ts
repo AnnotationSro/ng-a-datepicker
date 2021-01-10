@@ -1,206 +1,19 @@
-/* eslint-disable */
+import {
+  FormStyle,
+  getLocaleDayNames,
+  getLocaleDayPeriods,
+  getLocaleEraNames,
+  getLocaleMonthNames,
+  TranslationWidth,
+} from '@angular/common';
+import { isDevMode } from '@angular/core';
+import { DATE_FORMATS_SPLIT, getNamedFormat } from './angular_commons';
 
-import {FormStyle, getLocaleDayNames, getLocaleDayPeriods, getLocaleEraNames, getLocaleMonthNames, TranslationWidth,} from '@angular/common';
-import {DATE_FORMATS_SPLIT, getNamedFormat} from './angular_commons';
-import {isDevMode} from "@angular/core";
-
+/*
 export function parseDate(value: string, format: string, locale: string, oldValue: Date = null): Date {
   return getDateFormatParser(locale, format).parseDate(value, oldValue);
 }
-
-interface DateParser {
-  errorMsg: string,
-
-  parseDate(text: string, oldValue?: Date): Date;
-}
-
-function createErrorParser(format: string, msg: string) {
-
-  return {
-    errorMsg: msg + '',
-    parseDate(text: string, oldValue: Date = null): Date {
-      try {
-        console.error(`DateParser for format '${format}' has error: ${msg}`);
-      } catch (e) {
-      }
-
-      return oldValue;
-    }
-  };
-}
-
-const DateParserMaps: { [key: string]: DateParser } = {};
-
-export function getDateFormatParser(locale: string, format: string): DateParser {
-  const namedFormat = getNamedFormat(locale, format);
-  format = namedFormat || format;
-  const originalFormat = format;
-  if (!format) return createErrorParser(format, 'bad format');
-  if (!locale) locale = 'en_US';
-  const key = locale + ':' + format;
-  if (DateParserMaps[key]) return DateParserMaps[key];
-
-  try {
-    let parsers: DatePart[] = [];
-
-    let match;
-    while (format) {
-      if (!format || format.trim().length == 0) break;
-
-      match = DATE_FORMATS_SPLIT.exec(format);
-      if (match) {
-        const formatParts = match.splice(1);
-        const part = formatParts.pop();
-
-        if (formatParts && formatParts.length) {
-          for (let formatPart of formatParts) {
-            if (!formatPart || formatPart.trim().length == 0) continue;
-            parsers.push(getDatePartParser(locale, formatPart));
-          }
-        }
-
-        format = part;
-      } else {
-        parsers.push(getDatePartParser(locale, format));
-        break;
-      }
-    }
-
-    let lineRegexp = null;
-    for (let parser of parsers) {
-      if (!parser.regexp || parser.regexp.trim().length == 0) continue;
-      if (lineRegexp) lineRegexp += '\\s*';
-      else lineRegexp = '^';
-      lineRegexp += parser.regexp;
-    }
-    lineRegexp += '$';
-    const strValueRegexp = new RegExp(lineRegexp, 'i');
-
-    const ret = {
-      parseDate(text: string, dtValue: Date = null): Date {
-        try {
-          dtValue = dtValue || null;
-          // empty date
-          if (!text || text.trim().length == 0) return null;
-
-          // parse string
-          const match = strValueRegexp.exec(normalizeString(text));
-          if (!match) {
-            if (isDevMode()) {
-              console.error(`DateParser with format '${originalFormat}' cannot parse date from '${text}'`);
-            }
-            return;
-          }
-
-          // value updates ...
-          const retValue = dtValue ? new Date(dtValue.getTime()) : new Date();
-
-          // reading part values
-          const values = new Map<DateType, number | string>();
-          let groupInx = 0;
-          for (let parser of parsers) {
-            // if function for value parsing missing => part of string is not in group and it is ignored
-            if (!parser.parseValue) continue;
-            groupInx++;
-            // if valueType is null => value is ignored
-            if (!parser.type && parser.type !== 0) continue; // ak nema typ, ignorujeme hodnotu tiez
-
-            const strValuePart = match[groupInx];
-            const value = parser.parseValue(strValuePart, retValue);
-
-            // if value == null, value is ignored
-            if (value === null || value === undefined) continue;
-            values.set(parser.type, value);
-          }
-
-          if (!values.size) {
-            if (isDevMode()) {
-              console.info(`DateParser with format '${originalFormat}' cannot parse date from '${text}'`);
-            }
-            return dtValue;
-          }
-
-          if (values.has(DateType.FullYear)) {
-            retValue.setFullYear(valueToNumber(values.get(DateType.FullYear)));
-          }
-          if (values.has(DateType.Month)) {
-            retValue.setMonth(valueToNumber(values.get(DateType.Month)) - 1);
-          }
-          if (values.has(DateType.Date)) {
-            retValue.setDate(valueToNumber(values.get(DateType.Date)));
-          }
-          if (values.has(DateType.Hours_24)) {
-            retValue.setHours(valueToNumber(values.get(DateType.Hours_24)));
-          }
-          if (values.has(DateType.Hours_12)) {
-            let hours12 = valueToNumber(values.get(DateType.Hours_12));
-            if (hours12 > 12) {
-              console.error(`DateParser with format '${originalFormat}' cannot parse date from '${text}'`);
-              return;
-            }
-            const inAM = retValue.getHours() < 12;
-            retValue.setHours(hours12 % 12 + (inAM ? 0 : 12));
-          }
-          if (values.has(DateType.DayPeriods)) {
-            var period = valueToNumber(values.get(DateType.DayPeriods)) || 0;
-            var currentPeriod = retValue.getHours() < 12 ? 0 : 1;
-            if (currentPeriod != period) {
-              if (period) {
-                retValue.setHours(retValue.getHours() + 12);
-              } else {
-                retValue.setHours(retValue.getHours() - 12);
-              }
-            }
-          }
-          if (values.has(DateType.Minutes)) {
-            retValue.setMinutes(valueToNumber(values.get(DateType.Minutes)));
-          }
-          if (values.has(DateType.Seconds)) {
-            retValue.setSeconds(valueToNumber(values.get(DateType.Seconds)));
-          }
-          if (values.has(DateType.FractionalSeconds)) {
-            retValue.setMilliseconds(valueToNumber(values.get(DateType.FractionalSeconds)) % 1000);
-          }
-
-          return retValue;
-        } catch (e) {
-          try {
-            if (isDevMode()) {
-              console.error('DateParser throw error', e);
-            }
-          } catch (eee) {
-          }
-          return null;
-        }
-      },
-      errorMsg: null
-    } as DateParser;
-
-    DateParserMaps[key] = ret;
-
-    // for tests
-    if (getDateFormatParser['run_in_tests']) {
-      ret['lineRegexp'] = lineRegexp;
-      ret['parsers'] = parsers;
-    }
-
-
-  } catch (e) {
-    if (isDevMode()) {
-      console.error(e);
-    }
-    DateParserMaps[key] = createErrorParser(format, e || 'unsupported format!');
-    return DateParserMaps[key];
-  }
-
-
-  return DateParserMaps[key];
-}
-
-function valueToNumber(value: number | string): number {
-  if (typeof value === 'string') return parseInt(value, 10);
-  return value;
-}
+*/
 
 enum DateType {
   FullYear,
@@ -213,62 +26,43 @@ enum DateType {
   FractionalSeconds,
   DayOfWeek,
 
-
   DayPeriods,
-  Eras
+  Eras,
 }
 
-class DatePart {
-  private constructor(public regexp: string, public type: DateType = null, public parseValue: (value: string, dtValue: Date) => number | string = null) {
-  }
-
-  static ignoreText(text: string): DatePart {
-    return new DatePart(normalizeStringForRegexp(text), null, null);
-  }
-
-
-  private static defaultParseValue: (value: string, dtValue: Date) => number | string = ((strValue) => {
-      return (strValue || '').trim(); // vrati to ako string - aby sme vedeli pocet znakov
-    }
-  );
-  static parsePart(regexp: string, type: DateType, parseValue: (value: string, dtValue: Date) => number | string = DatePart.defaultParseValue): DatePart {
-    return new DatePart('(' + regexp + ')', type, parseValue);
-  }
-
-  static ignorePart(regexp: string): DatePart {
-    return new DatePart(regexp, null, null);
-  }
-
-  static parseStrPart(locale: string, type: DateType, /*name: TranslationType, */width: TranslationWidth, form: FormStyle = FormStyle.Format, extended = false): DatePart {
-    let structure = getStrPartStructure(locale, type, width, form, extended);
-    return new DatePart(structure.regexp, type, (strValue) => {
-      if (!strValue) return null;
-      for (let regexp in structure.mapRegexpPerValue) {
-        if (strValue.match(new RegExp(regexp))) {
-          return structure.mapRegexpPerValue[regexp];
-        }
-      }
-      return null;
-    });
-  }
-
-  static ignoreStrPart(locale: string, type: DateType, width: TranslationWidth, form: FormStyle = FormStyle.Format, extended = false): DatePart {
-    let structure = getStrPartStructure(locale, type, width, form, extended);
-    return new DatePart(structure.regexp, null, value => null); // ignored
-  }
+function valueToNumber(value: number | string): number {
+  if (typeof value === 'string') return parseInt(value, 10);
+  return value;
 }
 
+interface DateParser {
+  errorMsg: string;
 
-// if (DATE_PARSERS[format]) {
-//   return DATE_PARSERS[format];
-// }
+  parseDate(text: string, oldValue?: Date): Date;
+}
+
+function createErrorParser(format: string, msg: string) {
+  return {
+    errorMsg: `${msg}`,
+    parseDate: (text: string, oldValue: Date = null): Date => {
+      try {
+        console.error(`DateParser for format '${format}' has error: ${msg}`);
+        // eslint-disable-next-line no-empty
+      } catch (e) {}
+
+      return oldValue;
+    },
+  };
+}
 
 function normalizeString(text: string): string {
   if (!text) return '';
 
   // remove diacritical chars
-  text = text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
-
+  text = text
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim();
 
   return text;
 }
@@ -279,61 +73,134 @@ function normalizeStringForRegexp(text: string): string {
   text = normalizeString(text);
 
   // regexp escape + space replace with
-  return text
+  return (
+    text
 
-    // $& means the whole matched string
-    .replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-    // replace white space with '\s+ regexp part'
-    .replace(/\s+/, '\\s+');
+      // $& means the whole matched string
+      .replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+      // replace white space with '\s+ regexp part'
+      .replace(/\s+/, '\\s+')
+  );
 }
 
 interface StrPartStructure {
-  regexp: string,
-  mapRegexpPerValue: { [locale: string]: number },
+  regexp: string;
+  mapRegexpPerValue: { [locale: string]: number };
 }
 
 const REGEXP_STR_NAMES: { [locale: string]: StrPartStructure } = {};
 
-function getStrPartStructure(locale: string, type: DateType, /*name: TranslationType, */width: TranslationWidth, form: FormStyle = FormStyle.Format, extended = false): StrPartStructure {
+function getStrPartStructure(
+  locale: string,
+  type: DateType,
+  width: TranslationWidth,
+  form: FormStyle = FormStyle.Format,
+  extended = false
+): StrPartStructure {
   if (!locale) locale = 'en_US';
-  const key = (locale || '') + ':' + type + ":" + width + ":" + form /*+ ":" + extended (is unsupported now)*/;
+  const key = `${locale || ''}:${type}:${width}:${form}:${extended}`;
   if (!REGEXP_STR_NAMES[key]) {
-    let ret = {
-      mapRegexpPerValue: {}
+    const ret = {
+      mapRegexpPerValue: {},
     } as StrPartStructure;
     REGEXP_STR_NAMES[key] = ret;
     switch (type) {
       case DateType.Month:
         getLocaleMonthNames(locale, form, width).forEach((name, value) => {
-          let regexp = normalizeStringForRegexp(name);
+          const regexp = normalizeStringForRegexp(name);
           ret.mapRegexpPerValue[regexp] = value + 1;
         });
         break;
       case DateType.DayOfWeek:
         getLocaleDayNames(locale, form, width).forEach((name, value) => {
-          let regexp = normalizeStringForRegexp(name);
+          const regexp = normalizeStringForRegexp(name);
           ret.mapRegexpPerValue[regexp] = value;
         });
         break;
       case DateType.DayPeriods:
         getLocaleDayPeriods(locale, form, <TranslationWidth>width).forEach((name, value) => {
-          let regexp = normalizeStringForRegexp(name);
+          const regexp = normalizeStringForRegexp(name);
           ret.mapRegexpPerValue[regexp] = value;
         });
         break;
       case DateType.Eras:
         getLocaleEraNames(locale, <TranslationWidth>width).forEach((name, value) => {
-          let regexp = normalizeStringForRegexp(name);
+          const regexp = normalizeStringForRegexp(name);
           ret.mapRegexpPerValue[regexp] = value;
         });
         break;
       default:
-        throw new Error("Unknown names !!!")
+        throw new Error('Unknown names !!!');
     }
-    ret.regexp = '(' + Object.keys(ret.mapRegexpPerValue).join('|') + ')';
+    ret.regexp = `(${Object.keys(ret.mapRegexpPerValue).join('|')})`;
   }
   return REGEXP_STR_NAMES[key];
 }
+
+
+class DatePart {
+  private constructor(
+    public regexp: string,
+    public type: DateType = null,
+    public parseValue: (value: string, dtValue: Date) => number | string = null
+  ) {}
+
+  static ignoreText(text: string): DatePart {
+    return new DatePart(normalizeStringForRegexp(text), null, null);
+  }
+
+  private static defaultParseValue: (value: string, dtValue: Date) => number | string = (strValue) => {
+    return (strValue || '').trim(); // vrati to ako string - aby sme vedeli pocet znakov
+  };
+
+  static parsePart(
+    regexp: string,
+    type: DateType,
+    parseValue: (value: string, dtValue: Date) => number | string = DatePart.defaultParseValue
+  ): DatePart {
+    return new DatePart(`(${regexp})`, type, parseValue);
+  }
+
+  static ignorePart(regexp: string): DatePart {
+    return new DatePart(regexp, null, null);
+  }
+
+  static parseStrPart(
+    locale: string,
+    type: DateType,
+    /* name: TranslationType, */ width: TranslationWidth,
+    form: FormStyle = FormStyle.Format,
+    extended = false
+  ): DatePart {
+    const structure = getStrPartStructure(locale, type, width, form, extended);
+    return new DatePart(structure.regexp, type, (strValue) => {
+      if (!strValue) return null;
+
+      // eslint-disable-next-line no-restricted-syntax
+      for (const regexp in structure.mapRegexpPerValue) {
+        if (strValue.match(new RegExp(regexp))) {
+          return structure.mapRegexpPerValue[regexp];
+        }
+      }
+      return null;
+    });
+  }
+
+  static ignoreStrPart(
+    locale: string,
+    type: DateType,
+    width: TranslationWidth,
+    form: FormStyle = FormStyle.Format,
+    extended = false
+  ): DatePart {
+    const structure = getStrPartStructure(locale, type, width, form, extended);
+    return new DatePart(structure.regexp, null, () => null); // ignored
+  }
+}
+
+// if (DATE_PARSERS[format]) {
+//   return DATE_PARSERS[format];
+// }
 
 // type DateParser = (value: string, updateValue: Date, locale: string) => string;
 // const DATE_PARSERS: { [format: string]: DateParser } = {};
@@ -347,33 +214,33 @@ function getDatePartParser(locale: string, format: string): DatePart | null {
     case 'G':
     case 'GG':
     case 'GGG':
-      throw Error("Unsupported parsing format '" + format + "'");
+      throw Error(`Unsupported parsing format '${format}'`);
       // formatter = dateStrGetter(DateType.Eras, TranslationWidth.Abbreviated);
       break;
     case 'GGGG':
       // formatter = dateStrGetter(DateType.Eras, TranslationWidth.Wide);
-      throw Error("Unsupported parsing format '" + format + "'");
+      throw Error(`Unsupported parsing format '${format}'`);
       break;
     case 'GGGGG':
       // formatter = dateStrGetter(DateType.Eras, TranslationWidth.Narrow);
-      throw Error("Unsupported parsing format '" + format + "'");
+      throw Error(`Unsupported parsing format '${format}'`);
       break;
 
     // 1 digit representation of the year, e.g. (AD 1 => 1, AD 199 => 199)
     case 'y':
-      formatter = DatePart.parsePart('\\d{1,4}', DateType.FullYear, (value:string, dtValue: Date) => {
+      formatter = DatePart.parsePart('\\d{1,4}', DateType.FullYear, (value: string) => {
         return valueToNumber(value);
       });
       break;
 
     // 2 digit representation of the year, padded (00-99). (e.g. AD 2001 => 01, AD 2010 => 10)
     case 'yy':
-      formatter = DatePart.parsePart('\\d{2}', DateType.FullYear, (value:string, dtValue: Date) => {
-        var strFullYear = dtValue.getFullYear() + "";
-        if (strFullYear.length<=value.length) {
+      formatter = DatePart.parsePart('\\d{2}', DateType.FullYear, (value: string, dtValue: Date) => {
+        const strFullYear = `${dtValue.getFullYear()}`;
+        if (strFullYear.length <= value.length) {
           return valueToNumber(value);
         }
-        const newFullYear = strFullYear.substr(0, strFullYear.length-value.length)+value;
+        const newFullYear = strFullYear.substr(0, strFullYear.length - value.length) + value;
         return valueToNumber(newFullYear);
       });
       break;
@@ -402,20 +269,20 @@ function getDatePartParser(locale: string, format: string): DatePart | null {
     // 2 digit representation of the week-numbering year, padded (00-99). (e.g. AD 2001 => 01, AD
     // 2010 => 10)
     case 'YY':
-      formatter = DatePart.parsePart('\\d{2}', DateType.FullYear, (value:string, dtValue: Date) => {
-        var strFullYear = dtValue.getFullYear() + "";
-        if (value.length<2) value = "0"+value;
-        if (strFullYear.length<=value.length) {
+      formatter = DatePart.parsePart('\\d{2}', DateType.FullYear, (value: string, dtValue: Date) => {
+        const strFullYear = `${dtValue.getFullYear()}`;
+        if (value.length < 2) value = `0${value}`;
+        if (strFullYear.length <= value.length) {
           return valueToNumber(value);
         }
-        const newFullYear = strFullYear.substr(0, strFullYear.length-value.length)+value;
+        const newFullYear = strFullYear.substr(0, strFullYear.length - value.length) + value;
         return valueToNumber(newFullYear);
       });
       break;
     // 3 digit representation of the week-numbering year, padded (000-999). (e.g. AD 1 => 001, AD
     // 2010 => 2010)
     case 'YYY':
-    // 4 digit representation of the week-numbering year (e.g. AD 1 => 0001, AD 2010 => 2010)
+      // 4 digit representation of the week-numbering year (e.g. AD 1 => 0001, AD 2010 => 2010)
       formatter = DatePart.parsePart('\\d{3,5}', DateType.FullYear);
       break;
     case 'YYYY':
@@ -505,29 +372,19 @@ function getDatePartParser(locale: string, format: string): DatePart | null {
     case 'b':
     case 'bb':
     case 'bbb':
-    // formatter = DatePart.ignoreStrPart(locale, DateType.DayPeriods, TranslationWidth.Abbreviated, FormStyle.Standalone, true);
-    // break;
     case 'bbbb':
-    // formatter = DatePart.ignoreStrPart(locale, DateType.DayPeriods, TranslationWidth.Wide, FormStyle.Standalone, true);
-    // break;
     case 'bbbbb':
       // formatter = DatePart.ignoreStrPart(locale, DateType.DayPeriods, TranslationWidth.Narrow, FormStyle.Standalone, true);
       // break;
-      throw Error("Unsupported parsing format '" + format + "'");
+      throw Error(`Unsupported parsing format '${format}'`);
 
     // Extended period of the day (midnight, night, ...), standalone
     case 'B':
     case 'BB':
     case 'BBB':
-    // formatter = DatePart.ignoreStrPart(locale, DateType.DayPeriods, TranslationWidth.Abbreviated, FormStyle.Format, true);
-    // break;
     case 'BBBB':
-    // formatter = DatePart.ignoreStrPart(locale, DateType.DayPeriods, TranslationWidth.Wide, FormStyle.Format, true);
-    // break;
     case 'BBBBB':
-      // formatter = DatePart.ignoreStrPart(locale, DateType.DayPeriods, TranslationWidth.Narrow, FormStyle.Format, true);
-      // break;
-      throw Error("Unsupported parsing format '" + format + "'");
+      throw Error(`Unsupported parsing format '${format}'`);
 
     // Hour in AM/PM, (1-12)
     case 'h':
@@ -565,40 +422,209 @@ function getDatePartParser(locale: string, format: string): DatePart | null {
     case 'ZZ':
     case 'ZZZ':
       // formatter = timeZoneGetter(ZoneWidth.Short);
-      throw Error("Unsupported parsing format '" + format + "'");
+      throw Error(`Unsupported parsing format '${format}'`);
       break;
     // Timezone ISO8601 extended format (-04:30)
     case 'ZZZZZ':
       // formatter = timeZoneGetter(ZoneWidth.Extended);
-      throw Error("Unsupported parsing format '" + format + "'");
+      throw Error(`Unsupported parsing format '${format}'`);
       break;
 
     // Timezone GMT short format (GMT+4)
     case 'O':
     case 'OO':
     case 'OOO':
-    // Should be location, but fallback to format O instead because we don't have the data yet
     case 'z':
     case 'zz':
     case 'zzz':
       // formatter = timeZoneGetter(ZoneWidth.ShortGMT);
-      throw Error("Unsupported parsing format '" + format + "'");
+      throw Error(`Unsupported parsing format '${format}'`);
       break;
     // Timezone GMT long format (GMT+0430)
     case 'OOOO':
     case 'ZZZZ':
-    // Should be location, but fallback to format O instead because we don't have the data yet
     case 'zzzz':
       // formatter = timeZoneGetter(ZoneWidth.Long);
-      throw Error("Unsupported parsing format '" + format + "'");
+      throw Error(`Unsupported parsing format '${format}'`);
       break;
     default:
       // ignored text part
       formatter = DatePart.ignoreText(format);
   }
   if (!formatter) {
-    throw Error("Unsupported part '" + format + "'");
+    throw Error(`Unsupported part '${format}'`);
   }
   // DATE_PARSERS[format] = formatter;
   return formatter;
+}
+
+const DateParserMaps: { [key: string]: DateParser } = {};
+
+export function getDateFormatParser(locale: string, format: string): DateParser {
+  const namedFormat = getNamedFormat(locale, format);
+  format = namedFormat || format;
+  const originalFormat = format;
+  if (!format) return createErrorParser(format, 'bad format');
+  if (!locale) locale = 'en_US';
+  const key = `${locale}:${format}`;
+  if (DateParserMaps[key]) return DateParserMaps[key];
+
+  try {
+    const parsers: DatePart[] = [];
+
+    let match;
+    while (format) {
+      if (!format || format.trim().length === 0) break;
+
+      match = DATE_FORMATS_SPLIT.exec(format);
+      if (match) {
+        const formatParts = match.splice(1);
+        const part = formatParts.pop();
+
+        if (formatParts && formatParts.length) {
+          formatParts.forEach((formatPart) => {
+            if (!formatPart || formatPart.trim().length === 0) return;
+            parsers.push(getDatePartParser(locale, formatPart));
+          });
+        }
+
+        format = part;
+      } else {
+        parsers.push(getDatePartParser(locale, format));
+        break;
+      }
+    }
+
+    let lineRegexp = null;
+    // eslint-disable-next-line no-restricted-syntax
+    for (const parser of parsers) {
+      if (!parser.regexp || parser.regexp.trim().length === 0) continue;
+      if (lineRegexp) lineRegexp += '\\s*';
+      else lineRegexp = '^';
+      lineRegexp += parser.regexp;
+    }
+    lineRegexp += '$';
+    const strValueRegexp = new RegExp(lineRegexp, 'i');
+
+    const ret = {
+      parseDate(text: string, dtValue: Date = null): Date {
+        try {
+          dtValue = dtValue || null;
+          // empty date
+          if (!text || text.trim().length === 0) return null;
+
+          // parse string
+          const matchedInput = strValueRegexp.exec(normalizeString(text));
+          if (!matchedInput) {
+            if (isDevMode()) {
+              console.error(`DateParser with format '${originalFormat}' cannot parse date from '${text}'`);
+            }
+            return undefined;
+          }
+
+          // value updates ...
+          const retValue = dtValue ? new Date(dtValue.getTime()) : new Date();
+
+          // reading part values
+          const values = new Map<DateType, number | string>();
+          let groupInx = 0;
+          // eslint-disable-next-line no-restricted-syntax
+          for (const parser of parsers) {
+            // if function for value parsing missing => part of string is not in group and it is ignored
+            if (!parser.parseValue) continue;
+            groupInx++;
+            // if valueType is null => value is ignored
+            if (!parser.type && parser.type !== 0) continue; // ak nema typ, ignorujeme hodnotu tiez
+
+            const strValuePart = matchedInput[groupInx];
+            const value = parser.parseValue(strValuePart, retValue);
+
+            // if value == null, value is ignored
+            if (value === null || value === undefined) continue;
+            values.set(parser.type, value);
+          }
+
+          if (!values.size) {
+            if (isDevMode()) {
+              console.info(`DateParser with format '${originalFormat}' cannot parse date from '${text}'`);
+            }
+            return dtValue;
+          }
+
+          if (values.has(DateType.FullYear)) {
+            retValue.setFullYear(valueToNumber(values.get(DateType.FullYear)));
+          }
+          if (values.has(DateType.Month)) {
+            retValue.setMonth(valueToNumber(values.get(DateType.Month)) - 1);
+          }
+          if (values.has(DateType.Date)) {
+            retValue.setDate(valueToNumber(values.get(DateType.Date)));
+          }
+          if (values.has(DateType.Hours_24)) {
+            retValue.setHours(valueToNumber(values.get(DateType.Hours_24)));
+          }
+          if (values.has(DateType.Hours_12)) {
+            const hours12 = valueToNumber(values.get(DateType.Hours_12));
+            if (hours12 > 12) {
+              console.error(`DateParser with format '${originalFormat}' cannot parse date from '${text}'`);
+              return undefined;
+            }
+            const inAM = retValue.getHours() < 12;
+            retValue.setHours((hours12 % 12) + (inAM ? 0 : 12));
+          }
+          if (values.has(DateType.DayPeriods)) {
+            const period = valueToNumber(values.get(DateType.DayPeriods)) || 0;
+            const currentPeriod = retValue.getHours() < 12 ? 0 : 1;
+            if (currentPeriod !== period) {
+              if (period) {
+                retValue.setHours(retValue.getHours() + 12);
+              } else {
+                retValue.setHours(retValue.getHours() - 12);
+              }
+            }
+          }
+          if (values.has(DateType.Minutes)) {
+            retValue.setMinutes(valueToNumber(values.get(DateType.Minutes)));
+          }
+          if (values.has(DateType.Seconds)) {
+            retValue.setSeconds(valueToNumber(values.get(DateType.Seconds)));
+          }
+          if (values.has(DateType.FractionalSeconds)) {
+            retValue.setMilliseconds(valueToNumber(values.get(DateType.FractionalSeconds)) % 1000);
+          }
+
+          return retValue;
+        } catch (e) {
+          try {
+            if (isDevMode()) {
+              console.error('DateParser throw error', e);
+            }
+            // eslint-disable-next-line no-empty
+          } catch (eee) {}
+          return null;
+        }
+      },
+      errorMsg: null,
+    } as DateParser;
+
+    DateParserMaps[key] = ret;
+
+    // for tests
+    if (getDateFormatParser['run_in_tests']) {
+      ret['lineRegexp'] = lineRegexp;
+      ret['parsers'] = parsers;
+    }
+  } catch (e) {
+    if (isDevMode()) {
+      console.error(e);
+    }
+    DateParserMaps[key] = createErrorParser(format, e || 'unsupported format!');
+    return DateParserMaps[key];
+  }
+
+  return DateParserMaps[key];
+}
+
+export function parseDate(value: string, format: string, locale: string, oldValue: Date = null): Date {
+  return getDateFormatParser(locale, format).parseDate(value, oldValue);
 }

@@ -1,8 +1,8 @@
-import { TestDirectiveDirective } from './test-directive.directive';
+import { AnnotationDateDirective } from './annotation-date.directive';
 
 describe('TestDirectiveDirective', () => {
   it('should create an instance', () => {
-    const directive = new TestDirectiveDirective(null, null, null);
+    const directive = new AnnotationDateDirective(null, null, null);
     expect(directive).toBeTruthy();
   });
 });
