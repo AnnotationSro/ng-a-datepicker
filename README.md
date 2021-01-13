@@ -7,3 +7,5 @@ run follow in folder ng-a-date-picker:
 yarn install
 yarn start
 ``` 
+
+Development INPROGRESS
