@@ -1,11 +1,10 @@
 /* eslint-disable @angular-eslint/no-host-metadata-property */
 import {formatDate, ɵgetDOM as getDOM} from '@angular/common';
 import {Directive, ElementRef, forwardRef, HostListener, Inject, Input, Optional, Renderer2} from '@angular/core';
-import { COMPOSITION_BUFFER_MODE, ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
+import {COMPOSITION_BUFFER_MODE, ControlValueAccessor, NG_VALUE_ACCESSOR} from '@angular/forms';
 import {DirectiveDateConfig} from "./date-configurator";
-import {parseDate, toDate} from "../../parsers/date-parser.service";
+import {parseDate} from "../../parsers/date-parser.service";
 import {ApiModelValueConverter} from "./ApiModelValueConverter";
-import {ignoreElements} from "rxjs/operators";
 
 /**
  * We must check whether the agent is Android because composition events
@@ -36,6 +35,7 @@ export const MY_VALUE_ACCESSOR: any = {
 })
 export class AnnotationDateDirective implements ControlValueAccessor {
   private _composing = false;
+
   constructor(
     private _renderer: Renderer2,
     private _elementRef: ElementRef,
@@ -50,12 +50,16 @@ export class AnnotationDateDirective implements ControlValueAccessor {
     this._renderer.setProperty(this._elementRef.nativeElement, 'value', this.valueFormatter(value));
   }
 
-  onChange: (value: any) => void = () => {};
+  onChange: (value: any) => void = () => {
+  };
+
   registerOnChange(fn: (_: any) => void): void {
     this.onChange = fn;
   }
 
-  onTouched: () => void = () => {};
+  onTouched: () => void = () => {
+  };
+
   registerOnTouched(fn: () => void): void {
     this.onTouched = fn;
   }
@@ -97,9 +101,10 @@ export class AnnotationDateDirective implements ControlValueAccessor {
 
   @Input('aNgDate')
   set setConfig(val: string | DirectiveDateConfig) {
-    this.config = {format: val+''};
+    this.config = {format: val + ''};
   }
-  get modelConverter():ApiModelValueConverter<any> {
+
+  get modelConverter(): ApiModelValueConverter<any> {
     // @ts-ignore
     return this.config.modelConverter;
   }
@@ -114,6 +119,7 @@ export class AnnotationDateDirective implements ControlValueAccessor {
   // <input type='a-date' ngmodel='value1' [aDate]='{format: 'dd. MM'}' />
   // <input type='a-date' ngmodel='value1' [aDate]='{format: 'hh:mm'}' />
   ngValue: any = null;
+
   valueFormatter(value: any): string {
     this.ngValue = value;
     this.dtValue = this.modelConverter.fromModel(value);

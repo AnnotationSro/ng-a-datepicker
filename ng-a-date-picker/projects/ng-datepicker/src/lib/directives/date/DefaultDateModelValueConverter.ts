@@ -1,5 +1,5 @@
 import {ApiModelValueConverter} from "./ApiModelValueConverter";
-import {toDate} from "../../parsers/date-parser.service";
+import {toDate} from "../../parsers/angular_commons";
 
 export class DefaultDateModelValueConverter implements ApiModelValueConverter<Date> {
   static readonly INSTANCE = new DefaultDateModelValueConverter();
