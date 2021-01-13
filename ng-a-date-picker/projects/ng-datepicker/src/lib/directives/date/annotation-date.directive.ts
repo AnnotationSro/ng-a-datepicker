@@ -1,7 +1,11 @@
 /* eslint-disable @angular-eslint/no-host-metadata-property */
-import { ɵgetDOM as getDOM } from '@angular/common';
-import { Directive, ElementRef, forwardRef, HostListener, Inject, Optional, Renderer2 } from '@angular/core';
+import {formatDate, ɵgetDOM as getDOM} from '@angular/common';
+import {Directive, ElementRef, forwardRef, HostListener, Inject, Input, Optional, Renderer2} from '@angular/core';
 import { COMPOSITION_BUFFER_MODE, ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
+import {DirectiveDateConfig} from "./date-configurator";
+import {parseDate, toDate} from "../../parsers/date-parser.service";
+import {ApiModelValueConverter} from "./ApiModelValueConverter";
+import {ignoreElements} from "rxjs/operators";
 
 /**
  * We must check whether the agent is Android because composition events
@@ -87,16 +91,43 @@ export class AnnotationDateDirective implements ControlValueAccessor {
   }
 
   /// /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  /// Customization behavior & config
+
+  private config: DirectiveDateConfig = null;
+
+  @Input('aNgDate')
+  set setConfig(val: string | DirectiveDateConfig) {
+    this.config = {format: val+''};
+  }
+  get modelConverter():ApiModelValueConverter<any> {
+    // @ts-ignore
+    return this.config.modelConverter;
+  }
+
+  dtValue: Date = null;
+
+  /// /////////////////////////////////////////////////////////////////////////////////////////////////////////////
   /// Value formatter & parsers
-  // value sender
+  // ngModel = string(iso) | Date | number
+  // html = formatter = 'yyyy-mm-dd'
+  // value sender '2012-12-30'  => 30.12.2012  (po uprave) 31.12.2020 => Date => do modelu '2020-12-31'
+  // <input type='a-date' ngmodel='value1' [aDate]='{format: 'dd. MM'}' />
+  // <input type='a-date' ngmodel='value1' [aDate]='{format: 'hh:mm'}' />
+  ngValue: any = null;
   valueFormatter(value: any): string {
-    const normalizedValue = value == null ? '' : value;
-    return `${normalizedValue}`;
+    this.ngValue = value;
+    this.dtValue = this.modelConverter.fromModel(value);
+    if (this.dtValue == null) return '';
+    return formatDate(this.dtValue, this.config.format, this.config.locale, this.config.timezone);
   }
 
   valueParser(val: string): string | number | Date {
     if (!val) return null;
     if (!val.trim().length) return null;
-    return val.split('|')[0];
+
+    this.dtValue = parseDate(val, this.config.format, undefined, this.dtValue);
+    let ngModelValue = this.modelConverter.toModel(this.dtValue, this.ngValue);
+    //convert : value => ngModel
+    return this.dtValue;
   }
 }

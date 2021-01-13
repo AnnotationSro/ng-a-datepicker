@@ -1,0 +1,14 @@
+import {ApiModelValueConverter} from "./ApiModelValueConverter";
+import {toDate} from "../../parsers/date-parser.service";
+
+export class DefaultDateModelValueConverter implements ApiModelValueConverter<Date> {
+  static readonly INSTANCE = new DefaultDateModelValueConverter();
+
+  fromModel(value: Date): Date {
+    return toDate(value);
+  }
+
+  toModel(value: Date): Date {
+    return value;
+  }
+}
