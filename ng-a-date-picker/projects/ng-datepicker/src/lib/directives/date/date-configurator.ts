@@ -1,16 +1,14 @@
-import { DatePipe } from '@angular/common';
-import {ApiModelValueConverter} from "./ApiModelValueConverter";
-
-
-
 // converting HTML value <=> Date value (working with std. Date parser&formatter)
+
 export interface HtmlValueConfig {
-  format: string;
+  dateFormat?: string;
+  displayFormat: string;
   timezone?: string;
   locale?: string;
 }
 
 export type StandardModelValueConverters =
+  | 'formatted'
   | 'number-timestamp'
   | 'date'
   | 'string-iso-datetime-with-zone'
@@ -20,7 +18,12 @@ export type StandardModelValueConverters =
   | 'string-iso-date';
 
 export interface DirectiveDateConfig extends HtmlValueConfig {
+  firstValueConverter?: StandardModelValueConverters | ApiModelValueConverter<any>;
   modelConverter?: StandardModelValueConverters | ApiModelValueConverter<any>;
   popup?: boolean;
 }
 
+export interface ApiModelValueConverter<T> {
+  fromModel: (value: T, opts?: DirectiveDateConfig) => Date;
+  toModel: (value: Date, oldModel: T, opts?: DirectiveDateConfig) => T;
+}

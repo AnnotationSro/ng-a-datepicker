@@ -137,7 +137,6 @@ function getStrPartStructure(
   return REGEXP_STR_NAMES[key];
 }
 
-
 class DatePart {
   private constructor(
     public regexp: string,
@@ -628,5 +627,3 @@ export function getDateFormatParser(locale: string, format: string): DateParser 
 export function parseDate(value: string, format: string, locale: string, oldValue: Date = null): Date {
   return getDateFormatParser(locale, format).parseDate(value, oldValue);
 }
-
-

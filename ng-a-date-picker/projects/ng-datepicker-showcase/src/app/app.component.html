@@ -1,9 +1,22 @@
 <h1>Showcase</h1>
 
-TEST1
-<a-date [value]="123" ></a-date>
-TEST2
+<!--TEST1-->
+<!--<a-date [value]="123" ></a-date>-->
+<!--TEST2-->
 
 
 <br />
-<input type="checkbox" [(ngModel)]="currentDateTime" aNgDate="full" /> Value 1 = {{currentDateTime | date : 'full'}} <br />
+<input type="text" [(ngModel)]="currentDateTime" [aNgDate]="ngDateConf"
+       (change)="log($event)" (ngModelChange)="logM($event)"/>
+
+<br>
+Value 1 = {{currentDateTime}}
+
+<br />
+<hr>
+
+<input type="text" [(ngModel)]="currentDateTime2" [aNgDate]="ngDateConf2"
+       (change)="log($event)" (ngModelChange)="logM($event)"/>
+
+<br>
+Value 2 = {{currentDateTime2}}

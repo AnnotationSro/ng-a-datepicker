@@ -58,6 +58,8 @@ module.exports = {
         "no-underscore-dangle": 'off',
         'no-continue': 'off',
         '@angular-eslint/no-input-rename': 'warn',
+        '@typescript-eslint/no-use-before-define': 'off',
+        'no-restricted-globals': 'warn',
       }
     },
 

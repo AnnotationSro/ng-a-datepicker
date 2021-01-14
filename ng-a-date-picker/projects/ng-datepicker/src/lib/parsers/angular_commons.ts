@@ -97,9 +97,8 @@ export function getNamedFormat(locale: string, format: string): string {
   return formatValue;
 }
 
-
 export const ISO8601_DATE_REGEX = /^(\d{4})-?(\d\d)-?(\d\d)(?:T(\d\d)(?::?(\d\d)(?::?(\d\d)(?:\.(\d+))?)?)?(Z|([+-])(\d\d):?(\d\d))?)?$/;
-export function toDate(value: string|number|Date): Date {
+export function toDate(value: string | number | Date): Date {
   if (isDate(value)) {
     return value;
   }
@@ -114,7 +113,7 @@ export function toDate(value: string|number|Date): Date {
     const parsedNb = parseFloat(value);
 
     // any string that only contains numbers, like "1234" but not like "1234hello"
-    if (!isNaN(value as any - parsedNb)) {
+    if (!isNaN((value as any) - parsedNb)) {
       return new Date(parsedNb);
     }
 
@@ -130,8 +129,8 @@ export function toDate(value: string|number|Date): Date {
       return new Date(y, m - 1, d);
     }
 
-    let match: RegExpMatchArray|null;
-    if (match = value.match(ISO8601_DATE_REGEX)) {
+    const match: RegExpMatchArray | null = value.match(ISO8601_DATE_REGEX);
+    if (match) {
       return isoStringToDate(match);
     }
   }
@@ -142,7 +141,6 @@ export function toDate(value: string|number|Date): Date {
   }
   return date;
 }
-
 
 /**
  * Converts a date in ISO8601 to a Date.
@@ -169,7 +167,7 @@ export function isoStringToDate(match: RegExpMatchArray): Date {
   // The ECMAScript specification (https://www.ecma-international.org/ecma-262/5.1/#sec-15.9.1.11)
   // defines that `DateTime` milliseconds should always be rounded down, so that `999.9ms`
   // becomes `999ms`.
-  const ms = Math.floor(parseFloat('0.' + (match[7] || 0)) * 1000);
+  const ms = Math.floor(parseFloat(`0.${match[7] || 0}`) * 1000);
   timeSetter.call(date, h, m, s, ms);
   return date;
 }
