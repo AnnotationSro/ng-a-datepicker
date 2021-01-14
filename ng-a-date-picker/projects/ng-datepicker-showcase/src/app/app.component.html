@@ -6,6 +6,13 @@
 
 
 <br />
+<pre>
+  currentDateTime1 = new Date();
+  ngDateConf2: DirectiveDateConfig =
+    displayFormat: 'dd.MM.YYYY o HH:mm',
+    modelConverter: 'string-iso-datetime', // DirectiveDateConfig.dateformat = 'YYYY-MM-ddTHH:mm'
+    firstValueConverter: 'date',
+</pre>
 <input type="text" [(ngModel)]="currentDateTime" [aNgDate]="ngDateConf"
        (change)="log($event)" (ngModelChange)="logM($event)"/>
 
@@ -14,7 +21,13 @@ Value 1 = {{currentDateTime}}
 
 <br />
 <hr>
-
+<pre>
+  currentDateTime2 = new Date();
+  ngDateConf2: DirectiveDateConfig =
+    displayFormat: 'HH:mm',
+    modelConverter: 'string-iso-time', // DirectiveDateConfig.dateformat = 'HH:mm'
+    firstValueConverter: 'date',
+</pre>
 <input type="text" [(ngModel)]="currentDateTime2" [aNgDate]="ngDateConf2"
        (change)="log($event)" (ngModelChange)="logM($event)"/>
 
