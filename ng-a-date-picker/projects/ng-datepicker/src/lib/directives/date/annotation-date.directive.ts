@@ -189,8 +189,6 @@ export class AnnotationDateDirective implements ControlValueAccessor, Validator 
     if (!this.config.locale) this.config.locale = 'en-US';
     // if (!this.config.firstValueConverter) this.config.firstValueConverter = undefined;
     // if (!this.config.dateFormat) this.config.dateFormat = undefined;
-
-    console.log(this.config);
   }
 
   get modelConverter(): ApiModelValueConverter<any> {
