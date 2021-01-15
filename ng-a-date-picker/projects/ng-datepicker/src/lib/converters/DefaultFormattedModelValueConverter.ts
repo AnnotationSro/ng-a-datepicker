@@ -1,6 +1,6 @@
 import { formatDate } from '@angular/common';
-import { ApiModelValueConverter, DirectiveDateConfig } from './date-configurator';
-import { parseDate } from '../../parsers/date-parser.service';
+import { ApiModelValueConverter, DirectiveDateConfig } from '../directives/date/date-configurator';
+import { parseDate } from '../parsers/parse-date';
 
 export class DefaultFormattedModelValueConverter implements ApiModelValueConverter<string> {
   static readonly INSTANCE = new DefaultFormattedModelValueConverter();

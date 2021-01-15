@@ -7,7 +7,15 @@ import { NgDatepickerModule } from '../../../ng-datepicker/src/lib/ng-datepicker
 
 @NgModule({
   declarations: [AppComponent],
-  imports: [BrowserModule, NgDatepickerModule, FormsModule],
+  // imports: [BrowserModule, NgDatepickerModule, FormsModule],
+  imports: [
+    BrowserModule,
+    // NgDatepickerModule.forRoot({})
+    NgDatepickerModule.forRoot({
+      ngDateConf: { firstValueConverter: 'date', displayFormat: 'medium', modelConverter: 'string-iso-datetime-with-zone' },
+    }),
+    FormsModule,
+  ],
   providers: [],
   bootstrap: [AppComponent],
 })

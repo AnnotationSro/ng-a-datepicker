@@ -1,4 +1,4 @@
-import { ApiModelValueConverter } from './date-configurator';
+import { ApiModelValueConverter } from '../directives/date/date-configurator';
 
 export class DefaultNumberModelValueConverter implements ApiModelValueConverter<number> {
   static readonly INSTANCE = new DefaultNumberModelValueConverter();

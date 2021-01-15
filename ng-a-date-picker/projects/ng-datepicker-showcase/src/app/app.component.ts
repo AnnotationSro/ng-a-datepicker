@@ -23,13 +23,15 @@ export class AppComponent {
     firstValueConverter: 'date',
   };
 
+  currentDateTime3 = new Date();
+
   log($event: Event) {
-    console.log('change');
-    console.log($event);
+    // console.log('change');
+    // console.log($event);
   }
 
   logM($event: any) {
-    console.log('ngModel');
-    console.log($event);
+    // console.log('ngModel');
+    // console.log($event);
   }
 }

@@ -1,35 +1,65 @@
 <h1>Showcase</h1>
 
-<!--TEST1-->
-<!--<a-date [value]="123" ></a-date>-->
-<!--TEST2-->
-
-
-<br />
+<h2>Custom conf in component</h2>
 <pre>
   currentDateTime1 = new Date();
   ngDateConf2: DirectiveDateConfig =
-    displayFormat: 'dd.MM.YYYY o HH:mm',
-    modelConverter: 'string-iso-datetime', // DirectiveDateConfig.dateformat = 'YYYY-MM-ddTHH:mm'
-    firstValueConverter: 'date',
+  {{ngDateConf | json}}
 </pre>
-<input type="text" [(ngModel)]="currentDateTime" [aNgDate]="ngDateConf"
+<input type="text" [(ngModel)]="currentDateTime" [aNgDate]="ngDateConf" #ngm1="ngModel"
        (change)="log($event)" (ngModelChange)="logM($event)"/>
 
 <br>
 Value 1 = {{currentDateTime}}
+<br>
+pristine = {{ngm1.control.pristine}}<br>
+dirty = {{ngm1.control.dirty}}<br>
+touched = {{ngm1.control.touched}}<br>
+valid = {{ngm1.control.valid}}<br>
+errors = {{ngm1.control.errors}}<br>
 
 <br />
 <hr>
+
+
+<h2>Time only</h2>
 <pre>
   currentDateTime2 = new Date();
   ngDateConf2: DirectiveDateConfig =
-    displayFormat: 'HH:mm',
-    modelConverter: 'string-iso-time', // DirectiveDateConfig.dateformat = 'HH:mm'
-    firstValueConverter: 'date',
+  {{ngDateConf2 | json}}
 </pre>
-<input type="text" [(ngModel)]="currentDateTime2" [aNgDate]="ngDateConf2"
+<input type="text" [(ngModel)]="currentDateTime2" [aNgDate]="ngDateConf2" #ngm2="ngModel"
        (change)="log($event)" (ngModelChange)="logM($event)"/>
 
 <br>
 Value 2 = {{currentDateTime2}}
+<br>
+pristine = {{ngm2.control.pristine}}<br>
+dirty = {{ngm2.control.dirty}}<br>
+touched = {{ngm2.control.touched}}<br>
+valid = {{ngm2.control.valid}}<br>
+errors = {{ngm2.control.errors}}<br>
+
+<br />
+<hr>
+
+
+
+<h2>Default conf (from AppModule)</h2>
+<pre>
+  currentDateTime3 = new Date();
+  ngDateConf3: DirectiveDateConfig = undefined
+</pre>
+<input type="text" [(ngModel)]="currentDateTime3" #ngm3="ngModel" aNgDate
+       (change)="log($event)" (ngModelChange)="logM($event)"/>
+<!--<input type="text" [(ngModel)]="currentDateTime3" #ngm3="ngModel" [aNgDate]="{firstValueConverter: 'date'}"-->
+<!--       (change)="log($event)" (ngModelChange)="logM($event)"/>-->
+
+<br>
+Value 3 = {{currentDateTime3 }}
+<br>
+pristine = {{ngm3.control.pristine}}<br>
+dirty = {{ngm3.control.dirty}}<br>
+touched = {{ngm3.control.touched}}<br>
+valid = {{ngm3.control.valid}}<br>
+errors = {{ngm3.control.errors}}<br>

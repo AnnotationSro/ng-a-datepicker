@@ -1,5 +1,5 @@
-import { toDate } from '../../parsers/angular_commons';
-import { ApiModelValueConverter } from './date-configurator';
+import { ApiModelValueConverter } from '../directives/date/date-configurator';
+import { toDate } from '../parsers/format-date';
 
 export class DefaultIsoStringModelValueConverter implements ApiModelValueConverter<string> {
   static readonly INSTANCE = new DefaultIsoStringModelValueConverter();

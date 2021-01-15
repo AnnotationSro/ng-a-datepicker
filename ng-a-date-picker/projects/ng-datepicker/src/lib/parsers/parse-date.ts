@@ -7,7 +7,8 @@ import {
   TranslationWidth,
 } from '@angular/common';
 import { isDevMode } from '@angular/core';
-import { DATE_FORMATS_SPLIT, getNamedFormat } from './angular_commons';
+import { DATE_FORMATS_SPLIT, getNamedFormat } from './format-date';
+import { BasicDateFormat, DatePartFormat } from '../directives/date/date-configurator';
 
 /*
 export function parseDate(value: string, format: string, locale: string, oldValue: Date = null): Date {
@@ -41,7 +42,7 @@ interface DateParser {
   parseDate(text: string, oldValue?: Date): Date;
 }
 
-function createErrorParser(format: string, msg: string) {
+function createErrorParser(format: BasicDateFormat | string, msg: string) {
   return {
     errorMsg: `${msg}`,
     parseDate: (text: string, oldValue: Date = null): Date => {
@@ -203,7 +204,7 @@ class DatePart {
 
 // type DateParser = (value: string, updateValue: Date, locale: string) => string;
 // const DATE_PARSERS: { [format: string]: DateParser } = {};
-function getDatePartParser(locale: string, format: string): DatePart | null {
+function getDatePartParser(locale: string, format: DatePartFormat): DatePart | null {
   // if (DATE_PARSERS[format]) {
   //   return DATE_PARSERS[format];
   // }
@@ -459,8 +460,8 @@ function getDatePartParser(locale: string, format: string): DatePart | null {
 
 const DateParserMaps: { [key: string]: DateParser } = {};
 
-export function getDateFormatParser(locale: string, format: string): DateParser {
-  const namedFormat = getNamedFormat(locale, format);
+export function getDateFormatParser(locale: string, format: BasicDateFormat | string): DateParser {
+  const namedFormat = getNamedFormat(locale, format as BasicDateFormat);
   format = namedFormat || format;
   const originalFormat = format;
   if (!format) return createErrorParser(format, 'bad format');
@@ -489,7 +490,7 @@ export function getDateFormatParser(locale: string, format: string): DateParser 
 
         format = part;
       } else {
-        parsers.push(getDatePartParser(locale, format));
+        parsers.push(getDatePartParser(locale, format as DatePartFormat));
         break;
       }
     }
@@ -624,6 +625,6 @@ export function getDateFormatParser(locale: string, format: string): DateParser 
   return DateParserMaps[key];
 }
 
-export function parseDate(value: string, format: string, locale: string, oldValue: Date = null): Date {
+export function parseDate(value: string, format: BasicDateFormat | string, locale: string, oldValue: Date = null): Date {
   return getDateFormatParser(locale, format).parseDate(value, oldValue);
 }

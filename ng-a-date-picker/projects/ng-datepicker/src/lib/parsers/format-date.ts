@@ -2,28 +2,12 @@
 /**
  * copy from https://github.com/angular/angular/blob/master/packages/common/src/i18n/format_date.ts
  */
-import {
-  FormatWidth,
-  // FormStyle,
-  getLocaleDateFormat,
-  getLocaleDateTimeFormat,
-  // getLocaleDayNames,
-  // getLocaleDayPeriods,
-  // getLocaleEraNames,
-  // getLocaleExtraDayPeriodRules,
-  // getLocaleExtraDayPeriods,
-  getLocaleId,
-  // getLocaleMonthNames,
-  // getLocaleNumberSymbol,
-  getLocaleTimeFormat,
-  // NumberSymbol,
-  // // Time,
-  // TranslationWidth,
-} from '@angular/common';
+import { FormatWidth, getLocaleDateFormat, getLocaleDateTimeFormat, getLocaleId, getLocaleTimeFormat } from '@angular/common';
+import { BasicDateFormat } from '../directives/date/date-configurator';
 
 export const DATE_FORMATS_SPLIT = /((?:[^GyYMLwWdEabBhHmsSzZO']+)|(?:'(?:[^']|'')*')|(?:G{1,5}|y{1,4}|Y{1,4}|M{1,5}|L{1,5}|w{1,2}|W{1}|d{1,2}|E{1,6}|a{1,5}|b{1,5}|B{1,5}|h{1,2}|H{1,2}|m{1,2}|s{1,2}|S{1,3}|z{1,4}|Z{1,5}|O{1,4}))([\s\S]*)/;
 
-const NAMED_FORMATS: { [localeId: string]: { [format: string]: string } } = {};
+const NAMED_FORMATS: { [localeId: string]: { [format in BasicDateFormat]: string } } = {};
 
 function formatDateTime(str: string, opt_values: string[]) {
   if (opt_values) {
@@ -34,9 +18,9 @@ function formatDateTime(str: string, opt_values: string[]) {
   return str;
 }
 
-export function getNamedFormat(locale: string, format: string): string {
+export function getNamedFormat(locale: string, format: BasicDateFormat): string {
   const localeId = getLocaleId(locale);
-  NAMED_FORMATS[localeId] = NAMED_FORMATS[localeId] || {};
+  NAMED_FORMATS[localeId] = NAMED_FORMATS[localeId] || ({} as any);
 
   if (NAMED_FORMATS[localeId][format]) {
     return NAMED_FORMATS[localeId][format];

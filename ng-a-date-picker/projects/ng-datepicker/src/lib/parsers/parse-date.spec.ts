@@ -1,6 +1,6 @@
-import {formatDate} from '@angular/common';
-import {getNamedFormat} from './angular_commons';
-import {getDateFormatParser, parseDate} from './date-parser.service';
+import { formatDate } from '@angular/common';
+import { getNamedFormat } from './format-date';
+import { getDateFormatParser } from './parse-date';
 
 const localeEn = 'en';
 // const localeDe = 'de';
@@ -37,16 +37,16 @@ describe('DateParserService', () => {
     'OOOO',
     'ZZZZ',
     'zzzz',
-  'b',
-  'bb',
-  'bbb',
-  'bbbb',
-  'bbbbb',
-  'B',
-  'BB',
-  'BBB',
-  'BBBB',
-  'BBBBB'
+    'b',
+    'bb',
+    'bbb',
+    'bbbb',
+    'bbbbb',
+    'B',
+    'BB',
+    'BBB',
+    'BBBB',
+    'BBBBB',
   ];
 
   for (const unsupportedFormat of unsupportedFormats) {
@@ -57,7 +57,7 @@ describe('DateParserService', () => {
     });
   }
 
-  const ignoredFormats = [ 'w', 'ww',  'W' , 'E', 'EE', 'EEE' ];
+  const ignoredFormats = ['w', 'ww', 'W', 'E', 'EE', 'EEE'];
   for (const ignoredFormat of ignoredFormats) {
     it(`test ignored format: ${ignoredFormat}`, () => {
       const parser = getDateFormatParser(localeEn, ignoredFormat);
@@ -137,7 +137,13 @@ describe('DateParserService', () => {
     });
   }
 
-  let createYearTest = (supportedFormat:string, strValue: string, fullYearBefore: number, fullYearExpected: number, runFormatedTest: boolean = true) => {
+  const createYearTest = (
+    supportedFormat: string,
+    strValue: string,
+    fullYearBefore: number,
+    fullYearExpected: number,
+    runFormatedTest: boolean = true
+  ) => {
     it(`test year format: ${supportedFormat} = '${strValue}' => ${fullYearExpected}`, () => {
       const parser = getDateFormatParser(localeEn, supportedFormat);
       const dIn = new Date();
@@ -191,9 +197,13 @@ describe('DateParserService', () => {
   createYearTest('yyyy', '3334', 2, 3334);
   createYearTest('YYYY', '3334', 2, 3334);
 
-
-
-  let createCustomTest = (format:string, strValue: string, dIn: Date, lineRegexpExpected: string, expFormatedStrValue: string = null) => {
+  const createCustomTest = (
+    format: string,
+    strValue: string,
+    dIn: Date,
+    lineRegexpExpected: string,
+    expFormatedStrValue: string = null
+  ) => {
     it(`createCustomTest: ${format} = '${strValue}' => ${dIn.toISOString()}, parsed with regexp: lineRegexpExpected`, () => {
       const parser = getDateFormatParser(localeEn, format);
 
@@ -214,7 +224,6 @@ describe('DateParserService', () => {
 
       const strValueTest2 = formatDate(dOut, format, localeEn);
       expect(strValueTest2).toBe(strValueTest1);
-
     });
   };
   const dtTest = new Date('2131-10-20T13:14:15.167'); //
@@ -224,5 +233,11 @@ describe('DateParserService', () => {
   createCustomTest('yyyy-dd', ' 2131 - 20 ', dtTest, '^(\\d{4,5})\\s*-\\s*(\\d{1,2})$');
   createCustomTest('yyyy-MM', '2131-10', dtTest, '^(\\d{4,5})\\s*-\\s*(\\d{1,2})$');
   createCustomTest('yyyy-MM-dd', '2131   - 10 -20', dtTest, '^(\\d{4,5})\\s*-\\s*(\\d{1,2})\\s*-\\s*(\\d{1,2})$');
-  createCustomTest('yyyy-MM-dd HH:mm:ss', '2131   - 10 -20 13 :14 : 15', dtTest, '^(\\d{4,5})\\s*-\\s*(\\d{1,2})\\s*-\\s*(\\d{1,2})\\s*(\\d{1,2})\\s*:\\s*(\\d{1,2})\\s*:\\s*(\\d{1,2})$', '2131-10-20 13:14:15');
+  createCustomTest(
+    'yyyy-MM-dd HH:mm:ss',
+    '2131   - 10 -20 13 :14 : 15',
+    dtTest,
+    '^(\\d{4,5})\\s*-\\s*(\\d{1,2})\\s*-\\s*(\\d{1,2})\\s*(\\d{1,2})\\s*:\\s*(\\d{1,2})\\s*:\\s*(\\d{1,2})$',
+    '2131-10-20 13:14:15'
+  );
 });
