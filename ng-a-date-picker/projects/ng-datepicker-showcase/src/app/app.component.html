@@ -1,13 +1,13 @@
 <h1>Showcase</h1>
 
-<h2>Custom conf in component</h2>
+<h2>Custom conf in component (+ mindate validation</h2>
 <pre>
   currentDateTime1 = new Date();
   ngDateConf2: DirectiveDateConfig =
   {{ngDateConf | json}}
 </pre>
 <input type="text" [(ngModel)]="currentDateTime" [aNgDate]="ngDateConf" #ngm1="ngModel"
-       (change)="log($event)" (ngModelChange)="logM($event)"/>
+       (change)="log($event)" (ngModelChange)="logM($event)"  minDate="2020-01-01T00:00"/>
 
 <br>
 Value 1 = {{currentDateTime}}
@@ -16,7 +16,7 @@ pristine = {{ngm1.control.pristine}}<br>
 dirty = {{ngm1.control.dirty}}<br>
 touched = {{ngm1.control.touched}}<br>
 valid = {{ngm1.control.valid}}<br>
-errors = {{ngm1.control.errors}}<br>
+errors = {{ngm1.control.errors | json}}<br>
 
 <br />
 <hr>

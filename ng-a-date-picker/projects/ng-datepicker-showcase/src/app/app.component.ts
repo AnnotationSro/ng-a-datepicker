@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { NgDateConfig } from '../../../ng-datepicker/src/lib/date-configurator';
+import { NgDateConfig } from 'ng-datepicker';
 
 @Component({
   selector: 'a-date-app-root',

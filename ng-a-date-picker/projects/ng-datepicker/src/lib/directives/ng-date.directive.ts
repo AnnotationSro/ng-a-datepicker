@@ -72,7 +72,6 @@ export class NgDateDirective implements ControlValueAccessor {
 
     this._ngValue = v;
     this.onChange(this._ngValue);
-    this.onTouched();
   }
 
   constructor(
