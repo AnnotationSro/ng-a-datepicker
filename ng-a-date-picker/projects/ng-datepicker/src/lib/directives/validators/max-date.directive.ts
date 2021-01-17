@@ -49,6 +49,6 @@ export class MaxDateDirective implements Validator {
       ...(this.aNgDate ? this.aNgDate : {}),
     } as NgDateConfig);
 
-    return NgDateValidators.maxDate(this.maxDate, conf)(control);
+    return NgDateValidators.maxDate(this._maxDate, conf)(control);
   }
 }

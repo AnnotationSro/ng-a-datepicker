@@ -8,3 +8,4 @@ export * from './lib/converters/converter-api';
 
 export * from './lib/directives/validators/max-date.directive';
 export * from './lib/directives/validators/min-date.directive';
+export * from './lib/directives/validators/validate.conf';
