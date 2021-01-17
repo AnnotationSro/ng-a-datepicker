@@ -48,20 +48,22 @@ export class NgDateDefaultConfig {
   };
 
   static getConfig(): NgDateConfig {
-    return this.default;
+    return NgDateDefaultConfig.default;
   }
 
   static fixConfig(input: NgDateConfig): NgDateConfig {
     const isUndef = (inp: any) => typeof inp === 'undefined';
 
     return {
-      popup: isUndef(input.popup) ? this.default.popup : input.popup,
-      modelConverter: isUndef(input.modelConverter) ? this.default.modelConverter : input.modelConverter,
-      displayFormat: isUndef(input.displayFormat) ? this.default.displayFormat : input.displayFormat,
-      timezone: isUndef(input.timezone) ? this.default.timezone : input.timezone,
-      locale: isUndef(input.locale) ? this.default.locale : input.locale,
-      firstValueConverter: isUndef(input.firstValueConverter) ? this.default.firstValueConverter : input.firstValueConverter,
-      dateFormat: isUndef(input.dateFormat) ? this.default.dateFormat : input.dateFormat,
+      popup: isUndef(input.popup) ? NgDateDefaultConfig.default.popup : input.popup,
+      modelConverter: isUndef(input.modelConverter) ? NgDateDefaultConfig.default.modelConverter : input.modelConverter,
+      displayFormat: isUndef(input.displayFormat) ? NgDateDefaultConfig.default.displayFormat : input.displayFormat,
+      timezone: isUndef(input.timezone) ? NgDateDefaultConfig.default.timezone : input.timezone,
+      locale: isUndef(input.locale) ? NgDateDefaultConfig.default.locale : input.locale,
+      firstValueConverter: isUndef(input.firstValueConverter)
+        ? NgDateDefaultConfig.default.firstValueConverter
+        : input.firstValueConverter,
+      dateFormat: isUndef(input.dateFormat) ? NgDateDefaultConfig.default.dateFormat : input.dateFormat,
     };
   }
 }
