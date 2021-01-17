@@ -2,13 +2,10 @@ import { formatDate, ɵgetDOM as getDOM } from '@angular/common';
 import { Directive, ElementRef, forwardRef, HostListener, Inject, Input, Optional, Renderer2 } from '@angular/core';
 import { COMPOSITION_BUFFER_MODE, ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { parseDate } from '../parsers/parse-date';
-import { DefaultDateModelValueConverter } from '../converters/DefaultDateModelValueConverter';
-import { DefaultIsoStringModelValueConverter } from '../converters/DefaultIsoStringModelValueConverter';
-import { DefaultNumberModelValueConverter } from '../converters/DefaultNumberModelValueConverter';
-import { DefaultFormattedModelValueConverter } from '../converters/DefaultFormattedModelValueConverter';
 import { NG_DATEPICKER_CONF } from '../conf/ng-datepicker.conf.token';
 import { NgDatepickerConf } from '../conf/ng-datepicker.conf';
 import { NgDateConfig, NgDateModelValueConverter, StandardModelValueConverters } from '../ng-date.model';
+import { getConverter, NgDateDefaultConfig } from '../ng-date.util';
 
 /**
  * We must check whether the agent is Android because composition events
@@ -25,7 +22,7 @@ function isAndroid(): boolean {
 //  - nova direktiva na validovanie
 //  - casove pasma
 //  - popup
-//  -
+//  - time-step - napr cas bude zaokruhleny na 15min, ovplyvni aj kalendar popup
 //  -
 
 @Directive({
@@ -181,14 +178,7 @@ export class NgDateDirective implements ControlValueAccessor {
     // console.warn(this.timezoneInput);
     // console.warn(this.localeInput);
 
-    // fill undefined/null values by defaults
-    if (!this.config.popup) this.config.popup = true; // TODO - mfilo - 15.01.2021 - implement
-    if (!this.config.modelConverter) this.config.modelConverter = 'string-iso-datetime-with-zone';
-    if (!this.config.displayFormat) this.config.displayFormat = 'long';
-    if (!this.config.timezone) this.config.timezone = undefined; // TODO - mfilo - 15.01.2021 - implement
-    if (!this.config.locale) this.config.locale = 'en-US';
-    // if (!this.config.firstValueConverter) this.config.firstValueConverter = undefined;
-    // if (!this.config.dateFormat) this.config.dateFormat = undefined;
+    this.config = NgDateDefaultConfig.fixConfig(this.config);
   }
 
   get modelConverter(): NgDateModelValueConverter<any> {
@@ -198,36 +188,7 @@ export class NgDateDirective implements ControlValueAccessor {
   handleConverterInput(
     converter?: StandardModelValueConverters | NgDateModelValueConverter<any>
   ): NgDateModelValueConverter<any> {
-    return typeof converter === 'string' ? this.getConverter(converter) : converter;
-  }
-
-  getConverter(modelConverters: StandardModelValueConverters): NgDateModelValueConverter<any> {
-    switch (modelConverters) {
-      case 'formatted':
-        return DefaultFormattedModelValueConverter.INSTANCE;
-      case 'date':
-        return DefaultDateModelValueConverter.INSTANCE;
-      case 'number-timestamp':
-        return DefaultNumberModelValueConverter.INSTANCE;
-      case 'string-iso-date':
-        // TODO - mfilo - 14.01.2021 - format as const/static field
-        this.config.dateFormat = 'YYYY-MM-dd';
-        return DefaultFormattedModelValueConverter.INSTANCE;
-      case 'string-iso-datetime':
-        // TODO - mfilo - 14.01.2021 - format as const/static field
-        this.config.dateFormat = 'YYYY-MM-ddTHH:mm';
-        return DefaultFormattedModelValueConverter.INSTANCE;
-      case 'string-iso-datetime-with-zone':
-        return DefaultIsoStringModelValueConverter.INSTANCE;
-      case 'string-iso-time':
-        // TODO - mfilo - 14.01.2021 - format as const/static field
-        this.config.dateFormat = 'HH:mm';
-        return new DefaultFormattedModelValueConverter();
-      case 'string-iso-time-with-zone':
-        throw new Error('Converter not implemented error!');
-      default:
-        throw new Error('Unknown converter type!');
-    }
+    return typeof converter === 'string' ? getConverter(converter, this.config) : converter;
   }
 
   /// /////////////////////////////////////////////////////////////////////////////////////////////////////////////
