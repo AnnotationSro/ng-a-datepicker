@@ -21,13 +21,28 @@ export class MaxDateDirective implements Validator {
   @Input()
   aNgDate: NgDateConfig;
 
+  private control: AbstractControl;
+  private _maxDate: any;
   @Input()
-  maxDate: any;
+  set maxDate(v: any) {
+    this._maxDate = v;
+
+    // if maxDate has changed we have to rerun validation
+    if (this.control) {
+      this.validate(this.control);
+      setTimeout(() => {
+        this.control.updateValueAndValidity();
+      });
+    }
+  }
 
   constructor(@Optional() @Inject(NG_DATEPICKER_CONF) private globalConf: NgDatepickerConf) {}
 
   validate(control: AbstractControl): ValidationErrors | null {
-    if (typeof this.maxDate === 'undefined') return null;
+    // TODO - mfilo - 17.01.2021 - there should be a better way
+    this.control = control;
+
+    if (!this._maxDate) return null;
 
     const conf = NgDateDefaultConfig.fixConfig({
       ...(this.globalConf?.ngDateConfig ? this.globalConf.ngDateConfig : {}),

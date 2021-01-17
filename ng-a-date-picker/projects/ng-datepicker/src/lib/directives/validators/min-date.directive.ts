@@ -21,19 +21,34 @@ export class MinDateDirective implements Validator {
   @Input()
   aNgDate: NgDateConfig;
 
+  private control: AbstractControl;
+  private _minDate: any;
   @Input()
-  minDate: any;
+  set minDate(v: any) {
+    this._minDate = v;
+
+    // if maxDate has changed we have to rerun validation
+    if (this.control) {
+      this.validate(this.control);
+      setTimeout(() => {
+        this.control.updateValueAndValidity();
+      });
+    }
+  }
 
   constructor(@Optional() @Inject(NG_DATEPICKER_CONF) private globalConf: NgDatepickerConf) {}
 
   validate(control: AbstractControl): ValidationErrors | null {
-    if (typeof this.minDate === 'undefined') return null;
+    // TODO - mfilo - 17.01.2021 - there should be a better way
+    this.control = control;
+
+    if (!this._minDate) return null;
 
     const conf = NgDateDefaultConfig.fixConfig({
       ...(this.globalConf?.ngDateConfig ? this.globalConf.ngDateConfig : {}),
       ...(this.aNgDate ? this.aNgDate : {}),
     } as NgDateConfig);
 
-    return NgDateValidators.minDate(this.minDate, conf)(control);
+    return NgDateValidators.minDate(this._minDate, conf)(control);
   }
 }

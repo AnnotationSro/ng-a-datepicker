@@ -4,10 +4,10 @@ import { NgDateConfig } from '../../ng-date.model';
 import { getConverter } from '../../ng-date.util';
 
 export type NgDateMaxValidationError = {
-  maxDate: { rejectedValue: any; maxDateAllowedFormatted: string; maxDateAllowed: string };
+  maxDate: { rejectedValue: any; rejectedValueFormatted: string; maxDateAllowed: any; maxDateAllowedFormatted: string };
 } | null;
 export type NgDateMinValidationError = {
-  minDate: { rejectedValue: any; minDateAllowedFormatted: string; minDateAllowed: string };
+  minDate: { rejectedValue: any; rejectedValueFormatted: string; minDateAllowed: any; minDateAllowedFormatted: string };
 } | null;
 
 export class NgDateValidators {
@@ -22,6 +22,7 @@ export class NgDateValidators {
         ? {
             minDate: {
               rejectedValue: control.value,
+              rejectedValueFormatted: NgDateValidators.valueToDisplayFormat(control.value, ngDateConfig),
               minDateAllowed: minDate,
               minDateAllowedFormatted: NgDateValidators.valueToDisplayFormat(minDate, ngDateConfig),
             },
@@ -43,6 +44,7 @@ export class NgDateValidators {
         ? {
             maxDate: {
               rejectedValue: control.value,
+              rejectedValueFormatted: NgDateValidators.valueToDisplayFormat(control.value, ngDateConfig),
               maxDateAllowed: maxDate,
               maxDateAllowedFormatted: NgDateValidators.valueToDisplayFormat(maxDate, ngDateConfig),
             },
@@ -60,6 +62,9 @@ export class NgDateValidators {
   }
 
   private static valueToDisplayFormat(value: any, config: NgDateConfig): string {
-    return formatDate(value, config.displayFormat, config.locale, config.timezone);
+    const converter = getConverter(config.modelConverter, config);
+    const date = converter.fromModel(value, config);
+
+    return formatDate(date, config.displayFormat, config.locale, config.timezone);
   }
 }

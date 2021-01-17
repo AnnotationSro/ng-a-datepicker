@@ -7,7 +7,7 @@
   {{ngDateConf | json}}
 </pre>
 <input type="text" [(ngModel)]="currentDateTime" [aNgDate]="ngDateConf" #ngm1="ngModel"
-       (change)="log($event)" (ngModelChange)="logM($event)"  minDate="2020-01-01T00:00"/>
+       (change)="log($event)" (ngModelChange)="logM($event)" minDate="2020-01-01T00:00"/>
 
 <br>
 Value 1 = {{currentDateTime}}
