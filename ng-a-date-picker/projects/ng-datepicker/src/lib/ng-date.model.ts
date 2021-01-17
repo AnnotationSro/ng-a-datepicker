@@ -9,22 +9,22 @@ export interface HtmlValueConfig {
   locale?: string;
 }
 
-export interface DirectiveDateConfig extends HtmlValueConfig {
+export interface NgDateConfig extends HtmlValueConfig {
   // ngModel output if StandardModelValueConverters=formatted
   dateFormat?: BasicDateFormat | string;
 
   // handler for initial value, converts date to desired format and vice versa
-  firstValueConverter?: StandardModelValueConverters | ApiModelValueConverter<any>;
+  firstValueConverter?: StandardModelValueConverters | NgDateModelValueConverter<any>;
   // converts date to desired format and vice versa, also overrides `DirectiveDateConfig.dateFormat`
-  modelConverter?: StandardModelValueConverters | ApiModelValueConverter<any>;
+  modelConverter?: StandardModelValueConverters | NgDateModelValueConverter<any>;
 
   // use interactive calendar to select date/time
   popup?: boolean;
 }
 
-export interface ApiModelValueConverter<T> {
-  fromModel: (value: T, opts?: DirectiveDateConfig) => Date;
-  toModel: (value: Date, oldModel: T, opts?: DirectiveDateConfig) => T;
+export interface NgDateModelValueConverter<T> {
+  fromModel: (value: T, opts?: NgDateConfig) => Date;
+  toModel: (value: Date, oldModel: T, opts?: NgDateConfig) => T;
 }
 
 // List of pre-defined converters

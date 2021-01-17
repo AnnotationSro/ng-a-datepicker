@@ -1,14 +1,13 @@
 import { ModuleWithProviders, NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { NgDatepickerComponent } from './ng-datepicker/ng-datepicker.component';
-import { AnnotationDateDirective } from './directives/date/annotation-date.directive';
 import { NgDatepickerConf } from './conf/ng-datepicker.conf';
 import { NG_DATEPICKER_CONF } from './conf/ng-datepicker.conf.token';
+import { NgDateDirective } from './directives/ng-date.directive';
 
 @NgModule({
-  declarations: [NgDatepickerComponent, AnnotationDateDirective],
+  declarations: [NgDateDirective],
   imports: [CommonModule],
-  exports: [NgDatepickerComponent, AnnotationDateDirective],
+  exports: [NgDateDirective],
 })
 export class NgDatepickerModule {
   static forRoot(ngDatepickerConf: NgDatepickerConf): ModuleWithProviders<NgDatepickerModule> {

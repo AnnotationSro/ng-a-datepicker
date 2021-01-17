@@ -3,7 +3,7 @@
  * copy from https://github.com/angular/angular/blob/master/packages/common/src/i18n/format_date.ts
  */
 import { FormatWidth, getLocaleDateFormat, getLocaleDateTimeFormat, getLocaleId, getLocaleTimeFormat } from '@angular/common';
-import { BasicDateFormat } from '../directives/date/date-configurator';
+import { BasicDateFormat } from '../ng-date.model';
 
 export const DATE_FORMATS_SPLIT = /((?:[^GyYMLwWdEabBhHmsSzZO']+)|(?:'(?:[^']|'')*')|(?:G{1,5}|y{1,4}|Y{1,4}|M{1,5}|L{1,5}|w{1,2}|W{1}|d{1,2}|E{1,6}|a{1,5}|b{1,5}|B{1,5}|h{1,2}|H{1,2}|m{1,2}|s{1,2}|S{1,3}|z{1,4}|Z{1,5}|O{1,4}))([\s\S]*)/;
 

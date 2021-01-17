@@ -1,6 +1,6 @@
-import { ApiModelValueConverter } from '../directives/date/date-configurator';
+import { NgDateModelValueConverter } from '../ng-date.model';
 
-export class DefaultNumberModelValueConverter implements ApiModelValueConverter<number> {
+export class DefaultNumberModelValueConverter implements NgDateModelValueConverter<number> {
   static readonly INSTANCE = new DefaultNumberModelValueConverter();
 
   fromModel(value: number): Date {

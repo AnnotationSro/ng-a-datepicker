@@ -1,22 +1,14 @@
 import { formatDate, ɵgetDOM as getDOM } from '@angular/common';
-import { Directive, ElementRef, forwardRef, HostListener, Inject, Input, OnInit, Optional, Renderer2 } from '@angular/core';
-import {
-  AbstractControl,
-  COMPOSITION_BUFFER_MODE,
-  ControlValueAccessor,
-  NG_VALIDATORS,
-  NG_VALUE_ACCESSOR,
-  ValidationErrors,
-  Validator,
-} from '@angular/forms';
-import { ApiModelValueConverter, DirectiveDateConfig, StandardModelValueConverters } from './date-configurator';
-import { parseDate } from '../../parsers/parse-date';
-import { DefaultDateModelValueConverter } from '../../converters/DefaultDateModelValueConverter';
-import { DefaultIsoStringModelValueConverter } from '../../converters/DefaultIsoStringModelValueConverter';
-import { DefaultNumberModelValueConverter } from '../../converters/DefaultNumberModelValueConverter';
-import { DefaultFormattedModelValueConverter } from '../../converters/DefaultFormattedModelValueConverter';
-import { NG_DATEPICKER_CONF } from '../../conf/ng-datepicker.conf.token';
-import { NgDatepickerConf } from '../../conf/ng-datepicker.conf';
+import { Directive, ElementRef, forwardRef, HostListener, Inject, Input, Optional, Renderer2 } from '@angular/core';
+import { COMPOSITION_BUFFER_MODE, ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
+import { parseDate } from '../parsers/parse-date';
+import { DefaultDateModelValueConverter } from '../converters/DefaultDateModelValueConverter';
+import { DefaultIsoStringModelValueConverter } from '../converters/DefaultIsoStringModelValueConverter';
+import { DefaultNumberModelValueConverter } from '../converters/DefaultNumberModelValueConverter';
+import { DefaultFormattedModelValueConverter } from '../converters/DefaultFormattedModelValueConverter';
+import { NG_DATEPICKER_CONF } from '../conf/ng-datepicker.conf.token';
+import { NgDatepickerConf } from '../conf/ng-datepicker.conf';
+import { NgDateConfig, NgDateModelValueConverter, StandardModelValueConverters } from '../ng-date.model';
 
 /**
  * We must check whether the agent is Android because composition events
@@ -26,6 +18,15 @@ function isAndroid(): boolean {
   const userAgent = getDOM() ? getDOM().getUserAgent() : '';
   return /android (\d+)/.test(userAgent.toLowerCase());
 }
+
+// TODO - mfilo - 15.01.2021 - checklist
+//  - locale provider
+//  - directive single field input na config hodnoty
+//  - nova direktiva na validovanie
+//  - casove pasma
+//  - popup
+//  -
+//  -
 
 @Directive({
   selector: '[aNgDate]',
@@ -38,28 +39,31 @@ function isAndroid(): boolean {
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,
-      useExisting: forwardRef(() => AnnotationDateDirective),
-      multi: true,
-    },
-    {
-      provide: NG_VALIDATORS,
-      useExisting: forwardRef(() => AnnotationDateDirective),
+      useExisting: forwardRef(() => NgDateDirective),
       multi: true,
     },
   ],
 })
-export class AnnotationDateDirective implements ControlValueAccessor, Validator {
+export class NgDateDirective implements ControlValueAccessor {
   private _composing = false;
 
   onChange: (value: any) => void; // Called on a value change
   onTouched: () => void; // Called if you care if the form was touched
-  onValidatorChange: () => void; // Called on a validator change or re-validation;
 
-  private config: DirectiveDateConfig = null;
+  private config: NgDateConfig = null;
   private hasConfig: boolean = false;
 
   dtValue: Date = null; // interna premenna
   _ngValue: any = null; // premenna ktoru posielame do ngModel
+
+  // TODO - mfilo - 15.01.2021 - toto by bolo vhodne tiez
+  // @Input('firstValueConverter') firstValueConverterInput: DirectiveDateConfig['firstValueConverter'];
+  // @Input('modelConverter') modelConverterInput: DirectiveDateConfig['modelConverter'];
+  // @Input('displayFormat') displayFormatInput: DirectiveDateConfig['displayFormat'];
+  // @Input('dateFormat') dateFormatInput: DirectiveDateConfig['dateFormat'];
+  // @Input('timezone') timezoneInput: DirectiveDateConfig['timezone'];
+  // @Input('locale') localeInput: DirectiveDateConfig['locale'];
+  // @Input('popup') popupInput: DirectiveDateConfig['popup'];
 
   get ngValue() {
     return this._ngValue;
@@ -95,24 +99,12 @@ export class AnnotationDateDirective implements ControlValueAccessor, Validator 
     this.onTouched = fn;
   }
 
-  // registration for Validator
-  registerOnValidatorChange?(fn: () => void): void {
-    this.onValidatorChange = fn;
-  }
-
   writeValue(value: any): void {
     this._renderer.setProperty(this._elementRef.nativeElement, 'value', this.valueFormatter(value));
   }
 
   setDisabledState(isDisabled: boolean): void {
     this._renderer.setProperty(this._elementRef.nativeElement, 'disabled', isDisabled);
-  }
-
-  // TODO - mfilo - 14.01.2021 -
-  validate(control: AbstractControl): ValidationErrors | null {
-    // console.log(control);
-    // return { invalid: true };
-    return null;
   }
 
   @HostListener('blur')
@@ -153,26 +145,26 @@ export class AnnotationDateDirective implements ControlValueAccessor, Validator 
   /// Customization behavior & config
 
   @Input('aNgDate')
-  set setConfig(val: DirectiveDateConfig) {
+  set setConfig(val: NgDateConfig) {
     this.hasConfig = true;
-    this.config = {} as DirectiveDateConfig;
+    this.config = {} as NgDateConfig;
     // set defaults from ModuleConf if exists
-    if (this.ngDatepickerConf?.ngDateConf) {
+    if (this.ngDatepickerConf?.ngDateConfig) {
       // TODO - mfilo - 15.01.2021 - @psl
       //  - pozri sem pls, keby spravim len `this.config=this.ngDatepickerConf.ngDateConf`
       //    tak zdielame jeden objekt pre vsetky komponenty co je blbost
 
       // we cant use JSON.parse(JSON.stringify()) to prevent reference to global config, because modelConverter can be a class instance
-      this.config.popup = this.ngDatepickerConf.ngDateConf.popup;
-      this.config.firstValueConverter = this.ngDatepickerConf.ngDateConf.firstValueConverter;
-      this.config.modelConverter = this.ngDatepickerConf.ngDateConf.modelConverter;
-      this.config.dateFormat = this.ngDatepickerConf.ngDateConf.dateFormat;
-      this.config.displayFormat = this.ngDatepickerConf.ngDateConf.displayFormat;
-      this.config.timezone = this.ngDatepickerConf.ngDateConf.timezone;
-      this.config.locale = this.ngDatepickerConf.ngDateConf.locale;
+      this.config.popup = this.ngDatepickerConf.ngDateConfig.popup;
+      this.config.firstValueConverter = this.ngDatepickerConf.ngDateConfig.firstValueConverter;
+      this.config.modelConverter = this.ngDatepickerConf.ngDateConfig.modelConverter;
+      this.config.dateFormat = this.ngDatepickerConf.ngDateConfig.dateFormat;
+      this.config.displayFormat = this.ngDatepickerConf.ngDateConfig.displayFormat;
+      this.config.timezone = this.ngDatepickerConf.ngDateConfig.timezone;
+      this.config.locale = this.ngDatepickerConf.ngDateConfig.locale;
     }
 
-    // fill and overwrite ModuleConf values from direct input
+    // fill and overwrite ModuleConf values from aNgDate input
     if (val?.popup) this.config.popup = val.popup;
     if (val?.firstValueConverter) this.config.firstValueConverter = val.firstValueConverter;
     if (val?.modelConverter) this.config.modelConverter = val.modelConverter;
@@ -180,6 +172,14 @@ export class AnnotationDateDirective implements ControlValueAccessor, Validator 
     if (val?.displayFormat) this.config.displayFormat = val.displayFormat;
     if (val?.timezone) this.config.timezone = val.timezone;
     if (val?.locale) this.config.locale = val.locale;
+
+    // console.warn(this.popupInput);
+    // console.warn(this.firstValueConverterInput);
+    // console.warn(this.modelConverterInput);
+    // console.warn(this.dateFormatInput);
+    // console.warn(this.displayFormatInput);
+    // console.warn(this.timezoneInput);
+    // console.warn(this.localeInput);
 
     // fill undefined/null values by defaults
     if (!this.config.popup) this.config.popup = true; // TODO - mfilo - 15.01.2021 - implement
@@ -191,15 +191,17 @@ export class AnnotationDateDirective implements ControlValueAccessor, Validator 
     // if (!this.config.dateFormat) this.config.dateFormat = undefined;
   }
 
-  get modelConverter(): ApiModelValueConverter<any> {
+  get modelConverter(): NgDateModelValueConverter<any> {
     return this.handleConverterInput(this.config.modelConverter);
   }
 
-  handleConverterInput(converter?: StandardModelValueConverters | ApiModelValueConverter<any>): ApiModelValueConverter<any> {
+  handleConverterInput(
+    converter?: StandardModelValueConverters | NgDateModelValueConverter<any>
+  ): NgDateModelValueConverter<any> {
     return typeof converter === 'string' ? this.getConverter(converter) : converter;
   }
 
-  getConverter(modelConverters: StandardModelValueConverters): ApiModelValueConverter<any> {
+  getConverter(modelConverters: StandardModelValueConverters): NgDateModelValueConverter<any> {
     switch (modelConverters) {
       case 'formatted':
         return DefaultFormattedModelValueConverter.INSTANCE;
