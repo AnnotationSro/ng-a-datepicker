@@ -11,7 +11,7 @@ export class AppComponent {
 
   currentDateTime = new Date();
   ngDateConf: NgDateConfig = {
-    displayFormat: 'dd.MM.YYYY o HH:mm',
+    displayFormat: 'dd.MM.yyyy o HH:mm',
     modelConverter: 'string-iso-datetime',
     firstValueConverter: 'date',
   };

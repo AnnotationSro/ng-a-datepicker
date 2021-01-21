@@ -17,11 +17,11 @@ export const getConverter = (
       return DefaultNumberModelValueConverter.INSTANCE;
     case 'string-iso-date':
       // TODO - mfilo - 14.01.2021 - format as const/static field
-      config.dateFormat = 'YYYY-MM-dd';
+      config.dateFormat = 'yyyy-MM-dd';
       return DefaultFormattedModelValueConverter.INSTANCE;
     case 'string-iso-datetime':
       // TODO - mfilo - 14.01.2021 - format as const/static field
-      config.dateFormat = 'YYYY-MM-ddTHH:mm';
+      config.dateFormat = 'yyyy-MM-ddTHH:mm';
       return DefaultFormattedModelValueConverter.INSTANCE;
     case 'string-iso-datetime-with-zone':
       return DefaultIsoStringModelValueConverter.INSTANCE;

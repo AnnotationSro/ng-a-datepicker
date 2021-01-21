@@ -19,7 +19,6 @@ function isAndroid(): boolean {
 // TODO - mfilo - 15.01.2021 - checklist
 //  - locale provider
 //  - directive single field input na config hodnoty
-//  - nova direktiva na validovanie
 //  - casove pasma
 //  - popup
 //  - time-step - napr cas bude zaokruhleny na 15min, ovplyvni aj kalendar popup
