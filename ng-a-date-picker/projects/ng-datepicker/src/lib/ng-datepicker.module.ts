@@ -1,5 +1,6 @@
 import { ModuleWithProviders, NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { NgDatepickerConf } from './conf/ng-datepicker.conf';
 import { NG_DATEPICKER_CONF } from './conf/ng-datepicker.conf.token';
 import { NgDateDirective } from './directives/ng-date.directive';
@@ -9,7 +10,7 @@ import { PopupComponent } from './components/popup/popup.component';
 
 @NgModule({
   declarations: [NgDateDirective, MinDateDirective, MaxDateDirective, PopupComponent],
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   exports: [NgDateDirective, MinDateDirective, MaxDateDirective, PopupComponent],
 })
 export class NgDatepickerModule {

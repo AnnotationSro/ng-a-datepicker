@@ -117,6 +117,10 @@ export class NgDateDirective implements ControlValueAccessor {
 
   writeValue(value: any): void {
     this._renderer.setProperty(this._elementRef.nativeElement, 'value', this.valueFormatter(value));
+
+    if (this.popupComponent?.instance) {
+      this.popupComponent.instance.val = this.readValue();
+    }
   }
 
   setDisabledState(isDisabled: boolean): void {
@@ -249,7 +253,9 @@ export class NgDateDirective implements ControlValueAccessor {
     };
   }
 
-  public changeValue(dateFormat: NgDateConfig['dateFormat']) {
-    this.writeValue(dateFormat);
+  public changeValue(value: Date) {
+    const v = this.modelConverter.toModel(value, null, this.config);
+    this.writeValue(v);
+    this.onTouched();
   }
 }
