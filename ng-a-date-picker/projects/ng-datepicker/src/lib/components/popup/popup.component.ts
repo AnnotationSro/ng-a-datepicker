@@ -52,22 +52,18 @@ export class PopupComponent implements OnInit, OnDestroy {
   // Handle input[ngDate] interaction
   /// ///////////////////////////////////
   private onInputTouch = () => {
-    console.log(this.ngDateDirective.readValue());
     document.removeEventListener('pointerdown', this.onFocusOut);
 
     this.isOpen = true;
     this.val = this.ngDateDirective.readValue();
 
-    setTimeout(() => {
-      document.addEventListener('pointerdown', this.onFocusOut);
-    });
+    document.addEventListener('pointerdown', this.onFocusOut);
   };
 
   // tento zapis je kvoli zachovaniu kontextu
   private onFocusOut = (e: Event) => {
     const inPopup = e.composedPath().some((element) => (element as HTMLElement).classList?.contains('ng-date-popup'));
     if (inPopup) {
-      e.preventDefault();
       return;
     }
 
@@ -113,8 +109,8 @@ const utils = {
     const currMonthDays = new Date(year, month + 1, 0).getDate();
 
     // if firstDayOfMonth is first day of week, show previous week (same for lastDayOfMonth
-    const firstDayOfMonth = utils.getDayOfWeek(new Date(year, month, 1)) || 6;
-    const lastDayOfMonth = 6 - utils.getDayOfWeek(new Date(year, month, currMonthDays)) || 6;
+    const firstDayOfMonth = utils.getDayOfWeek(new Date(year, month, 1)) || 7;
+    const lastDayOfMonth = 6 - utils.getDayOfWeek(new Date(year, month, currMonthDays)) || 7;
 
     const nexyYearNumber = month === 11 ? year - 1 : year;
     const nextMonthNumber = (month + 1 + 12) % 12;

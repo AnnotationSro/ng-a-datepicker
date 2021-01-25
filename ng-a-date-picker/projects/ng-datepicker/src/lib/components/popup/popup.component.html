@@ -1,25 +1,20 @@
 <div class="ng-date-popup" *ngIf="isOpen">
   <div class="d-flex">
-    <button (click)="removeMonth()" type="button"> < </button>
+    <button (click)="removeMonth()" type="button"> <</button>
     {{val.internal | date: 'MMMM'}}
-    <button (click)="addMonth()" type="button"> > </button>
+    <button (click)="addMonth()" type="button"> ></button>
     <input type="number" [ngModel]="val.internal.getFullYear()" (ngModelChange)="setYear($event)">
   </div>
-  <hr>
-  {{val.internal | date: 'dd.MM.yyyy'}}
-  <hr>
-  {{val.internal | date: 'HH:mm'}}
-  <hr>
-  {{val.internal}}
-  <hr>
-<div class="row">
-  <ng-container *ngFor="let day of days; let i = index">
-<!--    <div class="col" [ngClass]="{'text-muted': !day.currentMonth}">{{day.day}} ({{day.dayOfWeek}})</div>-->
-    <div class="col h-cursor-pointer"
-         [ngClass]="{'text-muted': !day.currentMonth, 'bg-primary': compareDate(day.date)}"
-         (click)="setDate(day.date)"
-    >{{day.day}}</div>
-    <div class="col-12" *ngIf="day.dayOfWeek === 6 "></div>
-  </ng-container>
-</div>
+
+  <div class="p-1 pt-3">
+  <div class="row">
+    <ng-container *ngFor="let day of days; let i = index">
+      <div class="col h-cursor-pointer text-center"
+           [ngClass]="{'text-muted': !day.currentMonth, 'bg-primary': compareDate(day.date)}"
+           (click)="setDate(day.date)"
+      >{{day.day}}</div>
+      <div class="col-12" *ngIf="day.dayOfWeek === 6 "></div>
+    </ng-container>
+  </div>
+  </div>
 </div>
