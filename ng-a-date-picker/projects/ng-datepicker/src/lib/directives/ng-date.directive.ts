@@ -18,20 +18,13 @@ function isAndroid(): boolean {
 
 // TODO - mfilo - 15.01.2021 - checklist
 //  - locale provider
-//  - directive single field input na config hodnoty
-//  - casove pasma
-//  - popup
+//  - timezones
+//  - directive single field inputs for config
 //  - time-step - napr cas bude zaokruhleny na 15min, ovplyvni aj kalendar popup
-//  -
 
 @Directive({
-  selector: '[aNgDate]',
-  // host: {
-  //   '(input)': '$any(this)._handleInput($event.target.value)',
-  //   '(blur)': '$any(this)._handleBlur()',
-  //   '(compositionstart)': '$any(this)._compositionStart()',
-  //   '(compositionend)': '$any(this)._compositionEnd($event.target.value)',
-  // },
+  selector: '[ngDate]',
+  exportAs: 'ngDate',
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,
@@ -39,6 +32,12 @@ function isAndroid(): boolean {
       multi: true,
     },
   ],
+  // host: {
+  //   '(input)': '$any(this)._handleInput($event.target.value)',
+  //   '(blur)': '$any(this)._handleBlur()',
+  //   '(compositionstart)': '$any(this)._compositionStart()',
+  //   '(compositionend)': '$any(this)._compositionEnd($event.target.value)',
+  // },
 })
 export class NgDateDirective implements ControlValueAccessor {
   private _composing = false;
@@ -71,6 +70,10 @@ export class NgDateDirective implements ControlValueAccessor {
 
     this._ngValue = v;
     this.onChange(this._ngValue);
+  }
+
+  get elementRef(): ElementRef {
+    return this._elementRef;
   }
 
   constructor(
@@ -139,7 +142,9 @@ export class NgDateDirective implements ControlValueAccessor {
   /// /////////////////////////////////////////////////////////////////////////////////////////////////////////////
   /// Customization behavior & config
 
-  @Input('aNgDate')
+  @Input('ngDate')
+  // TODO - mfilo - 25.01.2021 -
+  // set setConfig(val: NgDateConfig | BasicDateFormat) {
   set setConfig(val: NgDateConfig) {
     this.hasConfig = true;
     this.config = {} as NgDateConfig;
@@ -159,7 +164,7 @@ export class NgDateDirective implements ControlValueAccessor {
       this.config.locale = this.ngDatepickerConf.ngDateConfig.locale;
     }
 
-    // fill and overwrite ModuleConf values from aNgDate input
+    // fill and overwrite ModuleConf values from ngDate input
     if (val?.popup) this.config.popup = val.popup;
     if (val?.firstValueConverter) this.config.firstValueConverter = val.firstValueConverter;
     if (val?.modelConverter) this.config.modelConverter = val.modelConverter;
@@ -179,25 +184,17 @@ export class NgDateDirective implements ControlValueAccessor {
     this.config = NgDateDefaultConfig.fixConfig(this.config);
   }
 
-  get modelConverter(): NgDateModelValueConverter<any> {
+  private get modelConverter(): NgDateModelValueConverter<any> {
     return this.handleConverterInput(this.config.modelConverter);
   }
 
-  handleConverterInput(
+  private handleConverterInput(
     converter?: StandardModelValueConverters | NgDateModelValueConverter<any>
   ): NgDateModelValueConverter<any> {
     return typeof converter === 'string' ? getConverter(converter, this.config) : converter;
   }
 
-  /// /////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  /// Value formatter & parsers
-  // ngModel = string(iso) | Date | number
-  // html = formatter = 'yyyy-mm-dd'
-  // value sender '2012-12-30'  => 30.12.2012  (po uprave) 31.12.2020 => Date => do modelu '2020-12-31'
-  // <input type='a-date' ngmodel='value1' [aDate]='{format: 'dd. MM'}' />
-  // <input type='a-date' ngmodel='value1' [aDate]='{format: 'hh:mm'}' />
-
-  valueFormatter(value: any): string {
+  private valueFormatter(value: any): string {
     if (value === undefined || value === null) return '';
 
     // first time - parse ANY input to Date
@@ -215,7 +212,7 @@ export class NgDateDirective implements ControlValueAccessor {
     return formatDate(this.dtValue, this.config.displayFormat, this.config.locale, this.config.timezone);
   }
 
-  valueParser(val: string): string | number | Date {
+  private valueParser(val: string): string | number | Date {
     if (!val || !val.trim().length) {
       this.dtValue = null;
       this.ngValue = null;
@@ -231,5 +228,16 @@ export class NgDateDirective implements ControlValueAccessor {
     }
 
     return this.ngValue;
+  }
+
+  public readValue(): { internal: Date; ngModel: string } {
+    return {
+      internal: this.dtValue,
+      ngModel: this.ngValue,
+    };
+  }
+
+  public changeValue(dateFormat: NgDateConfig['dateFormat']) {
+    this.writeValue(dateFormat);
   }
 }

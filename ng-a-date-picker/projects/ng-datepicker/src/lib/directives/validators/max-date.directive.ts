@@ -19,7 +19,7 @@ import { NgDateDefaultConfig } from '../../ng-date.util';
 })
 export class MaxDateDirective implements Validator {
   @Input()
-  aNgDate: NgDateConfig;
+  ngDate: NgDateConfig;
 
   private control: AbstractControl;
   private _maxDate: any;
@@ -46,7 +46,7 @@ export class MaxDateDirective implements Validator {
 
     const conf = NgDateDefaultConfig.fixConfig({
       ...(this.globalConf?.ngDateConfig ? this.globalConf.ngDateConfig : {}),
-      ...(this.aNgDate ? this.aNgDate : {}),
+      ...(this.ngDate ? this.ngDate : {}),
     } as NgDateConfig);
 
     return NgDateValidators.maxDate(this._maxDate, conf)(control);

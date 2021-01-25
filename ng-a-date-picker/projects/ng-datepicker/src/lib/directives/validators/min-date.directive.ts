@@ -19,7 +19,7 @@ import { NgDateConfig } from '../../ng-date.model';
 })
 export class MinDateDirective implements Validator {
   @Input()
-  aNgDate: NgDateConfig;
+  ngDate: NgDateConfig;
 
   private control: AbstractControl;
   private _minDate: any;
@@ -46,7 +46,7 @@ export class MinDateDirective implements Validator {
 
     const conf = NgDateDefaultConfig.fixConfig({
       ...(this.globalConf?.ngDateConfig ? this.globalConf.ngDateConfig : {}),
-      ...(this.aNgDate ? this.aNgDate : {}),
+      ...(this.ngDate ? this.ngDate : {}),
     } as NgDateConfig);
 
     return NgDateValidators.minDate(this._minDate, conf)(control);

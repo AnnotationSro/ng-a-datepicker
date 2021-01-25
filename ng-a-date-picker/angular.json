@@ -10,7 +10,7 @@
       "projectType": "library",
       "root": "projects/ng-datepicker",
       "sourceRoot": "projects/ng-datepicker/src",
-      "prefix": "a-date",
+      "prefix": "ng-date",
       "architect": {
         "build": {
           "builder": "@angular-devkit/build-angular:ng-packagr",

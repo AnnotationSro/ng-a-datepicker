@@ -40,8 +40,8 @@ module.exports = {
         "plugin:prettier/recommended"
       ],
       "rules": {
-        "@angular-eslint/directive-selector": ["error",{"type": "attribute", "prefix": ["a","aNg"], "style": "camelCase"}],
-        "@angular-eslint/component-selector": ["error",{"type": "element", "prefix": ["a-","a-ng-"], "style": "kebab-case"}],
+        "@angular-eslint/directive-selector": ["error",{"type": "attribute", "prefix": ["ngDate"], "style": "camelCase"}],
+        "@angular-eslint/component-selector": ["error",{"type": "element", "prefix": ["ng-date"], "style": "kebab-case"}],
         "quotes": ["error", "single", {"allowTemplateLiterals": true}],
         // Custom rules
         'import/prefer-default-export': 'off',
