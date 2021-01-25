@@ -66,36 +66,36 @@ errors = {{ngm3.control.errors}}<br>
 
 
 
-<hr />
-Priklady pouzitia:
-<div>
-  Iba INPUT: <input type="text" [(ngModel)]="currentDateTime" [ngDate]="ngDateConf" />
-  <small>Ked pride, pusti sa automaticky popup a ked odide, zatvorit sa</small>
-</div>
-<div>
-  Iba INPUT: <input type="text" [(ngModel)]="currentDateTime" [ngDate]="ngDateConf" ngDatePopup="false" />
-  <small>Neotvara sa popup (vobec)</small>
-</div>
+<!--<hr />-->
+<!--Priklady pouzitia:-->
+<!--<div>-->
+<!--  Iba INPUT: <input type="text" [(ngModel)]="currentDateTime" [ngDate]="ngDateConf" />-->
+<!--  <small>Ked pride, pusti sa automaticky popup a ked odide, zatvorit sa</small>-->
+<!--</div>-->
+<!--<div>-->
+<!--  Iba INPUT: <input type="text" [(ngModel)]="currentDateTime" [ngDate]="ngDateConf" ngDatePopup="false" />-->
+<!--  <small>Neotvara sa popup (vobec)</small>-->
+<!--</div>-->
 
-<div>
-  INLINE COMPONENT:
-  1)
-  <input type="text" [(ngModel)]="currentDateTime" [ngDate]="ngDateConf" #date="ngDate" />
+<!--<div>-->
+<!--  INLINE COMPONENT:-->
+<!--  1)-->
+<!--  <input type="text" [(ngModel)]="currentDateTime" [ngDate]="ngDateConf" #date="ngDate" />-->
 
-  2)
-  <ng-date-component [(ngModel)]="currentDateTime" render="inline|button"></ng-date-component>
-</div>
+<!--  2)-->
+<!--  <ng-date-component [(ngModel)]="currentDateTime" render="inline|button"></ng-date-component>-->
+<!--</div>-->
 
-<div>
-  INPUT s BUTTONOM:
-<!--  <div><input type="text" [(ngModel)]="currentDateTime" [ngDate]="ngDateConf" ngDatePopup="buttonAfter"  />NIE, lebo toto spravime cez ikonky v pozadi</div>-->
-  <div><input type="text" [(ngModel)]="currentDateTime" [ngDate]="ngDateConf" #date="ngDate" /><button ngDatePopup="date">CLICK</button></div>
-  <div ngDateContainer><input type="text" [(ngModel)]="currentDateTime" [ngDate]="ngDateConf" /><button ngDatePopup>CLICK</button></div>
-  <div ngDateContainer>
-    <input type="text" [(ngModel)]="currentDateTime" [ngDate]="ngDateConf" />
-    <input type="text" [(ngModel)]="currentDateTime" [ngDate]="ngTimeConf" />
-    <ng-date-component [(ngModel)]="currentDateTime" render="inline|button"></ng-date-component>
-  </div>
-  <small>Neotvara sa popup (vobec)</small >
-</div>
+<!--<div>-->
+<!--  INPUT s BUTTONOM:-->
+<!--&lt;!&ndash;  <div><input type="text" [(ngModel)]="currentDateTime" [ngDate]="ngDateConf" ngDatePopup="buttonAfter"  />NIE, lebo toto spravime cez ikonky v pozadi</div>&ndash;&gt;-->
+<!--  <div><input type="text" [(ngModel)]="currentDateTime" [ngDate]="ngDateConf" #date="ngDate" /><button ngDatePopup="date">CLICK</button></div>-->
+<!--  <div ngDateContainer><input type="text" [(ngModel)]="currentDateTime" [ngDate]="ngDateConf" /><button ngDatePopup>CLICK</button></div>-->
+<!--  <div ngDateContainer>-->
+<!--    <input type="text" [(ngModel)]="currentDateTime" [ngDate]="ngDateConf" />-->
+<!--    <input type="text" [(ngModel)]="currentDateTime" [ngDate]="ngTimeConf" />-->
+<!--    <ng-date-component [(ngModel)]="currentDateTime" render="inline|button"></ng-date-component>-->
+<!--  </div>-->
+<!--  <small>Neotvara sa popup (vobec)</small >-->
+<!--</div>-->
 

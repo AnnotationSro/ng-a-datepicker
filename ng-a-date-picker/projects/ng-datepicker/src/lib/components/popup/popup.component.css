@@ -1,0 +1,16 @@
+.ng-date-popup {
+  position: absolute;
+  z-index: 99;
+
+  left:0;
+  right: 0;
+  bottom: -5px;
+  transform: translateY(100%);
+  padding: 10px;
+
+  background: white;
+  border: 2px solid grey;
+  border-radius: 5px;
+
+  min-width: 200px;
+}

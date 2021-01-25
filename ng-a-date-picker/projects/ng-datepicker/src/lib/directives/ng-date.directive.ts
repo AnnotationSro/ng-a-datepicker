@@ -1,11 +1,24 @@
 import { formatDate, ɵgetDOM as getDOM } from '@angular/common';
-import { Directive, ElementRef, forwardRef, HostListener, Inject, Input, Optional, Renderer2 } from '@angular/core';
+import {
+  ComponentFactoryResolver,
+  ComponentRef,
+  Directive,
+  ElementRef,
+  forwardRef,
+  HostListener,
+  Inject,
+  Input,
+  Optional,
+  Renderer2,
+  ViewContainerRef,
+} from '@angular/core';
 import { COMPOSITION_BUFFER_MODE, ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { parseDate } from '../parsers/parse-date';
 import { NG_DATEPICKER_CONF } from '../conf/ng-datepicker.conf.token';
 import { NgDatepickerConf } from '../conf/ng-datepicker.conf';
 import { NgDateConfig, NgDateModelValueConverter, StandardModelValueConverters } from '../ng-date.model';
 import { getConverter, NgDateDefaultConfig } from '../ng-date.util';
+import { PopupComponent } from '../components/popup/popup.component';
 
 /**
  * We must check whether the agent is Android because composition events
@@ -51,14 +64,8 @@ export class NgDateDirective implements ControlValueAccessor {
   dtValue: Date = null; // interna premenna
   _ngValue: any = null; // premenna ktoru posielame do ngModel
 
-  // TODO - mfilo - 15.01.2021 - toto by bolo vhodne tiez
-  // @Input('firstValueConverter') firstValueConverterInput: DirectiveDateConfig['firstValueConverter'];
-  // @Input('modelConverter') modelConverterInput: DirectiveDateConfig['modelConverter'];
-  // @Input('displayFormat') displayFormatInput: DirectiveDateConfig['displayFormat'];
-  // @Input('dateFormat') dateFormatInput: DirectiveDateConfig['dateFormat'];
-  // @Input('timezone') timezoneInput: DirectiveDateConfig['timezone'];
-  // @Input('locale') localeInput: DirectiveDateConfig['locale'];
-  // @Input('popup') popupInput: DirectiveDateConfig['popup'];
+  @Input() disablePopup: boolean = false;
+  private popupComponent: ComponentRef<PopupComponent>;
 
   get ngValue() {
     return this._ngValue;
@@ -79,11 +86,22 @@ export class NgDateDirective implements ControlValueAccessor {
   constructor(
     private _renderer: Renderer2,
     private _elementRef: ElementRef,
+    private _viewContainerRef: ViewContainerRef,
+    private _componentFactoryResolver: ComponentFactoryResolver,
     @Optional() @Inject(NG_DATEPICKER_CONF) private ngDatepickerConf: NgDatepickerConf,
     @Optional() @Inject(COMPOSITION_BUFFER_MODE) private _compositionMode: boolean
   ) {
     if (this._compositionMode == null) {
       this._compositionMode = !isAndroid();
+    }
+
+    if (!this.disablePopup) {
+      const componentFactory = this._componentFactoryResolver.resolveComponentFactory(PopupComponent);
+      this.popupComponent = this._viewContainerRef.createComponent<PopupComponent>(componentFactory);
+      this.popupComponent.instance.ngDateDirective = this;
+
+      // autocomple would overlay popup
+      this._renderer.setProperty(this._elementRef.nativeElement, 'autocomplete', 'off');
     }
   }
 
@@ -107,7 +125,9 @@ export class NgDateDirective implements ControlValueAccessor {
 
   @HostListener('blur')
   _handleBlur() {
-    this.onTouched();
+    if (!this.popupComponent?.instance?.isOpen) {
+      this.onTouched();
+    }
 
     if (!this.dtValue) {
       // clean user input
@@ -172,14 +192,6 @@ export class NgDateDirective implements ControlValueAccessor {
     if (val?.displayFormat) this.config.displayFormat = val.displayFormat;
     if (val?.timezone) this.config.timezone = val.timezone;
     if (val?.locale) this.config.locale = val.locale;
-
-    // console.warn(this.popupInput);
-    // console.warn(this.firstValueConverterInput);
-    // console.warn(this.modelConverterInput);
-    // console.warn(this.dateFormatInput);
-    // console.warn(this.displayFormatInput);
-    // console.warn(this.timezoneInput);
-    // console.warn(this.localeInput);
 
     this.config = NgDateDefaultConfig.fixConfig(this.config);
   }
