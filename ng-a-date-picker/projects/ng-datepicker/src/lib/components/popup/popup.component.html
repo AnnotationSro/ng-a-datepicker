@@ -4,7 +4,8 @@
     <span class="ng-date-popup--month">{{val.dtValue | date: 'LLLL'}}</span>
     <button (click)="addMonth()" type="button" class="ng-date-popup--prev">+</button>
 
-    <input type="number" class="ng-date-popup--year" [ngModel]="val.dtValue.getFullYear()" (ngModelChange)="setYear($event)">
+    <input type="number" class="ng-date-popup--year"
+           [ngModel]="val.dtValue.getFullYear()" (ngModelChange)="setYear($event)">
 
   </div>
 
@@ -27,4 +28,13 @@
   <!-- TODO - mfilo - 27.01.2021 - -->
   <!--  <div class="ng-date-popup&#45;&#45;time"></div>-->
   <!--  <div class="ng-date-popup&#45;&#45;datetime"></div>-->
+
+  <hr>
+  <div *ngIf="types.includes(DateType.FullYear)">show year</div>
+  <div *ngIf="types.includes(DateType.Month)">show months</div>
+  <div *ngIf="types.includes(DateType.Date)">show date</div>
+  <div *ngIf="types.includes(DateType.Hours_24)">show hrs24</div>
+  <div *ngIf="types.includes(DateType.Hours_12)">show hrs12</div>
+  <div *ngIf="types.includes(DateType.Minutes)">show minutes</div>
+  <div *ngIf="types.includes(DateType.Seconds)">show seconds</div>
 </div>

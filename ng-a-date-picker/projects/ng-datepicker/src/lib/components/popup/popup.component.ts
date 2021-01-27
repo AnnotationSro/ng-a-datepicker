@@ -2,6 +2,8 @@ import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { FormStyle, getLocaleDayNames, getLocaleFirstDayOfWeek, TranslationWidth, WeekDay } from '@angular/common';
 import { NgDateDirectiveApi, NgDateValue } from '../../directives/ng-date/ng-date.directive.api';
 import { NgDateConfigUtil } from '../../conf/ng-date.config.util';
+import { BasicDateFormat } from '../../model/ng-date-public.model';
+import { DateType, getDateFormatParser } from '../../parsers/parse-date';
 
 // TODO - mfilo - 25.01.2021
 //  - start of week
@@ -13,6 +15,8 @@ import { NgDateConfigUtil } from '../../conf/ng-date.config.util';
   styleUrls: ['./popup.component.scss'],
 })
 export class PopupComponent implements OnInit, OnDestroy {
+  DateType = DateType;
+
   @Input()
   public ngDateDirective: NgDateDirectiveApi = null;
 
@@ -26,6 +30,8 @@ export class PopupComponent implements OnInit, OnDestroy {
   private firstDayOfWeek: WeekDay;
 
   private _val: NgDateValue = {} as NgDateValue;
+  types: DateType[];
+
   get val() {
     return this._val;
   }
@@ -51,20 +57,28 @@ export class PopupComponent implements OnInit, OnDestroy {
   // Component setup
   /// ///////////////////////////////////
   private localizeComponent() {
+    const conf = NgDateConfigUtil.resolveHtmlValueConfig(this.ngDateDirective);
+
     // TODO - mfilo - 27.01.2021 - we should listen to locale change in case app has dynamic locale
     if (!this.locale) {
       // we can get locale 3 ways:
       //  1) user defined in input
       //  2) if provided to module, its injected into ngDateDirective and then read from it
       //  3) if ngDateDirective is undefined or locale does not exist we fallback to default locale 'en'
-      this.locale = NgDateConfigUtil.resolveHtmlValueConfig(this.ngDateDirective).locale;
+      this.locale = conf.locale;
     }
+
+    this.types = getDateFormatParser(this.locale, conf.displayFormat as BasicDateFormat).types;
 
     this.firstDayOfWeek = getLocaleFirstDayOfWeek(this.locale);
 
     this.localizedDays = JSON.parse(JSON.stringify(getLocaleDayNames(this.locale, FormStyle.Standalone, TranslationWidth.Short)));
     const tmp = this.localizedDays.splice(0, this.firstDayOfWeek);
     this.localizedDays = this.localizedDays.concat(tmp);
+  }
+
+  private configureCalendarContent(types: DateType[]) {
+    // TODO - mfilo - 27.01.2021 - CalendarContentType
   }
 
   private readDays() {
@@ -179,3 +193,12 @@ interface CalendarDay {
   date: Date;
   currentMonth: boolean;
 }
+
+type CalendarContentType =
+  | 'year-picker' // yyyy -> 2012
+  | 'month-picker' // MM, yyyy -> Dec, 2012
+  | 'standalone-month-picker' // LLLL -> December
+  | 'date-picker' // d.M.yyyy -> 1.12.2012
+  | 'date-time-picker' // dd.MM.yyyy, H:mm -> 1.12.2012, 4:18
+  | 'time-picker' // H:mm -> 4:18
+  | 'day-picker'; // EEEE -> Tuesday

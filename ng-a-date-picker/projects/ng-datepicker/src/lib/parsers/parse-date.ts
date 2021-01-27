@@ -16,7 +16,7 @@ export function parseDate(value: string, format: string, locale: string, oldValu
 }
 */
 
-enum DateType {
+export enum DateType {
   FullYear,
   Month,
   Date,
@@ -38,6 +38,7 @@ function valueToNumber(value: number | string): number {
 
 interface DateParser {
   errorMsg: string;
+  types: DateType[];
 
   parseDate(text: string, oldValue?: Date): Date;
 }
@@ -45,6 +46,7 @@ interface DateParser {
 function createErrorParser(format: BasicDateFormat | string, msg: string) {
   return {
     errorMsg: `${msg}`,
+    types: undefined,
     parseDate: (text: string, oldValue: Date = null): Date => {
       try {
         console.error(`DateParser for format '${format}' has error: ${msg}`);
@@ -507,6 +509,7 @@ export function getDateFormatParser(locale: string, format: BasicDateFormat | st
     const strValueRegexp = new RegExp(lineRegexp, 'i');
 
     const ret = {
+      types: parsers.map((p) => p.type).filter((t) => typeof t !== 'undefined'),
       parseDate(text: string, dtValue: Date = null): Date {
         try {
           dtValue = dtValue || null;
