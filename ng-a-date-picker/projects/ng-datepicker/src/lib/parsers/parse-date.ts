@@ -8,7 +8,7 @@ import {
 } from '@angular/common';
 import { isDevMode } from '@angular/core';
 import { DATE_FORMATS_SPLIT, getNamedFormat } from './format-date';
-import { BasicDateFormat, DatePartFormat } from '../ng-date.model';
+import { BasicDateFormat, DatePartFormat } from '../model/ng-date-public.model';
 
 /*
 export function parseDate(value: string, format: string, locale: string, oldValue: Date = null): Date {

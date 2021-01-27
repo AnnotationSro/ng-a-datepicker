@@ -1,10 +1,10 @@
 import { toDate } from '../parsers/format-date';
-import { NgDateModelValueConverter } from '../ng-date.model';
+import { ApiNgDateModelValueConverter } from '../model/ng-date-public.model';
 
-export class DefaultDateModelValueConverter implements NgDateModelValueConverter<Date> {
+export class DefaultDateModelValueConverter implements ApiNgDateModelValueConverter<Date> {
   static readonly INSTANCE = new DefaultDateModelValueConverter();
 
-  fromModel(value: Date): Date {
+  fromModel(value: string | number | Date): Date {
     return toDate(value);
   }
 

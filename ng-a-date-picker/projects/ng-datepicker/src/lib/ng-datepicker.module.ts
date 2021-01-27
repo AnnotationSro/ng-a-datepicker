@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NgDatepickerConf } from './conf/ng-datepicker.conf';
 import { NG_DATEPICKER_CONF } from './conf/ng-datepicker.conf.token';
-import { NgDateDirective } from './directives/ng-date.directive';
+import { NgDateDirective } from './directives/ng-date/ng-date.directive';
 import { MinDateDirective } from './directives/validators/min-date.directive';
 import { MaxDateDirective } from './directives/validators/max-date.directive';
 import { PopupComponent } from './components/popup/popup.component';

@@ -3,8 +3,8 @@
 
 import 'zone.js/dist/zone';
 import 'zone.js/dist/zone-testing';
-import { getTestBed } from '@angular/core/testing';
-import { BrowserDynamicTestingModule, platformBrowserDynamicTesting } from '@angular/platform-browser-dynamic/testing';
+import {getTestBed} from '@angular/core/testing';
+import {BrowserDynamicTestingModule, platformBrowserDynamicTesting} from '@angular/platform-browser-dynamic/testing';
 import {registerLocaleData} from "@angular/common";
 // Add these two imports
 import localeEn from '@angular/common/locales/en';

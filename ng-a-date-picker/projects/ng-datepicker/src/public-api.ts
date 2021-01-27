@@ -1,6 +1,7 @@
 export * from './lib/ng-datepicker.module';
-export * from './lib/directives/ng-date.directive';
-export * from './lib/ng-date.model';
+export * from './lib/directives/ng-date/ng-date.directive';
+export * from './lib/directives/ng-date/ng-date.directive.api';
+export * from './lib/model/ng-date-public.model';
 
 export * from './lib/parsers/format-date';
 export * from './lib/parsers/parse-date';

@@ -1,5 +1,5 @@
 import { Component, Input, OnDestroy, OnInit } from '@angular/core';
-import { NgDateDirective } from '../../directives/ng-date.directive';
+import { NgDateDirectiveApi, NgDateValue } from '../../directives/ng-date/ng-date.directive.api';
 
 // TODO - mfilo - 25.01.2021
 //  - start of week
@@ -12,40 +12,32 @@ import { NgDateDirective } from '../../directives/ng-date.directive';
 })
 export class PopupComponent implements OnInit, OnDestroy {
   @Input()
-  ngDateDirective: NgDateDirective;
-
-  private inputElement: HTMLInputElement;
+  public ngDateDirective: NgDateDirectiveApi = null;
 
   public isOpen = false;
   public days: CalendarDay[];
 
-  private _val: { internal: Date; ngModel: string };
+  private _val: NgDateValue = {} as NgDateValue;
   get val() {
     return this._val;
   }
 
-  set val(value) {
-    if (!value.internal) {
-      value['internal'] = new Date();
+  set val(value: NgDateValue) {
+    if (!value.dtValue) {
+      value.dtValue = new Date();
     }
 
-    this.days = utils.createCalendar(value.internal.getFullYear(), value.internal.getMonth());
+    this.days = utils.createCalendar(value.dtValue.getFullYear(), value.dtValue.getMonth());
 
     this._val = value;
   }
 
   ngOnInit(): void {
-    this.inputElement = this.ngDateDirective?.elementRef?.nativeElement;
-
-    if (!this.inputElement) {
-      throw new Error('[NgDatePopupComponent] missing "ngDate" directive');
-    }
-
-    this.inputElement.addEventListener('pointerup', this.onInputTouch);
+    this.ngDateDirective.addEventListenerToInput('pointerup', this.onInputTouch);
   }
 
   ngOnDestroy() {
-    this.inputElement.removeEventListener('pointerup', this.onInputTouch);
+    this.ngDateDirective.removeEventListenerFromInput('pointerup', this.onInputTouch);
   }
 
   /// ///////////////////////////////////
@@ -76,8 +68,8 @@ export class PopupComponent implements OnInit, OnDestroy {
   // Handle user interaction with popup
   /// ///////////////////////////////////
   setYear($event: number) {
-    this.val.internal.setFullYear($event);
-    this.ngDateDirective.changeValue(this.val.internal);
+    this.val.dtValue.setFullYear($event);
+    this.ngDateDirective.changeValue(this.val.dtValue);
   }
 
   setDate($event: Date) {
@@ -85,17 +77,17 @@ export class PopupComponent implements OnInit, OnDestroy {
   }
 
   addMonth() {
-    this.val.internal.setMonth(this.val.internal.getMonth() + 1);
-    this.ngDateDirective.changeValue(this.val.internal);
+    this.val.dtValue.setMonth(this.val.dtValue.getMonth() + 1);
+    this.ngDateDirective.changeValue(this.val.dtValue);
   }
 
   removeMonth() {
-    this.val.internal.setMonth(this.val.internal.getMonth() - 1);
-    this.ngDateDirective.changeValue(this.val.internal);
+    this.val.dtValue.setMonth(this.val.dtValue.getMonth() - 1);
+    this.ngDateDirective.changeValue(this.val.dtValue);
   }
 
   compareDate(date: Date) {
-    return this.val.internal.toLocaleDateString() === date.toLocaleDateString();
+    return this.val.dtValue.toLocaleDateString() === date.toLocaleDateString();
   }
 }
 

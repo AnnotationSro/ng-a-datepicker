@@ -10,26 +10,35 @@ export interface HtmlValueConfig {
 }
 
 export interface NgDateConfig extends HtmlValueConfig {
-  // ngModel output if StandardModelValueConverters=formatted
-  dateFormat?: BasicDateFormat | string;
-
-  // handler for initial value, converts date to desired format and vice versa
-  firstValueConverter?: StandardModelValueConverters | NgDateModelValueConverter<any>;
+  // // ngModel output if StandardModelValueConverters=formatted
+  // /**
+  //  * @deprecated The method should not be used
+  //  */
+  // dateFormat?: BasicDateFormat | string;
+  //
+  // // handler for initial value, converts date to desired format and vice versa
+  // /**
+  // * @deprecated The method should not be used
+  // */
+  // firstValueConverter?: StandardModelValueConverters | NgDateModelValueConverter<any>;
   // converts date to desired format and vice versa, also overrides `DirectiveDateConfig.dateFormat`
-  modelConverter?: StandardModelValueConverters | NgDateModelValueConverter<any>;
+  modelConverter?: StandardModelValueConverters | ApiNgDateModelValueConverter<any>;
 
   // use interactive calendar to select date/time
   popup?: boolean;
 }
 
-export interface NgDateModelValueConverter<T> {
-  fromModel: (value: T, opts?: NgDateConfig) => Date;
-  toModel: (value: Date, oldModel: T, opts?: NgDateConfig) => T;
+export interface ApiNgDateModelValueConverterConf {
+  locale?: string;
+}
+
+export interface ApiNgDateModelValueConverter<T> {
+  fromModel: (value: T, oldValue?: Date, opts?: ApiNgDateModelValueConverterConf) => Date;
+  toModel: (value: Date, oldModel: T, opts?: ApiNgDateModelValueConverterConf) => T;
 }
 
 // List of pre-defined converters
 export type StandardModelValueConverters =
-  | 'formatted' // requires `DirectiveDateConfig.dateFormat` to be set
   | 'number-timestamp'
   | 'date'
   | 'string-iso-datetime-with-zone'

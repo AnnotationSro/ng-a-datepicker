@@ -1,10 +1,15 @@
-import { Directive, forwardRef, Inject, Input, Optional } from '@angular/core';
+import { Directive, forwardRef, Inject, Input, LOCALE_ID, Optional } from '@angular/core';
 import { AbstractControl, NG_VALIDATORS, ValidationErrors, Validator } from '@angular/forms';
 import { NgDateValidators } from './validate.conf';
-import { NgDateConfig } from '../../ng-date.model';
+import {
+  ApiNgDateModelValueConverter,
+  BasicDateFormat,
+  NgDateConfig,
+  StandardModelValueConverters,
+} from '../../model/ng-date-public.model';
 import { NG_DATEPICKER_CONF } from '../../conf/ng-datepicker.conf.token';
 import { NgDatepickerConf } from '../../conf/ng-datepicker.conf';
-import { NgDateDefaultConfig } from '../../ng-date.util';
+import { HasNgDateConf } from '../../conf/has-ng-date-conf';
 
 @Directive({
   // eslint-disable-next-line @angular-eslint/directive-selector
@@ -17,9 +22,17 @@ import { NgDateDefaultConfig } from '../../ng-date.util';
     },
   ],
 })
-export class MaxDateDirective implements Validator {
-  @Input()
-  ngDate: NgDateConfig;
+export class MaxDateDirective implements Validator, HasNgDateConf {
+  @Input('ngDate')
+  ngDateConfig: BasicDateFormat | NgDateConfig = null;
+
+  @Input('ngDateModelConverter')
+  ngDateModelConverterConfig: StandardModelValueConverters | ApiNgDateModelValueConverter<any> = null;
+
+  constructor(
+    @Optional() @Inject(NG_DATEPICKER_CONF) public ngDatepickerConf: NgDatepickerConf,
+    @Inject(LOCALE_ID) public locale: string
+  ) {}
 
   private control: AbstractControl;
   private _maxDate: any;
@@ -36,19 +49,12 @@ export class MaxDateDirective implements Validator {
     }
   }
 
-  constructor(@Optional() @Inject(NG_DATEPICKER_CONF) private globalConf: NgDatepickerConf) {}
-
   validate(control: AbstractControl): ValidationErrors | null {
     // TODO - mfilo - 17.01.2021 - there should be a better way
     this.control = control;
 
     if (!this._maxDate) return null;
 
-    const conf = NgDateDefaultConfig.fixConfig({
-      ...(this.globalConf?.ngDateConfig ? this.globalConf.ngDateConfig : {}),
-      ...(this.ngDate ? this.ngDate : {}),
-    } as NgDateConfig);
-
-    return NgDateValidators.maxDate(this._maxDate, conf)(control);
+    return NgDateValidators.maxDate(this._maxDate, this)(control);
   }
 }

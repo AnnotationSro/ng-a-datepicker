@@ -1,7 +1,7 @@
 import { toDate } from '../parsers/format-date';
-import { NgDateModelValueConverter } from '../ng-date.model';
+import { ApiNgDateModelValueConverter } from '../model/ng-date-public.model';
 
-export class DefaultIsoStringModelValueConverter implements NgDateModelValueConverter<string> {
+export class DefaultIsoStringModelValueConverter implements ApiNgDateModelValueConverter<string> {
   static readonly INSTANCE = new DefaultIsoStringModelValueConverter();
 
   fromModel(value: string): Date {

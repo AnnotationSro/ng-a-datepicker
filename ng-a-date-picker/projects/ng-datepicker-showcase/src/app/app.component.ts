@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
-import { NgDateConfig } from 'ng-datepicker';
+import {NgDateConfig} from "../../../ng-datepicker/src/lib/model/ng-date-public.model"; //todo(psl2mfi): for discussion
+// import { NgDateConfig } from 'ng-datepicker';
 
 @Component({
   selector: 'a-date-app-root',
@@ -13,14 +14,14 @@ export class AppComponent {
   ngDateConf: NgDateConfig = {
     displayFormat: 'dd.MM.yyyy o HH:mm',
     modelConverter: 'string-iso-datetime',
-    firstValueConverter: 'date',
+    // firstValueConverter: 'date',
   };
 
   currentDateTime2 = new Date();
   ngDateConf2: NgDateConfig = {
     displayFormat: 'HH:mm',
     modelConverter: 'string-iso-time',
-    firstValueConverter: 'date',
+    // firstValueConverter: 'date',
   };
 
   currentDateTime3 = new Date();
