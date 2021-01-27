@@ -257,6 +257,14 @@ export class NgDateDirective implements ControlValueAccessor, HasNgDateConf, NgD
   }
 
   private valueParser(htmlValue: string): any {
+    // TODO - mfilo - 27.01.2021 - @psl - check me - bez tohto prazdny string je 1.1.1970
+    if (!htmlValue.trim()) {
+      this.dtValue = null;
+      this.ngValue = '';
+
+      return this.ngValue;
+    }
+
     // 1) (htmlValue, dtValue) => dtValue
     this.dtValue = this.convertHtmlValueToDtValue(htmlValue, this.dtValue);
 
