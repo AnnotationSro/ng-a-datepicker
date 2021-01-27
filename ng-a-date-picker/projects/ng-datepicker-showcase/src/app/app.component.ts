@@ -9,6 +9,7 @@ import { NgDateConfig } from '../../../ng-datepicker/src/lib/model/ng-date-publi
 export class AppComponent {
   title = 'ng-datepicker-showcase';
 
+  dt = new Date();
   currentDateTime = new Date();
   ngDateConf: NgDateConfig = {
     displayFormat: 'dd.MM.yyyy o HH:mm',

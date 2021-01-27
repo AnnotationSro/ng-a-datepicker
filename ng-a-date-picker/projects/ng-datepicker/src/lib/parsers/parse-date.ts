@@ -1,14 +1,7 @@
-import {
-  FormStyle,
-  getLocaleDayNames,
-  getLocaleDayPeriods,
-  getLocaleEraNames,
-  getLocaleMonthNames,
-  TranslationWidth,
-} from '@angular/common';
-import { isDevMode } from '@angular/core';
-import { DATE_FORMATS_SPLIT, getNamedFormat } from './format-date';
-import { BasicDateFormat, DatePartFormat } from '../model/ng-date-public.model';
+import {FormStyle, getLocaleDayNames, getLocaleDayPeriods, getLocaleEraNames, getLocaleMonthNames, getLocaleNumberSymbol, NumberSymbol, TranslationWidth,} from '@angular/common';
+import {isDevMode} from '@angular/core';
+import {DATE_FORMATS_SPLIT, getNamedFormat} from './format-date';
+import {BasicDateFormat, DatePartFormat} from '../model/ng-date-public.model';
 
 /*
 export function parseDate(value: string, format: string, locale: string, oldValue: Date = null): Date {
@@ -29,6 +22,7 @@ export enum DateType {
 
   DayPeriods,
   Eras,
+  TimeZoneOffset,
 }
 
 function valueToNumber(value: number | string): number {
@@ -140,27 +134,80 @@ function getStrPartStructure(
   return REGEXP_STR_NAMES[key];
 }
 
-class DatePart {
+export class DatePart {
   private constructor(
     public regexp: string,
+    public regexpGroup: number,
     public type: DateType = null,
-    public parseValue: (value: string, dtValue: Date) => number | string = null
+    public parseValue: (parsedArray: RegExpExecArray, arrayIndex: number, dtValue: Date) => number | string = null
   ) {}
 
   static ignoreText(text: string): DatePart {
     return new DatePart(normalizeStringForRegexp(text), null, null);
   }
 
-  private static defaultParseValue: (value: string, dtValue: Date) => number | string = (strValue) => {
+  private static defaultParseValueAsString: (parsedArray: RegExpExecArray, arrayIndex: number, dtValue: Date) => number | string = (parsedArray: RegExpExecArray, arrayIndex: number, dtValue: Date) => {
+    const strValue = parsedArray[arrayIndex+1];
     return (strValue || '').trim(); // vrati to ako string - aby sme vedeli pocet znakov
   };
+  public static defaultParseValueAsNumber: (parsedArray: RegExpExecArray, arrayIndex: number, dtValue: Date) => number | string = (parsedArray: RegExpExecArray, arrayIndex: number, dtValue: Date) => {
+    const strValue = parsedArray[arrayIndex+1];
+    return valueToNumber(strValue); // vrati to ako string - aby sme vedeli pocet znakov
+  };
 
-  static parsePart(
+  static parsePartSimple(
     regexp: string,
     type: DateType,
-    parseValue: (value: string, dtValue: Date) => number | string = DatePart.defaultParseValue
+    parseValue: (parsedArray: RegExpExecArray, arrayIndex: number, dtValue: Date) => number | string = DatePart.defaultParseValueAsString
   ): DatePart {
-    return new DatePart(`(${regexp})`, type, parseValue);
+    return new DatePart(`(${regexp})`, 1, type, parseValue);
+  }
+
+  static parsePartRegexp(
+    regexp: string,
+    regexpGroups: number,
+    type: DateType,
+    parseValue: (parsedArray: RegExpExecArray, arrayIndex: number, dtValue: Date) => number | string = DatePart.defaultParseValueAsString
+  ): DatePart {
+    return new DatePart(regexp, regexpGroups, type, parseValue);
+  }
+
+  /*
+  * ([+-])(\d\d)(\d\d)
+  * ([+-])(\d\d):(\d\d)
+  * GMT([+-])(d+)
+  * GMT([+-])(\d\d)(\d\d)
+  * (Z|([+-])(\\d\\d):(\\d\\d))
+  */
+  static parsePartTimeZone(
+    locale: string,
+    regexp: string,
+    regexpGroups: number
+  ): DatePart {
+    regexp = normalizeString(regexp);
+    const plus = normalizeString(getLocaleNumberSymbol(locale, NumberSymbol.PlusSign));
+    const minus = normalizeString(getLocaleNumberSymbol(locale, NumberSymbol.MinusSign));
+
+    if (plus !== '+' || minus !== '-') {
+      regexp = regexp.replace('([+-])', `(${normalizeStringForRegexp(plus)}|${normalizeStringForRegexp(minus)}|\\+|\\-)`);
+    }//todo: dokoncit sposoby parsovania
+    return new DatePart(regexp, regexpGroups, DateType.TimeZoneOffset, (parsedArray: RegExpExecArray, arrayIndex: number) => {
+      if (regexpGroups == 4) {
+        // (Z|([+-])(\\d\\d):(\\d\\d))
+        if (parsedArray[arrayIndex+1] === 'Z') return 0;
+        arrayIndex++;
+      }
+
+      const sign = parsedArray[arrayIndex+1];
+      const h = parsedArray[arrayIndex+2];
+      const m = regexpGroups>2 ? parsedArray[arrayIndex+3] : '0';
+
+      var ret = parseInt(h,10)*60+parseInt(m, 10);
+      if (sign == '-' || sign == minus) {
+        return ret;
+      }
+      return -ret;
+    });
   }
 
   static ignorePart(regexp: string): DatePart {
@@ -175,7 +222,8 @@ class DatePart {
     extended = false
   ): DatePart {
     const structure = getStrPartStructure(locale, type, width, form, extended);
-    return new DatePart(structure.regexp, type, (strValue) => {
+    return new DatePart(structure.regexp, 1, type, (parsedArray: RegExpExecArray, arrayIndex: number, dtValue: Date) => {
+      const strValue = parsedArray[arrayIndex+1];
       if (!strValue) return null;
 
       // eslint-disable-next-line no-restricted-syntax
@@ -196,7 +244,7 @@ class DatePart {
     extended = false
   ): DatePart {
     const structure = getStrPartStructure(locale, type, width, form, extended);
-    return new DatePart(structure.regexp, null, () => null); // ignored
+    return new DatePart(structure.regexp, 0, null, () => null); // ignored
   }
 }
 
@@ -230,14 +278,13 @@ function getDatePartParser(locale: string, format: DatePartFormat): DatePart | n
 
     // 1 digit representation of the year, e.g. (AD 1 => 1, AD 199 => 199)
     case 'y':
-      formatter = DatePart.parsePart('\\d{1,4}', DateType.FullYear, (value: string) => {
-        return valueToNumber(value);
-      });
+      formatter = DatePart.parsePartRegexp('(\\d{1,4})',1, DateType.FullYear, DatePart.defaultParseValueAsNumber);
       break;
 
     // 2 digit representation of the year, padded (00-99). (e.g. AD 2001 => 01, AD 2010 => 10)
     case 'yy':
-      formatter = DatePart.parsePart('\\d{2}', DateType.FullYear, (value: string, dtValue: Date) => {
+      formatter = DatePart.parsePartRegexp('(\\d{2})', 1, DateType.FullYear, (parsedArray: RegExpExecArray, arrayIndex: number, dtValue: Date) => {
+        const value = parsedArray[arrayIndex+1];
         const strFullYear = `${dtValue.getFullYear()}`;
         if (strFullYear.length <= value.length) {
           return valueToNumber(value);
@@ -257,21 +304,23 @@ function getDatePartParser(locale: string, format: DatePartFormat): DatePart | n
       //   const newFullYear = strFullYear.substr(0, strFullYear.length-value.length)+value;
       //   return valueToNumber(newFullYear);
       // });
-      formatter = DatePart.parsePart('\\d{3,5}', DateType.FullYear);
+      formatter = DatePart.parsePartRegexp('(\\d{3,5})', 1, DateType.FullYear);
       break;
     // 4 digit representation of the year (e.g. AD 1 => 0001, AD 2010 => 2010)
     case 'yyyy':
-      formatter = DatePart.parsePart('\\d{4,5}', DateType.FullYear);
+      formatter = DatePart.parsePartRegexp('(\\d{4,5})', 1, DateType.FullYear);
       break;
 
     // 1 digit representation of the week-numbering year, e.g. (AD 1 => 1, AD 199 => 199)
     case 'Y':
-      formatter = DatePart.parsePart('\\d{1,5}', DateType.FullYear);
+      formatter = DatePart.parsePartRegexp('(\\d{1,5})', 1, DateType.FullYear);
       break;
     // 2 digit representation of the week-numbering year, padded (00-99). (e.g. AD 2001 => 01, AD
     // 2010 => 10)
     case 'YY':
-      formatter = DatePart.parsePart('\\d{2}', DateType.FullYear, (value: string, dtValue: Date) => {
+      formatter = DatePart.parsePartRegexp('(\\d{2})', 1, DateType.FullYear, (parsedArray: RegExpExecArray, arrayIndex: number, dtValue: Date) => {
+        let value = parsedArray[arrayIndex+1];
+
         const strFullYear = `${dtValue.getFullYear()}`;
         if (value.length < 2) value = `0${value}`;
         if (strFullYear.length <= value.length) {
@@ -285,11 +334,11 @@ function getDatePartParser(locale: string, format: DatePartFormat): DatePart | n
     // 2010 => 2010)
     case 'YYY':
       // 4 digit representation of the week-numbering year (e.g. AD 1 => 0001, AD 2010 => 2010)
-      formatter = DatePart.parsePart('\\d{3,5}', DateType.FullYear);
+      formatter = DatePart.parsePartRegexp('(\\d{3,5})', 1, DateType.FullYear);
       break;
     case 'YYYY':
       // throw Error("Unsupported parsing format: " + format);
-      formatter = DatePart.parsePart('\\d{4,5}', DateType.FullYear);
+      formatter = DatePart.parsePartRegexp('(\\d{4,5})', 1, DateType.FullYear);
       break;
 
     // Month of the year (1-12), numeric
@@ -297,7 +346,7 @@ function getDatePartParser(locale: string, format: DatePartFormat): DatePart | n
     case 'L':
     case 'MM':
     case 'LL':
-      formatter = DatePart.parsePart('\\d{1,2}', DateType.Month);
+      formatter = DatePart.parsePartRegexp('(\\d{1,2})', 1, DateType.Month);
       break;
 
     // Month of the year (January, ...), string, format
@@ -338,7 +387,7 @@ function getDatePartParser(locale: string, format: DatePartFormat): DatePart | n
     // Day of the month (1-31)
     case 'd':
     case 'dd':
-      formatter = DatePart.parsePart('\\d{1,2}', DateType.Date);
+      formatter = DatePart.parsePartRegexp('(\\d{1,2})', 1, DateType.Date);
       break;
 
     // Day of the Week
@@ -391,45 +440,43 @@ function getDatePartParser(locale: string, format: DatePartFormat): DatePart | n
     // Hour in AM/PM, (1-12)
     case 'h':
     case 'hh':
-      formatter = DatePart.parsePart('\\d{1,2}', DateType.Hours_12);
+      formatter = DatePart.parsePartRegexp('(\\d{1,2})', 1, DateType.Hours_12);
       break;
 
     // Hour of the day (0-23)
     case 'H':
     case 'HH':
-      formatter = DatePart.parsePart('\\d{1,2}', DateType.Hours_24);
+      formatter = DatePart.parsePartRegexp('(\\d{1,2})', 1, DateType.Hours_24);
       break;
 
     // Minute of the hour (0-59)
     case 'm':
     case 'mm':
-      formatter = DatePart.parsePart('\\d{1,2}', DateType.Minutes);
+      formatter = DatePart.parsePartRegexp('(\\d{1,2})', 1, DateType.Minutes);
       break;
 
     // Second of the minute (0-59)
     case 's':
     case 'ss':
-      formatter = DatePart.parsePart('\\d{1,2}', DateType.Seconds);
+      formatter = DatePart.parsePartRegexp('(\\d{1,2})', 1, DateType.Seconds);
       break;
 
     // Fractional second
     case 'S':
     case 'SS':
     case 'SSS':
-      formatter = DatePart.parsePart('\\d{1,3}', DateType.FractionalSeconds);
+      formatter = DatePart.parsePartRegexp('(\\d{1,3})', 1, DateType.FractionalSeconds);
       break;
 
     // Timezone ISO8601 short format (-0430)
     case 'Z':
     case 'ZZ':
     case 'ZZZ':
-      // formatter = timeZoneGetter(ZoneWidth.Short);
-      throw Error(`Unsupported parsing format '${format}'`);
+      formatter = DatePart.parsePartTimeZone(locale, `([+-])(\\d\\d)(\\d\\d)`, 3);
       break;
     // Timezone ISO8601 extended format (-04:30)
     case 'ZZZZZ':
-      // formatter = timeZoneGetter(ZoneWidth.Extended);
-      throw Error(`Unsupported parsing format '${format}'`);
+      formatter = DatePart.parsePartTimeZone(locale, `(Z|([+-])(\\d\\d):(\\d\\d))`, 4);
       break;
 
     // Timezone GMT short format (GMT+4)
@@ -439,15 +486,17 @@ function getDatePartParser(locale: string, format: DatePartFormat): DatePart | n
     case 'z':
     case 'zz':
     case 'zzz':
+      formatter = DatePart.parsePartTimeZone(locale, 'GMT([+-])(\\d+)', 2);
       // formatter = timeZoneGetter(ZoneWidth.ShortGMT);
-      throw Error(`Unsupported parsing format '${format}'`);
+      // throw Error(`Unsupported parsing format '${format}'`);
       break;
     // Timezone GMT long format (GMT+0430)
     case 'OOOO':
     case 'ZZZZ':
     case 'zzzz':
       // formatter = timeZoneGetter(ZoneWidth.Long);
-      throw Error(`Unsupported parsing format '${format}'`);
+      // throw Error(`Unsupported parsing format '${format}'`);
+      formatter = DatePart.parsePartTimeZone(locale, `GMT([+-])(\\d\\d):?(\\d\\d)`, 3);
       break;
     default:
       // ignored text part
@@ -526,7 +575,14 @@ export function getDateFormatParser(locale: string, format: BasicDateFormat | st
           }
 
           // value updates ...
-          const retValue = dtValue ? new Date(dtValue.getTime()) : new Date();
+          let retValue = null;
+          if (dtValue) retValue = new Date(dtValue.getTime());
+          if (!retValue) {
+            retValue = new Date();
+            retValue.setMilliseconds(0);
+            retValue.setSeconds(0);
+          }
+
 
           // reading part values
           const values = new Map<DateType, number | string>();
@@ -534,13 +590,16 @@ export function getDateFormatParser(locale: string, format: BasicDateFormat | st
           // eslint-disable-next-line no-restricted-syntax
           for (const parser of parsers) {
             // if function for value parsing missing => part of string is not in group and it is ignored
-            if (!parser.parseValue) continue;
-            groupInx++;
-            // if valueType is null => value is ignored
-            if (!parser.type && parser.type !== 0) continue; // ak nema typ, ignorujeme hodnotu tiez
+            if (!parser.regexpGroup || !parser.parseValue) continue;
 
-            const strValuePart = matchedInput[groupInx];
-            const value = parser.parseValue(strValuePart, retValue);
+            // if valueType is null => value is ignored
+            if (!parser.type && parser.type !== 0) {
+              groupInx+=parser.regexpGroup;
+              continue;
+            } // ak nema typ, ignorujeme hodnotu tiez
+
+            const value = parser.parseValue(matchedInput, groupInx, retValue);
+            groupInx+=parser.regexpGroup;
 
             // if value == null, value is ignored
             if (value === null || value === undefined) continue;
@@ -594,6 +653,14 @@ export function getDateFormatParser(locale: string, format: BasicDateFormat | st
           }
           if (values.has(DateType.FractionalSeconds)) {
             retValue.setMilliseconds(valueToNumber(values.get(DateType.FractionalSeconds)) % 1000);
+          }
+
+          if (values.has(DateType.TimeZoneOffset)) {
+            var v = valueToNumber(values.get(DateType.TimeZoneOffset));
+            if (v != retValue.getTimezoneOffset()) {
+              var move = -retValue.getTimezoneOffset() + v;
+              retValue.setMinutes(retValue.getMinutes() + move);
+            }
           }
 
           return retValue;

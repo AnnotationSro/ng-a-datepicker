@@ -11,6 +11,46 @@ const localeEn = 'en';
 // });
 
 describe('DateParserService', () => {
+  var strValues = [
+    '2021-01-27T20:37:44Z',
+    '2021-01-27T20:37:44+00:00',
+    '2021-01-27T21:37:44+01:00',
+    '2021-01-27T22:07:44+01:30',
+    '2021-01-27T22:37:44+02:00',
+    '2021-01-28T00:37:44+04:00',
+    '2021-01-27T20:37:44-00:00',
+    '2021-01-27T19:37:44-01:00',
+    '2021-01-27T19:07:44-01:30',
+    '2021-01-27T18:37:44-02:00',
+    '2021-01-27T16:37:44-04:00',
+  ];
+  for (let i = 0; i < strValues.length; i++) {
+    it(`test parsing timezone ${strValues[i]} == ${strValues[0]}`, () => {
+      let isoDateTimeWithTimeZone: string = 'yyyy-MM-ddTHH:mm:ssZZZZZ';
+      const parser = getDateFormatParser(localeEn, isoDateTimeWithTimeZone);
+      expect(parser.errorMsg).toBe(null);
+
+      const d0 = new Date(strValues[0]);
+      const d1 = new Date(strValues[i]);
+      const d2 = parser.parseDate(strValues[i]);
+      expect(d2).not.toBeNull();
+      expect(d1).not.toBe(d0);
+      expect(d2).not.toBe(d0);
+      expect(d2).not.toBe(d1);
+      expect(d1.getTime()).toBe(d0.getTime());
+      expect(d2.getTime()).toBe(d1.getTime());
+
+      var zone = strValues[i];
+      zone = zone.substring(zone.length-6);
+      const strValue2 = formatDate(d2, isoDateTimeWithTimeZone, localeEn, zone);
+      expect(strValue2).not.toBeNull();
+      expect(strValue2).toBe(strValues[i].replace('+00:00', 'Z').replace('-00:00', 'Z'));
+      console.log(zone, strValue2, d0.getTime(), d1.getTime(), d2.getTime());
+    });
+  }
+
+
+
   it('test getNamedFormat', () => {
     const directive = getNamedFormat(localeEn, 'shortDate');
     console.log('test the cat api ', directive);
@@ -24,19 +64,6 @@ describe('DateParserService', () => {
     'GGG',
     'GGGG',
     'GGGGG',
-    'Z',
-    'ZZ',
-    'ZZZ',
-    'ZZZZZ',
-    'O',
-    'OO',
-    'OOO',
-    'z',
-    'zz',
-    'zzz',
-    'OOOO',
-    'ZZZZ',
-    'zzzz',
     'b',
     'bb',
     'bbb',
@@ -77,6 +104,7 @@ describe('DateParserService', () => {
       expect(d3).toBe(d1);
     });
   }
+
   const supportedFormats = [
     'y',
     'yy',
@@ -114,11 +142,27 @@ describe('DateParserService', () => {
     'S',
     'SS',
     'SSS',
+
+    // timezone ...
+    'Z',
+    'ZZ',
+    'ZZZ',
+    'ZZZZZ',
+    'O',
+    'OO',
+    'OOO',
+    'z',
+    'zz',
+    'zzz',
+    'OOOO',
+    'ZZZZ',
+    'zzzz',
   ];
   for (const supportedFormat of supportedFormats) {
     it(`test format: ${supportedFormat}`, () => {
       const parser = getDateFormatParser(localeEn, supportedFormat);
       expect(parser.errorMsg).toBe(null);
+      debugger;
 
       const d1 = new Date('1999-12-31T23:59:57'); // some formats can lost any information (e.g.: MMMMM)
       const s1 = formatDate(d1, supportedFormat, localeEn);
