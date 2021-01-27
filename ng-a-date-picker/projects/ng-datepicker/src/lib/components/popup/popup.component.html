@@ -1,20 +1,30 @@
 <div class="ng-date-popup" *ngIf="isOpen">
-  <div class="d-flex">
-    <button (click)="removeMonth()" type="button"> <</button>
-    {{val.dtValue | date: 'MMMM'}}
-    <button (click)="addMonth()" type="button"> ></button>
-    <input type="number" [ngModel]="val.dtValue.getFullYear()" (ngModelChange)="setYear($event)">
+  <div class="ng-date-popup--header">
+    <button (click)="removeMonth()" type="button" class="ng-date-popup--next">-</button>
+    <span class="ng-date-popup--month">{{val.dtValue | date: 'LLLL'}}</span>
+    <button (click)="addMonth()" type="button" class="ng-date-popup--prev">+</button>
+
+    <input type="number" class="ng-date-popup--year" [ngModel]="val.dtValue.getFullYear()" (ngModelChange)="setYear($event)">
+
   </div>
 
-  <div class="p-1 pt-3">
-    <div class="row">
+  <div class="ng-date-popup--date">
+    <div class="ng-date-popup--days">
+      <div *ngFor="let day of localizedDays">{{day}}</div>
+    </div>
+
+    <div class="ng-date-popup--date-row">
       <ng-container *ngFor="let day of days; let i = index">
-        <div class="col h-cursor-pointer text-center"
-             [ngClass]="{'text-muted': !day.currentMonth, 'bg-primary': compareDate(day.date)}"
+        <div class="ng-date-popup--date-day"
+             [ngClass]="{'ng-date-popup--date-disabled': !day.currentMonth, 'ng-date-popup--date-active': compareDate(day.date)}"
              (click)="setDate(day.date)"
         >{{day.day}}</div>
-        <div class="col-12" *ngIf="day.dayOfWeek === 6 "></div>
+        <div class="ng-date-popup--date-row-separator" *ngIf="day.dayOfWeek === 6 "></div>
       </ng-container>
     </div>
   </div>
+
+  <!-- TODO - mfilo - 27.01.2021 - -->
+  <!--  <div class="ng-date-popup&#45;&#45;time"></div>-->
+  <!--  <div class="ng-date-popup&#45;&#45;datetime"></div>-->
 </div>

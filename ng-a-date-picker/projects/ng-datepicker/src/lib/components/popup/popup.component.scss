@@ -1,0 +1,82 @@
+.ng-date-popup {
+  position: absolute;
+  z-index: 99;
+
+  left: 0;
+  right: 0;
+  bottom: -5px;
+  transform: translateY(100%);
+  padding: 10px;
+
+  background: white;
+  border: 2px solid silver;
+  border-radius: 5px;
+
+  width: 300px;
+}
+
+.ng-date-popup--header {
+  display: flex;
+}
+
+.ng-date-popup--prev {
+
+}
+
+.ng-date-popup--next {
+
+}
+
+.ng-date-popup--month {
+  flex-basis: 125px;
+  flex-shrink: 0;
+
+  text-transform: capitalize;
+  text-align: center;
+
+}
+
+.ng-date-popup--year {
+  width: 100px;
+  flex-basis: 100px;
+  flex-shrink: 0;
+}
+
+.ng-date-popup--date {
+
+}
+
+.ng-date-popup--date-row {
+  display: flex;
+  flex-wrap: wrap;
+  border: 1px solid silver;
+}
+
+.ng-date-popup--date-row-separator {
+
+}
+
+.ng-date-popup--days {
+  display: flex;
+
+  & > * {
+    flex-basis: calc(100% / 7);
+    text-align: center;
+  }
+}
+
+.ng-date-popup--date-day {
+  flex-basis: calc(100% / 7);
+  text-align: center;
+  border: 1px solid silver;
+  cursor: pointer;
+}
+
+.ng-date-popup--date-active {
+  background: red;
+  color: white;
+}
+
+.ng-date-popup--date-disabled {
+  background: rgba(silver, 0.25);
+}

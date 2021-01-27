@@ -1,5 +1,7 @@
 import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { FormStyle, getLocaleDayNames, getLocaleFirstDayOfWeek, TranslationWidth, WeekDay } from '@angular/common';
 import { NgDateDirectiveApi, NgDateValue } from '../../directives/ng-date/ng-date.directive.api';
+import { NgDateConfigUtil } from '../../conf/ng-date.config.util';
 
 // TODO - mfilo - 25.01.2021
 //  - start of week
@@ -8,14 +10,20 @@ import { NgDateDirectiveApi, NgDateValue } from '../../directives/ng-date/ng-dat
 @Component({
   selector: 'ng-date-popup',
   templateUrl: './popup.component.html',
-  styleUrls: ['./popup.component.css'],
+  styleUrls: ['./popup.component.scss'],
 })
 export class PopupComponent implements OnInit, OnDestroy {
   @Input()
   public ngDateDirective: NgDateDirectiveApi = null;
 
+  @Input()
+  public locale: string = undefined;
+
   public isOpen = false;
   public days: CalendarDay[];
+  public localizedDays: string[];
+
+  private firstDayOfWeek: WeekDay;
 
   private _val: NgDateValue = {} as NgDateValue;
   get val() {
@@ -27,12 +35,11 @@ export class PopupComponent implements OnInit, OnDestroy {
       value.dtValue = new Date();
     }
 
-    this.days = utils.createCalendar(value.dtValue.getFullYear(), value.dtValue.getMonth());
-
     this._val = value;
   }
 
   ngOnInit(): void {
+    this.localizeComponent();
     this.ngDateDirective.addEventListenerToInput('pointerup', this.onInputTouch);
   }
 
@@ -41,13 +48,38 @@ export class PopupComponent implements OnInit, OnDestroy {
   }
 
   /// ///////////////////////////////////
+  // Component setup
+  /// ///////////////////////////////////
+  private localizeComponent() {
+    // TODO - mfilo - 27.01.2021 - we should listen to locale change in case app has dynamic locale
+    if (!this.locale) {
+      // we can get locale 3 ways:
+      //  1) user defined in input
+      //  2) if provided to module, its injected into ngDateDirective and then read from it
+      //  3) if ngDateDirective is undefined or locale does not exist we fallback to default locale 'en'
+      this.locale = NgDateConfigUtil.resolveHtmlValueConfig(this.ngDateDirective).locale;
+    }
+
+    this.firstDayOfWeek = getLocaleFirstDayOfWeek(this.locale);
+
+    this.localizedDays = JSON.parse(JSON.stringify(getLocaleDayNames(this.locale, FormStyle.Standalone, TranslationWidth.Short)));
+    const tmp = this.localizedDays.splice(0, this.firstDayOfWeek);
+    this.localizedDays = this.localizedDays.concat(tmp);
+  }
+
+  private readDays() {
+    this.val = this.ngDateDirective.readValue();
+    this.days = utils.createCalendar(this.val.dtValue.getFullYear(), this.val.dtValue.getMonth(), this.firstDayOfWeek);
+  }
+
+  /// ///////////////////////////////////
   // Handle input[ngDate] interaction
   /// ///////////////////////////////////
   private onInputTouch = () => {
     document.removeEventListener('pointerdown', this.onFocusOut);
 
+    this.readDays();
     this.isOpen = true;
-    this.val = this.ngDateDirective.readValue();
 
     document.addEventListener('pointerdown', this.onFocusOut);
   };
@@ -70,20 +102,24 @@ export class PopupComponent implements OnInit, OnDestroy {
   setYear($event: number) {
     this.val.dtValue.setFullYear($event);
     this.ngDateDirective.changeValue(this.val.dtValue);
+    this.readDays();
   }
 
   setDate($event: Date) {
     this.ngDateDirective.changeValue($event);
+    this.readDays();
   }
 
   addMonth() {
     this.val.dtValue.setMonth(this.val.dtValue.getMonth() + 1);
     this.ngDateDirective.changeValue(this.val.dtValue);
+    this.readDays();
   }
 
   removeMonth() {
     this.val.dtValue.setMonth(this.val.dtValue.getMonth() - 1);
     this.ngDateDirective.changeValue(this.val.dtValue);
+    this.readDays();
   }
 
   compareDate(date: Date) {
@@ -91,18 +127,16 @@ export class PopupComponent implements OnInit, OnDestroy {
   }
 }
 
-const TMP_WEEK_START: 'sun' | 'mon' = 'mon';
-
 const utils = {
   // months are 0 based!!! (january = 0)
-  createCalendar: (year: number, month: number) => {
+  createCalendar: (year: number, month: number, firstDayOfWeek: WeekDay) => {
     const days: CalendarDay[] = [];
 
     const currMonthDays = new Date(year, month + 1, 0).getDate();
 
     // if firstDayOfMonth is first day of week, show previous week (same for lastDayOfMonth
-    const firstDayOfMonth = utils.getDayOfWeek(new Date(year, month, 1)) || 7;
-    const lastDayOfMonth = 6 - utils.getDayOfWeek(new Date(year, month, currMonthDays)) || 7;
+    const firstDayOfMonth = utils.getDayOfWeek(new Date(year, month, 1), firstDayOfWeek) || 7;
+    const lastDayOfMonth = 6 - utils.getDayOfWeek(new Date(year, month, currMonthDays), firstDayOfWeek) || 7;
 
     const nexyYearNumber = month === 11 ? year - 1 : year;
     const nextMonthNumber = (month + 1 + 12) % 12;
@@ -115,27 +149,27 @@ const utils = {
     for (let i = 1; i <= firstDayOfMonth; i++) {
       const day = prevMonthStart + i;
       const date = new Date(Date.UTC(prevYearNumber, prevMonthNumber, day));
-      const dayOfWeek = utils.getDayOfWeek(date);
+      const dayOfWeek = utils.getDayOfWeek(date, firstDayOfWeek);
       days.push({ day, currentMonth: false, date, dayOfWeek });
     }
 
     for (let j = 1; j <= currMonthDays; j++) {
       const date = new Date(Date.UTC(year, month, j));
-      const dayOfWeek = utils.getDayOfWeek(date);
+      const dayOfWeek = utils.getDayOfWeek(date, firstDayOfWeek);
       days.push({ day: j, currentMonth: true, date, dayOfWeek });
     }
 
     for (let k = 1; k <= lastDayOfMonth; k++) {
       const date = new Date(Date.UTC(nexyYearNumber, nextMonthNumber, k));
-      const dayOfWeek = utils.getDayOfWeek(date);
+      const dayOfWeek = utils.getDayOfWeek(date, firstDayOfWeek);
       days.push({ day: k, currentMonth: false, date, dayOfWeek });
     }
 
     return days;
   },
-  getDayOfWeek: (date: Date): number => {
-    // TMP_WEEK_START === 'mon' => monday = 0, sunday = 6
-    return (date.getDay() - (TMP_WEEK_START === 'mon' ? 1 : 0) + 7) % 7;
+
+  getDayOfWeek: (date: Date, firstDayOfWeek: WeekDay): number => {
+    return (date.getDay() - firstDayOfWeek + 7) % 7;
   },
 };
 
