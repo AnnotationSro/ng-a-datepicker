@@ -9,6 +9,7 @@ import {
   Inject,
   Input,
   LOCALE_ID,
+  OnDestroy,
   Optional,
   Renderer2,
   ViewContainerRef,
@@ -38,9 +39,7 @@ function isAndroid(): boolean {
 }
 
 // TODO - mfilo - 15.01.2021 - checklist
-//  - locale provider
 //  - timezones
-//  - directive single field inputs for config
 //  - time-step - napr cas bude zaokruhleny na 15min, ovplyvni aj kalendar popup
 
 @Directive({
@@ -60,10 +59,9 @@ function isAndroid(): boolean {
   //   '(compositionend)': '$any(this)._compositionEnd($event.target.value)',
   // },
 })
-export class NgDateDirective implements ControlValueAccessor, HasNgDateConf, NgDateDirectiveApi {
-  dtValue: Date = null; // internal variable with date value
+export class NgDateDirective implements ControlValueAccessor, HasNgDateConf, NgDateDirectiveApi, OnDestroy {
   @Input() disablePopup: boolean = false;
-  private popupComponent: ComponentRef<PopupComponent> = null;
+  private readonly popupComponent: ComponentRef<PopupComponent> = null;
 
   @Input('ngDate')
   ngDateConfig: NgDateConfig | BasicDateFormat = null;
@@ -71,17 +69,14 @@ export class NgDateDirective implements ControlValueAccessor, HasNgDateConf, NgD
   @Input('ngDateModelConverter')
   ngDateModelConverterConfig: StandardModelValueConverters | ApiNgDateModelValueConverter<any> = null;
 
+  dtValue: Date = null; // internal variable with date value
   private ngValue: any = null;
-
-  /// ///////////////
-
-  private _composing = false;
 
   onChange: (value: any) => void; // Called on a value change
   onTouched: () => void; // Called if you care if the form was touched
 
-  // _ngValue: any = null; // premenna ktoru posielame do ngValue
-  //
+  private _composing = false;
+
   // get ngValue() {
   //   return this._ngValue;
   // }
@@ -92,10 +87,6 @@ export class NgDateDirective implements ControlValueAccessor, HasNgDateConf, NgD
   //
   //   this._ngValue = v;
   //   this.onChange(this._ngValue);
-  // }
-
-  // get elementRef(): ElementRef {
-  //   return this.elementRef;
   // }
 
   constructor(
@@ -116,9 +107,17 @@ export class NgDateDirective implements ControlValueAccessor, HasNgDateConf, NgD
       this.popupComponent = this._viewContainerRef.createComponent<PopupComponent>(componentFactory);
       this.popupComponent.instance.ngDateDirective = this;
 
-      // autocomple would overlay popup
+      // browser autocomplete would overlay popup
       this._renderer.setProperty(this.elementRef.nativeElement, 'autocomplete', 'off');
     }
+  }
+
+  ngOnDestroy() {
+    if (!this.popupComponent) {
+      return;
+    }
+
+    this.popupComponent.destroy();
   }
 
   addEventListenerToInput<K extends keyof HTMLElementEventMap>(
@@ -178,15 +177,17 @@ export class NgDateDirective implements ControlValueAccessor, HasNgDateConf, NgD
     if (!this.popupComponent?.instance?.isOpen) {
       this.onTouched();
     }
-    //
-    // if (!this.dtValue) {
-    //   // clean user input
-    //   this.writeValue('');
-    //   return;
-    // }
-    //
-    // const val = ConfigUtil.resolveModelConverter(this.modelConfig, this.config, this.ngDatepickerConf).toModel(this.dtValue, this._ngValue);
-    // this.writeValue(val);
+
+    if (!this.dtValue) {
+      // TODO - mfilo - 27.01.2021 - @psl - podla rozhovoru nemazeme obsah inputu v pripade ze neexistuje dtValue
+      // clean user input
+      // this.writeValue('');
+      return;
+    }
+
+    // toto chceme zavolat 'on blur' aby sme opravili format napr: 1.1.2020 -> 01.01.2020
+    const val = NgDateConfigUtil.resolveModelConverter(this).toModel(this.dtValue, this.ngValue);
+    this.writeValue(val);
   }
 
   @HostListener('input', ['$event.target.value'])
@@ -275,11 +276,12 @@ export class NgDateDirective implements ControlValueAccessor, HasNgDateConf, NgD
     // 1) dtValue => htmlValue (update view)
     const newHtmlValue = (this.convertDtValueToHtmlValue(value) || '').trim();
     const oldHtmlValue = (this.elementRef.nativeElement.value || '').trim();
-    if (newHtmlValue == oldHtmlValue) return; // no change is there
+    if (newHtmlValue === oldHtmlValue) return; // no change is there
 
     // 2) update values
-    this._renderer.setProperty(this.elementRef.nativeElement, 'value', newHtmlValue);
+    // this._renderer.setProperty(this.elementRef.nativeElement, 'value', newHtmlValue);
     this.onChange(this.valueParser(newHtmlValue));
+    this.writeValue(this.ngValue);
     this.onTouched();
   }
 }

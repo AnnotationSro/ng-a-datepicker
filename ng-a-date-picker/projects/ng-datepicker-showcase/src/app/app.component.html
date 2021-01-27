@@ -50,7 +50,7 @@ errors = {{ngm2.control.errors}}<br>
   currentDateTime3 = new Date();
   ngDateConf3: DirectiveDateConfig = undefined
 </pre>
-<input type="text" [(ngModel)]="currentDateTime3" #ngm3="ngModel" ngDate
+<input type="text" [(ngModel)]="currentDateTime3" #ngm3="ngModel" ngDate="shortDate"
        (change)="log($event)" (ngModelChange)="logM($event)"/>
 <!--<input type="text" [(ngModel)]="currentDateTime3" #ngm3="ngModel" [ngDate]="{firstValueConverter: 'date'}"-->
 <!--       (change)="log($event)" (ngModelChange)="logM($event)"/>-->

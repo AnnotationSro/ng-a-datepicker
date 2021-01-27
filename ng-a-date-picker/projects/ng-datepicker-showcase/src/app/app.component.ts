@@ -1,6 +1,5 @@
 import { Component } from '@angular/core';
-import {NgDateConfig} from "../../../ng-datepicker/src/lib/model/ng-date-public.model"; //todo(psl2mfi): for discussion
-// import { NgDateConfig } from 'ng-datepicker';
+import { NgDateConfig } from '../../../ng-datepicker/src/lib/model/ng-date-public.model';
 
 @Component({
   selector: 'a-date-app-root',

@@ -154,6 +154,7 @@ export class NgDateConfigUtil {
 
     if (!ret.locale) ret.locale = comp.locale;
     if (!ret.locale) ret.locale = 'en';
+
     return ret;
   }
 
@@ -169,13 +170,15 @@ export class NgDateConfigUtil {
           return DefaultNumberModelValueConverter.INSTANCE;
         case 'string-iso-date':
           return DefaultFormattedModelValueConverter.INSTANCE_ISO_YYYYMMDD;
+        case 'string-iso-datetime-short':
+          return DefaultFormattedModelValueConverter.INSTANCE_ISO_YYYYMMDD_HHMM;
         case 'string-iso-datetime':
-          // return DefaultFormattedModelValueConverter.INSTANCE_ISO_YYYYMMDD_HHMM;
           return DefaultFormattedModelValueConverter.INSTANCE_ISO_YYYYMMDD_HHMMSS;
         case 'string-iso-datetime-with-zone':
           return DefaultIsoStringModelValueConverter.INSTANCE;
+        case 'string-iso-time-short':
+          return DefaultFormattedModelValueConverter.INSTANCE_ISO_HHMM;
         case 'string-iso-time':
-          // return DefaultFormattedModelValueConverter.INSTANCE_ISO_HHMM;
           return DefaultFormattedModelValueConverter.INSTANCE_ISO_HHMMSS;
         case 'string-iso-time-with-zone':
           throw new Error('Converter is not implemented!');

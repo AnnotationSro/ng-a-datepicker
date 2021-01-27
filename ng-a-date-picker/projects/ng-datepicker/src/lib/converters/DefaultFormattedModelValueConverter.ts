@@ -38,8 +38,10 @@ export class DefaultFormattedModelValueConverter implements ApiNgDateModelValueC
   fromModel(value: any, oldValue: Date, opts: ApiNgDateModelValueConverterConf): Date {
     if (NgDateConfigUtil.isStringConstant(value)) {
       let { locale } = this;
-      if (!locale && opts) locale = opts.locale;
+      // TODO - mfilo - 27.01.2021 - fixme
+      if (!locale && opts) locale = opts.locale; // tuto je defaultne definovane 'en-US' a teda ignoruje locale z conf
       if (!locale) locale = localeIso;
+
       return parseDate(value, this.dateFormat, locale);
     }
     return toDate(value);
