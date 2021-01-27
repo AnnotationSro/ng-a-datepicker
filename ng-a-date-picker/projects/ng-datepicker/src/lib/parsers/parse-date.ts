@@ -509,7 +509,7 @@ export function getDateFormatParser(locale: string, format: BasicDateFormat | st
     const strValueRegexp = new RegExp(lineRegexp, 'i');
 
     const ret = {
-      types: parsers.map((p) => p.type).filter((t) => typeof t !== 'undefined'),
+      types: parsers.map((p) => p.type).filter((t) => t != null),
       parseDate(text: string, dtValue: Date = null): Date {
         try {
           dtValue = dtValue || null;

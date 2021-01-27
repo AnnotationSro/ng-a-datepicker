@@ -1,3 +1,5 @@
+$border-color: #ced4da;
+
 .ng-date-popup {
   position: absolute;
   z-index: 99;
@@ -9,7 +11,7 @@
   padding: 10px;
 
   background: white;
-  border: 2px solid silver;
+  border: 2px solid $border-color;
   border-radius: 5px;
 
   width: 300px;
@@ -17,18 +19,22 @@
 
 .ng-date-popup--header {
   display: flex;
+  align-items: center;
 }
 
-.ng-date-popup--prev {
-
-}
-
+.ng-date-popup--prev ,
 .ng-date-popup--next {
-
+  color: #52b4f6;
+  display: inline-block;
+  text-decoration: none;
+  cursor: pointer;
+  background-color: transparent;
+  border: 2px solid transparent;
+  border-radius: 5px;
 }
 
 .ng-date-popup--month {
-  flex-basis: 125px;
+  flex-basis: 100px;
   flex-shrink: 0;
 
   text-transform: capitalize;
@@ -40,6 +46,19 @@
   width: 100px;
   flex-basis: 100px;
   flex-shrink: 0;
+  flex-grow: 1;
+
+  border: 2px solid $border-color;
+  border-radius: 5px;
+  padding: 4px 12px;
+
+  &:focus {
+    color: #212529;
+    background-color: #fff;
+    border-color: #9fd6fa;
+    outline: 0;
+    box-shadow: 0 0 0 0.25rem rgba(63, 172, 245, 0.25);
+  }
 }
 
 .ng-date-popup--date {
@@ -49,7 +68,7 @@
 .ng-date-popup--date-row {
   display: flex;
   flex-wrap: wrap;
-  border: 1px solid silver;
+  border: 1px solid $border-color;
 }
 
 .ng-date-popup--date-row-separator {
@@ -68,19 +87,24 @@
 .ng-date-popup--date-day {
   flex-basis: calc(100% / 7);
   text-align: center;
-  border: 1px solid silver;
+  border: 1px solid $border-color;
   cursor: pointer;
 }
 
 .ng-date-popup--date-active {
-  background: red;
+  background: #52b4f6;
   color: white;
 }
 
 .ng-date-popup--date-disabled {
-  background: rgba(silver, 0.25);
+  background: rgba($border-color, 0.25);
 }
 
 .relative-wrapper {
   position: relative;
+}
+
+.ng-date-popup--time-row {
+  display: flex;
+  align-items: center;
 }

@@ -2,12 +2,8 @@ import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { FormStyle, getLocaleDayNames, getLocaleFirstDayOfWeek, TranslationWidth, WeekDay } from '@angular/common';
 import { NgDateDirectiveApi, NgDateValue } from '../../directives/ng-date/ng-date.directive.api';
 import { NgDateConfigUtil } from '../../conf/ng-date.config.util';
-import { BasicDateFormat } from '../../model/ng-date-public.model';
+import { BasicDateFormat, HtmlValueConfig } from '../../model/ng-date-public.model';
 import { DateType, getDateFormatParser } from '../../parsers/parse-date';
-
-// TODO - mfilo - 25.01.2021
-//  - start of week
-//  - AM/PM
 
 @Component({
   selector: 'ng-date-popup',
@@ -30,7 +26,6 @@ export class PopupComponent implements OnInit, OnDestroy {
   private firstDayOfWeek: WeekDay;
 
   private _val: NgDateValue = {} as NgDateValue;
-  types: DateType[];
 
   get val() {
     return this._val;
@@ -68,7 +63,8 @@ export class PopupComponent implements OnInit, OnDestroy {
       this.locale = conf.locale;
     }
 
-    this.types = getDateFormatParser(this.locale, conf.displayFormat as BasicDateFormat).types;
+    // TODO - mfilo - 27.01.2021 - presunut na lepsie miesto (onInit) :)
+    this.configureCalendarContent(conf);
 
     this.firstDayOfWeek = getLocaleFirstDayOfWeek(this.locale);
 
@@ -77,8 +73,30 @@ export class PopupComponent implements OnInit, OnDestroy {
     this.localizedDays = this.localizedDays.concat(tmp);
   }
 
-  private configureCalendarContent(types: DateType[]) {
-    // TODO - mfilo - 27.01.2021 - CalendarContentType
+  // TODO - mfilo - 27.01.2021 - WIP!!!
+  config: {
+    year: boolean;
+    month: boolean;
+    date: boolean;
+    hours: 'off' | '12' | '24';
+    minutes: boolean;
+    // seconds: boolean;
+    // ostatne podla CalendarContentType
+  };
+
+  private configureCalendarContent(conf: HtmlValueConfig) {
+    const { types } = getDateFormatParser(this.locale, conf.displayFormat as BasicDateFormat);
+
+    if (!this.config) {
+      // TODO - mfilo - 27.01.2021 - typings!!!
+      this.config = {} as any;
+    }
+
+    this.config.year = types.includes(DateType.FullYear);
+    this.config.month = types.includes(DateType.Month);
+    this.config.date = types.includes(DateType.Date);
+    this.config.hours = types.includes(DateType.Hours_24) ? '24' : 'off';
+    this.config.minutes = types.includes(DateType.Minutes);
   }
 
   private readDays() {
@@ -120,7 +138,11 @@ export class PopupComponent implements OnInit, OnDestroy {
   }
 
   setDate($event: Date) {
-    this.ngDateDirective.changeValue($event);
+    this.val.dtValue.setDate($event.getDate());
+    this.val.dtValue.setMonth($event.getMonth());
+    this.val.dtValue.setFullYear($event.getFullYear());
+
+    this.ngDateDirective.changeValue(this.val.dtValue);
     this.readDays();
   }
 
@@ -132,6 +154,18 @@ export class PopupComponent implements OnInit, OnDestroy {
 
   removeMonth() {
     this.val.dtValue.setMonth(this.val.dtValue.getMonth() - 1);
+    this.ngDateDirective.changeValue(this.val.dtValue);
+    this.readDays();
+  }
+
+  setHours($event: any) {
+    this.val.dtValue.setHours($event);
+    this.ngDateDirective.changeValue(this.val.dtValue);
+    this.readDays();
+  }
+
+  setMinutes($event: any) {
+    this.val.dtValue.setMinutes($event % 60);
     this.ngDateDirective.changeValue(this.val.dtValue);
     this.readDays();
   }
