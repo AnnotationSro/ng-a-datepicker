@@ -11,8 +11,6 @@ import { DateType, getDateFormatParser } from '../../parsers/parse-date';
   styleUrls: ['./popup.component.scss'],
 })
 export class PopupComponent implements OnInit, OnDestroy {
-  DateType = DateType;
-
   @Input()
   public ngDateDirective: NgDateDirectiveApi = null;
 

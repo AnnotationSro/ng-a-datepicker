@@ -60,6 +60,8 @@ function isAndroid(): boolean {
   // },
 })
 export class NgDateDirective implements ControlValueAccessor, HasNgDateConf, NgDateDirectiveApi, OnDestroy {
+  @Input() disabled: boolean;
+
   @Input() disablePopup: boolean = false;
   private readonly popupComponent: ComponentRef<PopupComponent> = null;
 
@@ -125,6 +127,10 @@ export class NgDateDirective implements ControlValueAccessor, HasNgDateConf, NgD
     listener: (this: HTMLInputElement, ev: HTMLElementEventMap[K]) => any,
     options?: boolean | AddEventListenerOptions
   ): void {
+    if (`${this.disabled}` === 'true') {
+      return;
+    }
+
     this.elementRef.nativeElement.addEventListener(type, listener, options);
   }
 

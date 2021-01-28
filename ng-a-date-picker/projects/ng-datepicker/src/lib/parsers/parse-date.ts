@@ -1,7 +1,16 @@
-import {FormStyle, getLocaleDayNames, getLocaleDayPeriods, getLocaleEraNames, getLocaleMonthNames, getLocaleNumberSymbol, NumberSymbol, TranslationWidth,} from '@angular/common';
-import {isDevMode} from '@angular/core';
-import {DATE_FORMATS_SPLIT, getNamedFormat} from './format-date';
-import {BasicDateFormat, DatePartFormat} from '../model/ng-date-public.model';
+import {
+  FormStyle,
+  getLocaleDayNames,
+  getLocaleDayPeriods,
+  getLocaleEraNames,
+  getLocaleMonthNames,
+  getLocaleNumberSymbol,
+  NumberSymbol,
+  TranslationWidth,
+} from '@angular/common';
+import { isDevMode } from '@angular/core';
+import { DATE_FORMATS_SPLIT, getNamedFormat } from './format-date';
+import { BasicDateFormat, DatePartFormat } from '../model/ng-date-public.model';
 
 /*
 export function parseDate(value: string, format: string, locale: string, oldValue: Date = null): Date {
@@ -134,7 +143,7 @@ function getStrPartStructure(
   return REGEXP_STR_NAMES[key];
 }
 
-export class DatePart {
+class DatePart {
   private constructor(
     public regexp: string,
     public regexpGroup: number,
@@ -146,19 +155,32 @@ export class DatePart {
     return new DatePart(normalizeStringForRegexp(text), null, null);
   }
 
-  private static defaultParseValueAsString: (parsedArray: RegExpExecArray, arrayIndex: number, dtValue: Date) => number | string = (parsedArray: RegExpExecArray, arrayIndex: number, dtValue: Date) => {
-    const strValue = parsedArray[arrayIndex+1];
+  private static defaultParseValueAsString: (
+    parsedArray: RegExpExecArray,
+    arrayIndex: number,
+    dtValue: Date
+  ) => number | string = (parsedArray: RegExpExecArray, arrayIndex: number, dtValue: Date) => {
+    const strValue = parsedArray[arrayIndex + 1];
     return (strValue || '').trim(); // vrati to ako string - aby sme vedeli pocet znakov
   };
-  public static defaultParseValueAsNumber: (parsedArray: RegExpExecArray, arrayIndex: number, dtValue: Date) => number | string = (parsedArray: RegExpExecArray, arrayIndex: number, dtValue: Date) => {
-    const strValue = parsedArray[arrayIndex+1];
+
+  public static defaultParseValueAsNumber: (
+    parsedArray: RegExpExecArray,
+    arrayIndex: number,
+    dtValue: Date
+  ) => number | string = (parsedArray: RegExpExecArray, arrayIndex: number, dtValue: Date) => {
+    const strValue = parsedArray[arrayIndex + 1];
     return valueToNumber(strValue); // vrati to ako string - aby sme vedeli pocet znakov
   };
 
   static parsePartSimple(
     regexp: string,
     type: DateType,
-    parseValue: (parsedArray: RegExpExecArray, arrayIndex: number, dtValue: Date) => number | string = DatePart.defaultParseValueAsString
+    parseValue: (
+      parsedArray: RegExpExecArray,
+      arrayIndex: number,
+      dtValue: Date
+    ) => number | string = DatePart.defaultParseValueAsString
   ): DatePart {
     return new DatePart(`(${regexp})`, 1, type, parseValue);
   }
@@ -167,42 +189,42 @@ export class DatePart {
     regexp: string,
     regexpGroups: number,
     type: DateType,
-    parseValue: (parsedArray: RegExpExecArray, arrayIndex: number, dtValue: Date) => number | string = DatePart.defaultParseValueAsString
+    parseValue: (
+      parsedArray: RegExpExecArray,
+      arrayIndex: number,
+      dtValue: Date
+    ) => number | string = DatePart.defaultParseValueAsString
   ): DatePart {
     return new DatePart(regexp, regexpGroups, type, parseValue);
   }
 
   /*
-  * ([+-])(\d\d)(\d\d)
-  * ([+-])(\d\d):(\d\d)
-  * GMT([+-])(d+)
-  * GMT([+-])(\d\d)(\d\d)
-  * (Z|([+-])(\\d\\d):(\\d\\d))
-  */
-  static parsePartTimeZone(
-    locale: string,
-    regexp: string,
-    regexpGroups: number
-  ): DatePart {
+   * ([+-])(\d\d)(\d\d)
+   * ([+-])(\d\d):(\d\d)
+   * GMT([+-])(d+)
+   * GMT([+-])(\d\d)(\d\d)
+   * (Z|([+-])(\\d\\d):(\\d\\d))
+   */
+  static parsePartTimeZone(locale: string, regexp: string, regexpGroups: number): DatePart {
     regexp = normalizeString(regexp);
     const plus = normalizeString(getLocaleNumberSymbol(locale, NumberSymbol.PlusSign));
     const minus = normalizeString(getLocaleNumberSymbol(locale, NumberSymbol.MinusSign));
 
     if (plus !== '+' || minus !== '-') {
       regexp = regexp.replace('([+-])', `(${normalizeStringForRegexp(plus)}|${normalizeStringForRegexp(minus)}|\\+|\\-)`);
-    }//todo: dokoncit sposoby parsovania
+    } // todo: dokoncit sposoby parsovania
     return new DatePart(regexp, regexpGroups, DateType.TimeZoneOffset, (parsedArray: RegExpExecArray, arrayIndex: number) => {
       if (regexpGroups == 4) {
         // (Z|([+-])(\\d\\d):(\\d\\d))
-        if (parsedArray[arrayIndex+1] === 'Z') return 0;
+        if (parsedArray[arrayIndex + 1] === 'Z') return 0;
         arrayIndex++;
       }
 
-      const sign = parsedArray[arrayIndex+1];
-      const h = parsedArray[arrayIndex+2];
-      const m = regexpGroups>2 ? parsedArray[arrayIndex+3] : '0';
+      const sign = parsedArray[arrayIndex + 1];
+      const h = parsedArray[arrayIndex + 2];
+      const m = regexpGroups > 2 ? parsedArray[arrayIndex + 3] : '0';
 
-      var ret = parseInt(h,10)*60+parseInt(m, 10);
+      const ret = parseInt(h, 10) * 60 + parseInt(m, 10);
       if (sign == '-' || sign == minus) {
         return ret;
       }
@@ -223,7 +245,7 @@ export class DatePart {
   ): DatePart {
     const structure = getStrPartStructure(locale, type, width, form, extended);
     return new DatePart(structure.regexp, 1, type, (parsedArray: RegExpExecArray, arrayIndex: number, dtValue: Date) => {
-      const strValue = parsedArray[arrayIndex+1];
+      const strValue = parsedArray[arrayIndex + 1];
       if (!strValue) return null;
 
       // eslint-disable-next-line no-restricted-syntax
@@ -278,20 +300,25 @@ function getDatePartParser(locale: string, format: DatePartFormat): DatePart | n
 
     // 1 digit representation of the year, e.g. (AD 1 => 1, AD 199 => 199)
     case 'y':
-      formatter = DatePart.parsePartRegexp('(\\d{1,4})',1, DateType.FullYear, DatePart.defaultParseValueAsNumber);
+      formatter = DatePart.parsePartRegexp('(\\d{1,4})', 1, DateType.FullYear, DatePart.defaultParseValueAsNumber);
       break;
 
     // 2 digit representation of the year, padded (00-99). (e.g. AD 2001 => 01, AD 2010 => 10)
     case 'yy':
-      formatter = DatePart.parsePartRegexp('(\\d{2})', 1, DateType.FullYear, (parsedArray: RegExpExecArray, arrayIndex: number, dtValue: Date) => {
-        const value = parsedArray[arrayIndex+1];
-        const strFullYear = `${dtValue.getFullYear()}`;
-        if (strFullYear.length <= value.length) {
-          return valueToNumber(value);
+      formatter = DatePart.parsePartRegexp(
+        '(\\d{2})',
+        1,
+        DateType.FullYear,
+        (parsedArray: RegExpExecArray, arrayIndex: number, dtValue: Date) => {
+          const value = parsedArray[arrayIndex + 1];
+          const strFullYear = `${dtValue.getFullYear()}`;
+          if (strFullYear.length <= value.length) {
+            return valueToNumber(value);
+          }
+          const newFullYear = strFullYear.substr(0, strFullYear.length - value.length) + value;
+          return valueToNumber(newFullYear);
         }
-        const newFullYear = strFullYear.substr(0, strFullYear.length - value.length) + value;
-        return valueToNumber(newFullYear);
-      });
+      );
       break;
 
     // 3 digit representation of the year, padded (000-999). (e.g. AD 2001 => 01, AD 2010 => 10)
@@ -318,17 +345,22 @@ function getDatePartParser(locale: string, format: DatePartFormat): DatePart | n
     // 2 digit representation of the week-numbering year, padded (00-99). (e.g. AD 2001 => 01, AD
     // 2010 => 10)
     case 'YY':
-      formatter = DatePart.parsePartRegexp('(\\d{2})', 1, DateType.FullYear, (parsedArray: RegExpExecArray, arrayIndex: number, dtValue: Date) => {
-        let value = parsedArray[arrayIndex+1];
+      formatter = DatePart.parsePartRegexp(
+        '(\\d{2})',
+        1,
+        DateType.FullYear,
+        (parsedArray: RegExpExecArray, arrayIndex: number, dtValue: Date) => {
+          let value = parsedArray[arrayIndex + 1];
 
-        const strFullYear = `${dtValue.getFullYear()}`;
-        if (value.length < 2) value = `0${value}`;
-        if (strFullYear.length <= value.length) {
-          return valueToNumber(value);
+          const strFullYear = `${dtValue.getFullYear()}`;
+          if (value.length < 2) value = `0${value}`;
+          if (strFullYear.length <= value.length) {
+            return valueToNumber(value);
+          }
+          const newFullYear = strFullYear.substr(0, strFullYear.length - value.length) + value;
+          return valueToNumber(newFullYear);
         }
-        const newFullYear = strFullYear.substr(0, strFullYear.length - value.length) + value;
-        return valueToNumber(newFullYear);
-      });
+      );
       break;
     // 3 digit representation of the week-numbering year, padded (000-999). (e.g. AD 1 => 001, AD
     // 2010 => 2010)
@@ -583,7 +615,6 @@ export function getDateFormatParser(locale: string, format: BasicDateFormat | st
             retValue.setSeconds(0);
           }
 
-
           // reading part values
           const values = new Map<DateType, number | string>();
           let groupInx = 0;
@@ -594,12 +625,12 @@ export function getDateFormatParser(locale: string, format: BasicDateFormat | st
 
             // if valueType is null => value is ignored
             if (!parser.type && parser.type !== 0) {
-              groupInx+=parser.regexpGroup;
+              groupInx += parser.regexpGroup;
               continue;
             } // ak nema typ, ignorujeme hodnotu tiez
 
             const value = parser.parseValue(matchedInput, groupInx, retValue);
-            groupInx+=parser.regexpGroup;
+            groupInx += parser.regexpGroup;
 
             // if value == null, value is ignored
             if (value === null || value === undefined) continue;
@@ -656,9 +687,9 @@ export function getDateFormatParser(locale: string, format: BasicDateFormat | st
           }
 
           if (values.has(DateType.TimeZoneOffset)) {
-            var v = valueToNumber(values.get(DateType.TimeZoneOffset));
+            const v = valueToNumber(values.get(DateType.TimeZoneOffset));
             if (v != retValue.getTimezoneOffset()) {
-              var move = -retValue.getTimezoneOffset() + v;
+              const move = -retValue.getTimezoneOffset() + v;
               retValue.setMinutes(retValue.getMinutes() + move);
             }
           }
