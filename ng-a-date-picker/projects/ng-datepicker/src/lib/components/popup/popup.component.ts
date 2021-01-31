@@ -138,7 +138,9 @@ export class PopupComponent implements OnInit, OnDestroy {
   // Handle user interaction with popup
   /// ///////////////////////////////////
   setYear($event: number) {
+    this.val.dtValue.setDate(1);
     this.val.dtValue.setFullYear($event);
+
     this.ngDateDirective.changeValue(this.val.dtValue);
     this.readDays();
   }
@@ -153,13 +155,17 @@ export class PopupComponent implements OnInit, OnDestroy {
   }
 
   addMonth() {
+    this.val.dtValue.setDate(1);
     this.val.dtValue.setMonth(this.val.dtValue.getMonth() + 1);
+
     this.ngDateDirective.changeValue(this.val.dtValue);
     this.readDays();
   }
 
   removeMonth() {
+    this.val.dtValue.setDate(1);
     this.val.dtValue.setMonth(this.val.dtValue.getMonth() - 1);
+
     this.ngDateDirective.changeValue(this.val.dtValue);
     this.readDays();
   }
@@ -186,6 +192,8 @@ const utils = {
     if (!popup) return 'bottom';
 
     const ngDatePopup: HTMLElement = popup.querySelector('.ng-date-popup');
+
+    if (!ngDatePopup) return 'bottom';
 
     // src: https://github.com/ng-select/ng-select/commit/d4404f7
     const selectRect = ngDatePopup.getBoundingClientRect();
