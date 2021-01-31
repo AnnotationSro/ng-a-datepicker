@@ -142,6 +142,10 @@ export class NgDateDirective implements ControlValueAccessor, HasNgDateConf, NgD
     this.elementRef.nativeElement.removeEventListener(type, listener, options);
   }
 
+  getInputHeight(): number {
+    return (this.elementRef.nativeElement as HTMLElement).getBoundingClientRect().height;
+  }
+
   // registration for ControlValueAccessor
   registerOnChange(fn: (_: any) => void): void {
     this.onChange = fn;
@@ -223,6 +227,7 @@ export class NgDateDirective implements ControlValueAccessor, HasNgDateConf, NgD
     if (!newNgValue) {
       return null;
     }
+
     return NgDateConfigUtil.resolveModelConverter(this).fromModel(
       newNgValue,
       dtValue,

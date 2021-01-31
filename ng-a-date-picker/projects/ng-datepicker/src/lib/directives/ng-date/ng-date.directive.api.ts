@@ -22,4 +22,6 @@ export interface NgDateDirectiveApi extends HasNgDateConf {
     listener: (this: HTMLInputElement, ev: HTMLElementEventMap[K]) => any,
     options?: boolean | EventListenerOptions
   ): void;
+
+  getInputHeight(): number;
 }

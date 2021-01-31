@@ -1,4 +1,4 @@
-import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { Component, ElementRef, Input, OnDestroy, OnInit } from '@angular/core';
 import { FormStyle, getLocaleDayNames, getLocaleFirstDayOfWeek, TranslationWidth, WeekDay } from '@angular/common';
 import { NgDateDirectiveApi, NgDateValue } from '../../directives/ng-date/ng-date.directive.api';
 import { NgDateConfigUtil } from '../../conf/ng-date.config.util';
@@ -17,6 +17,7 @@ export class PopupComponent implements OnInit, OnDestroy {
   @Input()
   public locale: string = undefined;
 
+  public position: 'top' | 'bottom' = 'bottom';
   public isOpen = false;
   public days: CalendarDay[];
   public localizedDays: string[];
@@ -25,7 +26,7 @@ export class PopupComponent implements OnInit, OnDestroy {
 
   private _val: NgDateValue = {} as NgDateValue;
 
-  get val() {
+  get val(): NgDateValue {
     return this._val;
   }
 
@@ -36,6 +37,8 @@ export class PopupComponent implements OnInit, OnDestroy {
 
     this._val = value;
   }
+
+  constructor(private _elementRef: ElementRef<HTMLElement>) {}
 
   ngOnInit(): void {
     this.localizeComponent();
@@ -111,10 +114,15 @@ export class PopupComponent implements OnInit, OnDestroy {
     this.readDays();
     this.isOpen = true;
 
+    this.position = (<unknown>'bottom-hidden') as any; // reset position
+    setTimeout(() => {
+      // wait for render
+      this.position = utils.getPosition(this._elementRef.nativeElement, this.ngDateDirective.getInputHeight());
+    });
+
     document.addEventListener('pointerdown', this.onFocusOut);
   };
 
-  // tento zapis je kvoli zachovaniu kontextu
   private onFocusOut = (e: Event) => {
     const inPopup = e.composedPath().some((element) => (element as HTMLElement).classList?.contains('ng-date-popup'));
     if (inPopup) {
@@ -174,6 +182,26 @@ export class PopupComponent implements OnInit, OnDestroy {
 }
 
 const utils = {
+  getPosition: (popup: HTMLElement, inputHeight: any): 'top' | 'bottom' => {
+    if (!popup) return 'bottom';
+
+    const ngDatePopup: HTMLElement = popup.querySelector('.ng-date-popup');
+
+    // src: https://github.com/ng-select/ng-select/commit/d4404f7
+    const selectRect = ngDatePopup.getBoundingClientRect();
+    const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+    const offsetTop = selectRect.top + window.pageYOffset;
+    const dropdownHeight = selectRect.height;
+
+    if (offsetTop + dropdownHeight > scrollTop + document.documentElement.clientHeight) {
+      const SPACE_BETWEEN_ELEMENTS = 5; // px
+      ngDatePopup.style.transform = `translateY(-${inputHeight + SPACE_BETWEEN_ELEMENTS}px)`;
+      return 'top';
+    }
+
+    return 'bottom';
+  },
+
   // months are 0 based!!! (january = 0)
   createCalendar: (year: number, month: number, firstDayOfWeek: WeekDay) => {
     const days: CalendarDay[] = [];
@@ -226,6 +254,7 @@ interface CalendarDay {
   currentMonth: boolean;
 }
 
+// TODO - mfilo - 31.01.2021 - implement
 type CalendarContentType =
   | 'year-picker' // yyyy -> 2012
   | 'month-picker' // MM, yyyy -> Dec, 2012

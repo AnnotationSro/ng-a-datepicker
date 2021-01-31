@@ -607,13 +607,16 @@ export function getDateFormatParser(locale: string, format: BasicDateFormat | st
           }
 
           // value updates ...
-          let retValue = null;
-          if (dtValue) retValue = new Date(dtValue.getTime());
-          if (!retValue) {
-            retValue = new Date();
-            retValue.setMilliseconds(0);
-            retValue.setSeconds(0);
-          }
+          // let retValue = null;
+          // if (dtValue) retValue = new Date(dtValue.getTime());
+          // if (!retValue) {
+          //   retValue = new Date(0);
+          //   retValue.setMilliseconds(0);
+          //   retValue.setSeconds(0);
+          // }
+
+          // TODO - mfilo - 31.01.2021 - tmp fix
+          const retValue = new Date(0);
 
           // reading part values
           const values = new Map<DateType, number | string>();

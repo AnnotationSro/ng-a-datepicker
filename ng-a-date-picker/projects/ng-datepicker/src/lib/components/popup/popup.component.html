@@ -1,5 +1,5 @@
 <div class="relative-wrapper">
-  <div class="ng-date-popup" *ngIf="isOpen">
+  <div class="ng-date-popup position-{{position}}" *ngIf="isOpen">
     <div class="ng-date-popup--header">
       <ng-container *ngIf="config.month">
         <button (click)="removeMonth()" type="button" class="ng-date-popup--prev">
