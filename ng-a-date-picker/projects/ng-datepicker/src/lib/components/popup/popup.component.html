@@ -5,7 +5,7 @@
         <button (click)="removeMonth()" type="button" class="ng-date-popup--prev">
           <span class="fas fa-chevron-left"></span>
         </button>
-        <span class="ng-date-popup--month">{{val.dtValue | date: 'LLLL'}}</span>
+        <span class="ng-date-popup--month">{{val | date: 'LLLL'}}</span>
         <button (click)="addMonth()" type="button" class="ng-date-popup--next">
           <span class="fas fa-chevron-right"></span>
         </button>
@@ -13,8 +13,7 @@
         </ng-container>
 
       <input type="number" class="ng-date-popup--year" *ngIf="config.year"
-             [ngModel]="val.dtValue.getFullYear()" (ngModelChange)="setYear($event)">
-
+             [ngModel]="val.getFullYear()" (ngModelChange)="setYear($event)">
     </div>
 
     <div class="ng-date-popup--date" *ngIf="config.date">
@@ -39,10 +38,10 @@
     <div class="ng-date-popup--time" *ngIf="config.minutes && config.hours">
       <div class="ng-date-popup--time-row">
         <input type="number" class="form-control" *ngIf="config.hours != 'off'"
-               [ngModel]="val.dtValue.getHours()" (ngModelChange)="setHours($event)">
+               [ngModel]="val.getHours()" (ngModelChange)="setHours($event)">
         &nbsp;:&nbsp;
         <input type="number" class="form-control" *ngIf="config.minutes"
-               [ngModel]="val.dtValue.getMinutes().toString().padStart(2, '0')" (ngModelChange)="setMinutes($event)">
+               [ngModel]="val.getMinutes().toString().padStart(2, '0')" (ngModelChange)="setMinutes($event)">
       </div>
     </div>
   </div>

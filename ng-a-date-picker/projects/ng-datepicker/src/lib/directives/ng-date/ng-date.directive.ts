@@ -174,7 +174,7 @@ export class NgDateDirective implements ControlValueAccessor, HasNgDateConf, NgD
     this._renderer.setProperty(this.elementRef.nativeElement, 'value', this.valueFormatter(value));
 
     if (this.popupComponent?.instance) {
-      this.popupComponent.instance.val = this.readValue();
+      this.popupComponent.instance.val = this.readValue().dtValue;
     }
   }
 

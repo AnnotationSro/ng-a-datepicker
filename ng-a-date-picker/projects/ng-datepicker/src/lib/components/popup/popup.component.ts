@@ -24,18 +24,19 @@ export class PopupComponent implements OnInit, OnDestroy {
 
   private firstDayOfWeek: WeekDay;
 
-  private _val: NgDateValue = {} as NgDateValue;
+  private _val: Date;
+  public realVal: Date;
 
-  get val(): NgDateValue {
-    return this._val;
-  }
-
-  set val(value: NgDateValue) {
-    if (!value.dtValue) {
-      value.dtValue = new Date();
+  set val(v: Date) {
+    if (!v) {
+      v = new Date();
     }
 
-    this._val = value;
+    this._val = new Date(v.getTime());
+  }
+
+  get val() {
+    return this._val;
   }
 
   constructor(private _elementRef: ElementRef<HTMLElement>) {}
@@ -101,8 +102,8 @@ export class PopupComponent implements OnInit, OnDestroy {
   }
 
   private readDays() {
-    this.val = this.ngDateDirective.readValue();
-    this.days = utils.createCalendar(this.val.dtValue.getFullYear(), this.val.dtValue.getMonth(), this.firstDayOfWeek);
+    // this.val = this.ngDateDirective.readValue().dtValue;
+    this.days = utils.createCalendar(this.val.getFullYear(), this.val.getMonth(), this.firstDayOfWeek);
   }
 
   /// ///////////////////////////////////
@@ -110,6 +111,9 @@ export class PopupComponent implements OnInit, OnDestroy {
   /// ///////////////////////////////////
   private onInputTouch = () => {
     document.removeEventListener('pointerdown', this.onFocusOut);
+
+    this.realVal = this.ngDateDirective.readValue().dtValue;
+    this.val = this.realVal;
 
     this.readDays();
     this.isOpen = true;
@@ -138,52 +142,65 @@ export class PopupComponent implements OnInit, OnDestroy {
   // Handle user interaction with popup
   /// ///////////////////////////////////
   setYear($event: number) {
-    this.val.dtValue.setDate(1);
-    this.val.dtValue.setFullYear($event);
+    this.val.setDate(1);
+    this.val.setFullYear($event);
 
-    this.ngDateDirective.changeValue(this.val.dtValue);
+    // date pipe is 'pure'
+    this.val = new Date(this.val.getTime());
+
     this.readDays();
   }
 
   setDate($event: Date) {
-    this.val.dtValue.setDate($event.getDate());
-    this.val.dtValue.setMonth($event.getMonth());
-    this.val.dtValue.setFullYear($event.getFullYear());
+    this.val.setDate($event.getDate());
+    this.val.setMonth($event.getMonth());
+    this.val.setFullYear($event.getFullYear());
 
-    this.ngDateDirective.changeValue(this.val.dtValue);
+    this.ngDateDirective.changeValue(this.val);
+
+    this.realVal = this.ngDateDirective.readValue().dtValue;
+    this.val = this.realVal;
     this.readDays();
   }
 
   addMonth() {
-    this.val.dtValue.setDate(1);
-    this.val.dtValue.setMonth(this.val.dtValue.getMonth() + 1);
+    this.val.setDate(1);
+    this.val.setMonth(this.val.getMonth() + 1);
 
-    this.ngDateDirective.changeValue(this.val.dtValue);
+    // date pipe is 'pure'
+    this.val = new Date(this.val.getTime());
+
     this.readDays();
   }
 
   removeMonth() {
-    this.val.dtValue.setDate(1);
-    this.val.dtValue.setMonth(this.val.dtValue.getMonth() - 1);
+    this.val.setDate(1);
+    this.val.setMonth(this.val.getMonth() - 1);
 
-    this.ngDateDirective.changeValue(this.val.dtValue);
+    // date pipe is 'pure'
+    this.val = new Date(this.val.getTime());
+
     this.readDays();
   }
 
   setHours($event: any) {
-    this.val.dtValue.setHours($event);
-    this.ngDateDirective.changeValue(this.val.dtValue);
+    this.val.setHours($event);
+    this.ngDateDirective.changeValue(this.val);
     this.readDays();
   }
 
   setMinutes($event: any) {
-    this.val.dtValue.setMinutes($event % 60);
-    this.ngDateDirective.changeValue(this.val.dtValue);
+    this.val.setMinutes($event % 60);
+    this.ngDateDirective.changeValue(this.val);
     this.readDays();
   }
 
-  compareDate(date: Date) {
-    return this.val.dtValue.toLocaleDateString() === date.toLocaleDateString();
+  compareDate(date: Date): boolean {
+    if (!this.realVal) {
+      return false;
+    }
+
+    return this.realVal.toLocaleDateString() === date.toLocaleDateString();
   }
 }
 
