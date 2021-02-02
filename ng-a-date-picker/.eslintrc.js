@@ -27,9 +27,17 @@ module.exports = {
       "files": ["projects/**/*.ts"],
       "parserOptions": {
         "project": [
-          "projects/**/tsconfig.*?.json"
+          "projects/ng-datepicker/tsconfig.lib.json"
         ],
-        "createDefaultProgram": true
+        /**
+         * parserOptions.createDefaultProgram, Default false.
+
+         This option allows you to request that when the project setting is specified, files will be allowed when not
+         included in the projects defined by the provided tsconfig.json files.
+
+         !!!!!!! Using this option will incur significant performance costs. This option is primarily included for backwards-compatibility.
+         */
+        // "createDefaultProgram": true
       },
       "extends": [
         "plugin:@angular-eslint/recommended",
@@ -58,8 +66,9 @@ module.exports = {
         "no-underscore-dangle": 'off',
         'no-continue': 'off',
         '@angular-eslint/no-input-rename': 'warn',
-        '@typescript-eslint/no-use-before-define': 'off',
+        '@typescript-eslint/no-use-before-define': 'warn',
         'no-restricted-globals': 'warn',
+        '@angular-eslint/no-output-on-prefix': 'off',
       }
     },
 
