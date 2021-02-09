@@ -169,8 +169,7 @@ export class PopupComponent implements OnInit, OnDestroy {
     this.realVal = this.ngDateDirective.readValue().dtValue;
     this.val = this.realVal;
 
-    // TODO - mfilo - 09.02.2021 - tmp..
-    if (!this.keepOpen && !(this.config.minutes || this.config.hours)) {
+    if (!this.keepOpen && !(this.config.minutes || this.config.hours !== 'off')) {
       this.isOpen = false;
     }
 
