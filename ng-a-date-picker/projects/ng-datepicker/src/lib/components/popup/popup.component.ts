@@ -1,6 +1,6 @@
 import { Component, ElementRef, Input, OnDestroy, OnInit } from '@angular/core';
 import { FormStyle, getLocaleDayNames, getLocaleFirstDayOfWeek, TranslationWidth, WeekDay } from '@angular/common';
-import { NgDateDirectiveApi, NgDateValue } from '../../directives/ng-date/ng-date.directive.api';
+import { NgDateDirectiveApi } from '../../directives/ng-date/ng-date.directive.api';
 import { NgDateConfigUtil } from '../../conf/ng-date.config.util';
 import { BasicDateFormat, HtmlValueConfig } from '../../model/ng-date-public.model';
 import { DateType, getDateFormatParser } from '../../parsers/parse-date';
@@ -17,6 +17,9 @@ export class PopupComponent implements OnInit, OnDestroy {
   @Input()
   public locale: string = undefined;
 
+  @Input()
+  public keepOpen: boolean = false;
+
   public position: 'top' | 'bottom' = 'bottom';
   public isOpen = false;
   public days: CalendarDay[];
@@ -26,6 +29,7 @@ export class PopupComponent implements OnInit, OnDestroy {
 
   private _val: Date;
   public realVal: Date;
+  private _today: Date;
 
   set val(v: Date) {
     if (!v) {
@@ -39,7 +43,11 @@ export class PopupComponent implements OnInit, OnDestroy {
     return this._val;
   }
 
-  constructor(private _elementRef: ElementRef<HTMLElement>) {}
+  constructor(private _elementRef: ElementRef<HTMLElement>) {
+    const myDate = new Date();
+    const timePortion = (myDate.getTime() - myDate.getTimezoneOffset() * 60 * 1000) % (3600 * 1000 * 24);
+    this._today = new Date(+myDate - timePortion);
+  }
 
   ngOnInit(): void {
     this.localizeComponent();
@@ -160,6 +168,12 @@ export class PopupComponent implements OnInit, OnDestroy {
 
     this.realVal = this.ngDateDirective.readValue().dtValue;
     this.val = this.realVal;
+
+    // TODO - mfilo - 09.02.2021 - tmp..
+    if (!this.keepOpen && !(this.config.minutes || this.config.hours)) {
+      this.isOpen = false;
+    }
+
     this.readDays();
   }
 
@@ -197,7 +211,7 @@ export class PopupComponent implements OnInit, OnDestroy {
 
   compareDate(date: Date): boolean {
     if (!this.realVal) {
-      return false;
+      return this._today.toLocaleDateString() === date.toLocaleDateString();
     }
 
     return this.realVal.toLocaleDateString() === date.toLocaleDateString();

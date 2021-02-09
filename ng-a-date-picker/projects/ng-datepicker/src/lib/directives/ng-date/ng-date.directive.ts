@@ -63,6 +63,8 @@ export class NgDateDirective implements ControlValueAccessor, HasNgDateConf, NgD
   @Input() disabled: boolean;
 
   @Input() disablePopup: boolean = false;
+  @Input() keepOpen: boolean = false;
+
   private readonly popupComponent: ComponentRef<PopupComponent> = null;
 
   @Input('ngDate')
@@ -108,6 +110,8 @@ export class NgDateDirective implements ControlValueAccessor, HasNgDateConf, NgD
       const componentFactory = this._componentFactoryResolver.resolveComponentFactory(PopupComponent);
       this.popupComponent = this._viewContainerRef.createComponent<PopupComponent>(componentFactory);
       this.popupComponent.instance.ngDateDirective = this;
+      // TODO - mfilo - 09.02.2021 - tmp..
+      this.popupComponent.instance.keepOpen = this.keepOpen;
 
       // browser autocomplete would overlay popup
       this._renderer.setProperty(this.elementRef.nativeElement, 'autocomplete', 'off');
