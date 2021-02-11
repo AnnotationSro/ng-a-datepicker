@@ -37,11 +37,19 @@
 
     <div class="ng-date-popup--time" *ngIf="config.minutes && config.hours">
       <div class="ng-date-popup--time-row">
+        <!-- TODO - mfilo - 11.02.2021 - AM/PM-->
         <input type="number" class="form-control" *ngIf="config.hours != 'off'"
-               [ngModel]="val.getHours()" (ngModelChange)="setHours($event)">
+               [ngModel]="val.getHours()" (ngModelChange)="setHours($event)"
+               maxlength="2" min="-24" max="24"
+        >
         &nbsp;:&nbsp;
         <input type="number" class="form-control" *ngIf="config.minutes"
-               [ngModel]="val.getMinutes().toString().padStart(2, '0')" (ngModelChange)="setMinutes($event)">
+               #inputElement
+               [ngModel]="val.getMinutes().toString().padStart(2, '0')"
+               (click)="inputElement.select()"
+               (blur)="setMinutes(inputElement.value)"
+               (change)="setMinutes(inputElement.value)"
+               maxlength="2" min="-60" max="60" step="{{timeStep}}">
       </div>
     </div>
   </div>

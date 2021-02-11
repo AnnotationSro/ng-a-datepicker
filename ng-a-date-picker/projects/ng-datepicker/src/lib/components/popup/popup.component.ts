@@ -17,8 +17,8 @@ export class PopupComponent implements OnInit, OnDestroy {
   @Input()
   public locale: string = undefined;
 
-  @Input()
-  public keepOpen: boolean = false;
+  @Input() public keepOpen: boolean = false;
+  @Input() public timeStep: number = 1;
 
   public position: 'top' | 'bottom' = 'bottom';
   public isOpen = false;
@@ -34,6 +34,10 @@ export class PopupComponent implements OnInit, OnDestroy {
   set val(v: Date) {
     if (!v) {
       v = new Date();
+
+      if (this.timeStep) {
+        v.setMinutes(Math.round(v.getMinutes() / this.timeStep) * this.timeStep);
+      }
     }
 
     this._val = new Date(v.getTime());
@@ -160,8 +164,12 @@ export class PopupComponent implements OnInit, OnDestroy {
   }
 
   setDate($event: Date) {
-    this.val.setDate($event.getDate());
-    this.val.setMonth($event.getMonth());
+    $event.setHours(this.val.getHours());
+    $event.setMinutes(this.val.getMinutes());
+    $event.setSeconds(this.val.getSeconds());
+    $event.setMilliseconds(this.val.getMilliseconds());
+
+    this.val = new Date($event.getTime());
     this.val.setFullYear($event.getFullYear());
 
     this.ngDateDirective.changeValue(this.val);
@@ -203,7 +211,11 @@ export class PopupComponent implements OnInit, OnDestroy {
   }
 
   setMinutes($event: any) {
-    this.val.setMinutes($event % 60);
+    if ($event % this.timeStep !== 0) {
+      $event = Math.round(parseInt($event, 10) / this.timeStep) * this.timeStep;
+    }
+
+    this.val.setMinutes($event);
     this.ngDateDirective.changeValue(this.val);
     this.readDays();
   }

@@ -10,6 +10,7 @@ import {
   Input,
   LOCALE_ID,
   OnDestroy,
+  OnInit,
   Optional,
   Renderer2,
   ViewContainerRef,
@@ -59,11 +60,12 @@ function isAndroid(): boolean {
   //   '(compositionend)': '$any(this)._compositionEnd($event.target.value)',
   // },
 })
-export class NgDateDirective implements ControlValueAccessor, HasNgDateConf, NgDateDirectiveApi, OnDestroy {
+export class NgDateDirective implements ControlValueAccessor, HasNgDateConf, NgDateDirectiveApi, OnInit, OnDestroy {
   @Input() disabled: boolean;
 
   @Input() disablePopup: boolean = false;
   @Input() keepOpen: boolean = false;
+  @Input() timeStep: number = 1;
 
   private readonly popupComponent: ComponentRef<PopupComponent> = null;
 
@@ -110,12 +112,19 @@ export class NgDateDirective implements ControlValueAccessor, HasNgDateConf, NgD
       const componentFactory = this._componentFactoryResolver.resolveComponentFactory(PopupComponent);
       this.popupComponent = this._viewContainerRef.createComponent<PopupComponent>(componentFactory);
       this.popupComponent.instance.ngDateDirective = this;
-      // TODO - mfilo - 09.02.2021 - tmp..
-      this.popupComponent.instance.keepOpen = this.keepOpen;
 
       // browser autocomplete would overlay popup
       this._renderer.setProperty(this.elementRef.nativeElement, 'autocomplete', 'off');
     }
+  }
+
+  ngOnInit() {
+    if (!this.popupComponent) {
+      return;
+    }
+
+    this.popupComponent.instance.keepOpen = this.keepOpen;
+    this.popupComponent.instance.timeStep = this.timeStep;
   }
 
   ngOnDestroy() {
@@ -282,6 +291,7 @@ export class NgDateDirective implements ControlValueAccessor, HasNgDateConf, NgD
 
     // 1) (htmlValue, dtValue) => dtValue
     this.dtValue = this.convertHtmlValueToDtValue(htmlValue, this.dtValue);
+    this.dtValue.setMinutes(Math.round(this.dtValue.getMinutes() / this.timeStep) * this.timeStep);
 
     // 2) (dtValue, ngValue) => ngValue
     this.ngValue = this.convertDtValueToNgModel(this.dtValue, this.ngValue);
@@ -302,7 +312,6 @@ export class NgDateDirective implements ControlValueAccessor, HasNgDateConf, NgD
     if (newHtmlValue === oldHtmlValue) return; // no change is there
 
     // 2) update values
-    // this._renderer.setProperty(this.elementRef.nativeElement, 'value', newHtmlValue);
     this.onChange(this.valueParser(newHtmlValue));
     this.writeValue(this.ngValue);
     this.onTouched();
