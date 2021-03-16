@@ -67,6 +67,32 @@ export class NgDateDirective implements ControlValueAccessor, HasNgDateConf, NgD
   @Input() keepOpen: boolean = false;
   @Input() timeStep: number = 1;
 
+  private _minDate: any;
+  @Input() set minDate(val: any) {
+    this._minDate = val;
+
+    if (this.popupComponent) {
+      this.popupComponent.instance.minDate = this.convertNgValueToDtValue(val, undefined);
+    }
+  }
+
+  get minDate() {
+    return this._minDate;
+  }
+
+  private _maxDate: any;
+  @Input() set maxDate(val: any) {
+    this._maxDate = val;
+
+    if (this.popupComponent) {
+      this.popupComponent.instance.maxDate = this.convertNgValueToDtValue(val, undefined);
+    }
+  }
+
+  get maxDate() {
+    return this._maxDate;
+  }
+
   private readonly popupComponent: ComponentRef<PopupComponent> = null;
 
   @Input('ngDate')

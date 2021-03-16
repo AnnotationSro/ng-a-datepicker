@@ -24,14 +24,12 @@ yarn start
 npm run start
 ```
 
-## Author
+## Authors
 
 👤 **Pavol Slany**
 
 * Website: www.annotation.sk
 * Github: [@slany](https://github.com/slany)
-
-## Contributors
 
 👤 **Martin Filo**
 

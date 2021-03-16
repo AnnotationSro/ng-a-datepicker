@@ -1,5 +1,6 @@
 import { Component, ElementRef, Input, OnDestroy, OnInit } from '@angular/core';
-import { FormStyle, getLocaleDayNames, getLocaleFirstDayOfWeek, TranslationWidth, WeekDay } from '@angular/common';
+import { formatDate, FormStyle, getLocaleDayNames, getLocaleFirstDayOfWeek, TranslationWidth, WeekDay } from '@angular/common';
+import { NgModel } from '@angular/forms';
 import { NgDateDirectiveApi } from '../../directives/ng-date/ng-date.directive.api';
 import { NgDateConfigUtil } from '../../conf/ng-date.config.util';
 import { BasicDateFormat, HtmlValueConfig } from '../../model/ng-date-public.model';
@@ -19,6 +20,9 @@ export class PopupComponent implements OnInit, OnDestroy {
 
   @Input() public keepOpen: boolean = false;
   @Input() public timeStep: number = 1;
+
+  @Input() public maxDate: Date;
+  @Input() public minDate: Date;
 
   public position: 'top' | 'bottom' = 'bottom';
   public isOpen = false;
@@ -114,7 +118,12 @@ export class PopupComponent implements OnInit, OnDestroy {
   }
 
   private readDays() {
-    // this.val = this.ngDateDirective.readValue().dtValue;
+    if (this.maxDate && +this.val > +this.maxDate) {
+      this.val = this.maxDate;
+    } else if (this.minDate && +this.val < +this.minDate) {
+      this.val = this.minDate;
+    }
+
     this.days = utils.createCalendar(this.val.getFullYear(), this.val.getMonth(), this.firstDayOfWeek);
   }
 
@@ -153,7 +162,19 @@ export class PopupComponent implements OnInit, OnDestroy {
   /// ///////////////////////////////////
   // Handle user interaction with popup
   /// ///////////////////////////////////
-  setYear($event: number) {
+  setYear($event: number, ngModelYear: NgModel) {
+    if (this.minDate || this.maxDate) {
+      const tmp = new Date(this.val);
+      tmp.setDate(1);
+      tmp.setFullYear($event);
+
+      if (this.isOutOfBounds(tmp)) {
+        const v = formatDate(this.val, 'yyyy', this.locale);
+        ngModelYear.reset(v);
+        return;
+      }
+    }
+
     this.val.setDate(1);
     this.val.setFullYear($event);
 
@@ -204,15 +225,37 @@ export class PopupComponent implements OnInit, OnDestroy {
     this.readDays();
   }
 
-  setHours($event: any) {
+  setHours($event: any, ngModelHour: NgModel) {
+    if (this.minDate || this.maxDate) {
+      const tmp = new Date(this.val);
+      tmp.setHours($event);
+
+      if (this.isOutOfBounds(tmp)) {
+        const v = formatDate(this.val, 'HH', this.locale);
+        ngModelHour.reset(v);
+        return;
+      }
+    }
+
     this.val.setHours($event);
     this.ngDateDirective.changeValue(this.val);
     this.readDays();
   }
 
-  setMinutes($event: any) {
+  setMinutes($event: any, ngModelMinute: NgModel) {
     if ($event % this.timeStep !== 0) {
       $event = Math.round(parseInt($event, 10) / this.timeStep) * this.timeStep;
+    }
+
+    if (this.minDate || this.maxDate) {
+      const tmp = new Date(this.val);
+      tmp.setMinutes($event);
+
+      if (this.isOutOfBounds(tmp)) {
+        const v = formatDate(this.val, 'mm', this.locale);
+        ngModelMinute.reset(v);
+        return;
+      }
     }
 
     this.val.setMinutes($event);
@@ -226,6 +269,23 @@ export class PopupComponent implements OnInit, OnDestroy {
     }
 
     return this.realVal.toLocaleDateString() === date.toLocaleDateString();
+  }
+
+  isOutOfBounds(date: Date) {
+    return (this.maxDate && +date > +this.maxDate) || (this.minDate && +date < +this.minDate);
+  }
+
+  wouldBeOutOfBounds(isAdd: boolean) {
+    const tmp = new Date(this.val);
+
+    if (!isAdd) {
+      tmp.setDate(0);
+    } else {
+      tmp.setDate(1);
+      tmp.setMonth(tmp.getMonth() + 1);
+    }
+
+    return this.isOutOfBounds(tmp);
   }
 }
 
@@ -272,19 +332,19 @@ const utils = {
     const prevMonthStart = prevMonthDays - firstDayOfMonth;
     for (let i = 1; i <= firstDayOfMonth; i++) {
       const day = prevMonthStart + i;
-      const date = new Date(Date.UTC(prevYearNumber, prevMonthNumber, day));
+      const date = new Date(prevYearNumber, prevMonthNumber, day);
       const dayOfWeek = utils.getDayOfWeek(date, firstDayOfWeek);
       days.push({ day, currentMonth: false, date, dayOfWeek });
     }
 
     for (let j = 1; j <= currMonthDays; j++) {
-      const date = new Date(Date.UTC(year, month, j));
+      const date = new Date(year, month, j);
       const dayOfWeek = utils.getDayOfWeek(date, firstDayOfWeek);
       days.push({ day: j, currentMonth: true, date, dayOfWeek });
     }
 
     for (let k = 1; k <= lastDayOfMonth; k++) {
-      const date = new Date(Date.UTC(nexyYearNumber, nextMonthNumber, k));
+      const date = new Date(nexyYearNumber, nextMonthNumber, k);
       const dayOfWeek = utils.getDayOfWeek(date, firstDayOfWeek);
       days.push({ day: k, currentMonth: false, date, dayOfWeek });
     }

@@ -33,7 +33,7 @@ $border-color: #ced4da;
   align-items: center;
 }
 
-.ng-date-popup--prev ,
+.ng-date-popup--prev,
 .ng-date-popup--next {
   color: #52b4f6;
   display: inline-block;
@@ -42,6 +42,11 @@ $border-color: #ced4da;
   background-color: transparent;
   border: 2px solid transparent;
   border-radius: 5px;
+}
+.ng-date-popup--prev[disabled],
+.ng-date-popup--next[disabled] {
+  color: #d8d8d8;
+  cursor: default;
 }
 
 .ng-date-popup--month {
@@ -99,16 +104,24 @@ $border-color: #ced4da;
   flex-basis: calc(100% / 7);
   text-align: center;
   border: 1px solid $border-color;
+}
+
+.ng-date-popup--date-day:not(.ng-date-popup--date-disabled ) {
   cursor: pointer;
+}
+
+.ng-date-popup--date-weekend {
+  background: rgba(#52b4f6, 0.15);
+}
+
+.ng-date-popup--date-disabled {
+  background: rgba($border-color, 0.25);
+  color: #212529;
 }
 
 .ng-date-popup--date-active {
   background: #52b4f6;
   color: white;
-}
-
-.ng-date-popup--date-disabled {
-  background: rgba($border-color, 0.25);
 }
 
 .relative-wrapper {

@@ -1,55 +1,83 @@
 <div class="relative-wrapper">
-  <div class="ng-date-popup position-{{position}}" *ngIf="isOpen">
+  <div class="ng-date-popup position-{{ position }}" *ngIf="isOpen">
     <div class="ng-date-popup--header">
       <ng-container *ngIf="config.month">
-        <button (click)="removeMonth()" type="button" class="ng-date-popup--prev">
+        <button (click)="removeMonth()" type="button" class="ng-date-popup--prev" [disabled]="wouldBeOutOfBounds(false)">
           <span class="fas fa-chevron-left"></span>
         </button>
-        <span class="ng-date-popup--month">{{val | date: 'LLLL'}}</span>
-        <button (click)="addMonth()" type="button" class="ng-date-popup--next">
+        <span class="ng-date-popup--month">{{ val | date: 'LLLL' }}</span>
+        <button (click)="addMonth()" type="button" class="ng-date-popup--next" [disabled]="wouldBeOutOfBounds(true)">
           <span class="fas fa-chevron-right"></span>
         </button>
         &nbsp;
-        </ng-container>
+      </ng-container>
 
-      <input type="number" class="ng-date-popup--year" *ngIf="config.year"
-             [ngModel]="val.getFullYear()" (ngModelChange)="setYear($event)">
+      <input
+        type="number"
+        class="ng-date-popup--year"
+        *ngIf="config.year"
+        [ngModel]="val.getFullYear()"
+        (ngModelChange)="setYear($event, ngModelYear)"
+        #ngModelYear="ngModel"
+      />
     </div>
 
     <div class="ng-date-popup--date" *ngIf="config.date">
       <div class="ng-date-popup--days">
-        <div *ngFor="let day of localizedDays">{{day}}</div>
+        <div *ngFor="let day of localizedDays">{{ day }}</div>
       </div>
 
       <div class="ng-date-popup--date-row">
         <ng-container *ngFor="let day of days; let i = index">
-          <div class="ng-date-popup--date-day"
-               [ngClass]="{'ng-date-popup--date-disabled': !day.currentMonth, 'ng-date-popup--date-active': compareDate(day.date)}"
-               (click)="setDate(day.date)"
-          >{{day.day}}</div>
-          <div class="ng-date-popup--date-row-separator" *ngIf="day.dayOfWeek === 6 "></div>
+          <div
+            class="ng-date-popup--date-day"
+            [ngClass]="{
+              'ng-date-popup--date-weekend': !day.currentMonth,
+              'ng-date-popup--date-disabled': isOutOfBounds(day.date),
+              'ng-date-popup--date-active': compareDate(day.date)
+            }"
+            (click)="!isOutOfBounds(day.date) && setDate(day.date)"
+          >
+            {{ day.day }}
+          </div>
+          <div class="ng-date-popup--date-row-separator" *ngIf="day.dayOfWeek === 6"></div>
         </ng-container>
       </div>
     </div>
 
     <!-- TODO - mfilo - 27.01.2021 - toto je iba specialny pripad - datetime... spravit poriadne!!-->
-    <hr *ngIf="config.minutes && config.year">
+    <hr *ngIf="config.minutes && config.year" />
 
     <div class="ng-date-popup--time" *ngIf="config.minutes && config.hours">
       <div class="ng-date-popup--time-row">
         <!-- TODO - mfilo - 11.02.2021 - AM/PM-->
-        <input type="number" class="form-control" *ngIf="config.hours != 'off'"
-               [ngModel]="val.getHours()" (ngModelChange)="setHours($event)"
-               maxlength="2" min="-24" max="24"
-        >
+        <input
+          type="number"
+          class="form-control"
+          *ngIf="config.hours != 'off'"
+          [ngModel]="val.getHours()"
+          (ngModelChange)="setHours($event, ngModelHour)"
+          #ngModelHour="ngModel"
+          maxlength="2"
+          min="-24"
+          max="24"
+        />
         &nbsp;:&nbsp;
-        <input type="number" class="form-control" *ngIf="config.minutes"
-               #inputElement
-               [ngModel]="val.getMinutes().toString().padStart(2, '0')"
-               (click)="inputElement.select()"
-               (blur)="setMinutes(inputElement.value)"
-               (change)="setMinutes(inputElement.value)"
-               maxlength="2" min="-60" max="60" step="{{timeStep}}">
+        <input
+          type="number"
+          class="form-control"
+          *ngIf="config.minutes"
+          #inputElement
+          [ngModel]="val.getMinutes().toString().padStart(2, '0')"
+          (click)="inputElement.select()"
+          (blur)="setMinutes(inputElement.value, ngModelMinute)"
+          (change)="setMinutes(inputElement.value, ngModelMinute)"
+          #ngModelMinute="ngModel"
+          maxlength="2"
+          min="-60"
+          max="60"
+          step="{{ timeStep }}"
+        />
       </div>
     </div>
   </div>
