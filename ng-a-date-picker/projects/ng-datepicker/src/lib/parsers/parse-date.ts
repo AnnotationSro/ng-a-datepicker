@@ -617,6 +617,10 @@ export function getDateFormatParser(locale: string, format: BasicDateFormat | st
 
           // TODO - mfilo - 31.01.2021 - tmp fix
           const retValue = new Date(0);
+          retValue.setHours(0);
+          retValue.setMinutes(0);
+          retValue.setSeconds(0);
+          retValue.setMilliseconds(0);
 
           // reading part values
           const values = new Map<DateType, number | string>();

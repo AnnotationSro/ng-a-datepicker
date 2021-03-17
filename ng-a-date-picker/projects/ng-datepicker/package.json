@@ -1,6 +1,6 @@
 {
   "name": "@annotation/ng-datepicker",
-  "version": "0.1.14-alpha",
+  "version": "0.1.15-alpha",
   "description": "Angular datepicker - work in progress",
   "peerDependencies": {
     "@angular/common": "^11.0.5",
