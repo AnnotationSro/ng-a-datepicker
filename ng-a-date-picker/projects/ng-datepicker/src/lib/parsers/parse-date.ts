@@ -543,7 +543,7 @@ function getDatePartParser(locale: string, format: DatePartFormat): DatePart | n
 
 const DateParserMaps: { [key: string]: DateParser } = {};
 
-export function getDateFormatParser(locale: string, format: BasicDateFormat | string): DateParser {
+export function getDateFormatParser(locale: string, format: BasicDateFormat | string): DateParser | null {
   const namedFormat = getNamedFormat(locale, format as BasicDateFormat);
   format = namedFormat || format;
   const originalFormat = format;
@@ -603,7 +603,7 @@ export function getDateFormatParser(locale: string, format: BasicDateFormat | st
             if (isDevMode()) {
               console.error(`DateParser with format '${originalFormat}' cannot parse date from '${text}'`);
             }
-            return undefined;
+            return null;
           }
 
           // value updates ...
@@ -667,7 +667,7 @@ export function getDateFormatParser(locale: string, format: BasicDateFormat | st
             const hours12 = valueToNumber(values.get(DateType.Hours_12));
             if (hours12 > 12) {
               console.error(`DateParser with format '${originalFormat}' cannot parse date from '${text}'`);
-              return undefined;
+              return null;
             }
             const inAM = retValue.getHours() < 12;
             retValue.setHours((hours12 % 12) + (inAM ? 0 : 12));
@@ -733,6 +733,6 @@ export function getDateFormatParser(locale: string, format: BasicDateFormat | st
   return DateParserMaps[key];
 }
 
-export function parseDate(value: string, format: BasicDateFormat | string, locale: string, oldValue: Date = null): Date {
+export function parseDate(value: string, format: BasicDateFormat | string, locale: string, oldValue: Date = null): Date | null{
   return getDateFormatParser(locale, format).parseDate(value, oldValue);
 }

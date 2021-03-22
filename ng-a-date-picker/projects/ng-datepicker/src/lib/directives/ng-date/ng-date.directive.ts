@@ -93,7 +93,7 @@ export class NgDateDirective implements ControlValueAccessor, HasNgDateConf, NgD
     return this._maxDate;
   }
 
-  private readonly popupComponent: ComponentRef<PopupComponent> = null;
+  private popupComponent: ComponentRef<PopupComponent> | null = null;
 
   @Input('ngDate')
   ngDateConfig: NgDateConfig | BasicDateFormat = null;
@@ -101,7 +101,7 @@ export class NgDateDirective implements ControlValueAccessor, HasNgDateConf, NgD
   @Input('ngDateModelConverter')
   ngDateModelConverterConfig: StandardModelValueConverters | ApiNgDateModelValueConverter<any> = null;
 
-  dtValue: Date = null; // internal variable with date value
+  dtValue: Date | null = null; // internal variable with date value
   private ngValue: any = null;
 
   onChange: (value: any) => void; // Called on a value change
@@ -134,6 +134,11 @@ export class NgDateDirective implements ControlValueAccessor, HasNgDateConf, NgD
       this._compositionMode = !isAndroid();
     }
 
+   
+  }
+
+  ngOnInit() {
+
     if (!this.disablePopup) {
       const componentFactory = this._componentFactoryResolver.resolveComponentFactory(PopupComponent);
       this.popupComponent = this._viewContainerRef.createComponent<PopupComponent>(componentFactory);
@@ -141,24 +146,17 @@ export class NgDateDirective implements ControlValueAccessor, HasNgDateConf, NgD
 
       // browser autocomplete would overlay popup
       this._renderer.setProperty(this.elementRef.nativeElement, 'autocomplete', 'off');
-    }
-  }
 
-  ngOnInit() {
-    if (!this.popupComponent) {
-      return;
+      this.popupComponent.instance.keepOpen = this.keepOpen;
+      this.popupComponent.instance.timeStep = this.timeStep;
     }
 
-    this.popupComponent.instance.keepOpen = this.keepOpen;
-    this.popupComponent.instance.timeStep = this.timeStep;
   }
 
   ngOnDestroy() {
-    if (!this.popupComponent) {
-      return;
-    }
-
-    this.popupComponent.destroy();
+    if (!!this.popupComponent) {
+      this.popupComponent.destroy();
+    }  
   }
 
   addEventListenerToInput<K extends keyof HTMLElementEventMap>(
@@ -262,7 +260,7 @@ export class NgDateDirective implements ControlValueAccessor, HasNgDateConf, NgD
   /// /////////////////////////////////////////////////////////////////////////////////////////////////////////////
   /// Converters only
   // 1) convert(ngValue, dtValue/old) => dtValue/new
-  private convertNgValueToDtValue(newNgValue: any, dtValue: Date): Date {
+  private convertNgValueToDtValue(newNgValue: any, dtValue: Date): Date | null{
     if (!newNgValue) {
       return null;
     }
@@ -284,7 +282,7 @@ export class NgDateDirective implements ControlValueAccessor, HasNgDateConf, NgD
   }
 
   // 3) convert(htmlValue, dtValue/old) => dtValue/new
-  private convertHtmlValueToDtValue(htmlValue: string, dtValue: Date): Date {
+  private convertHtmlValueToDtValue(htmlValue: string, dtValue: Date): Date | null{
     const htmlValueConfig = NgDateConfigUtil.resolveHtmlValueConfig(this);
     return parseDate(htmlValue, htmlValueConfig.displayFormat, htmlValueConfig.locale, dtValue);
   }
@@ -317,7 +315,7 @@ export class NgDateDirective implements ControlValueAccessor, HasNgDateConf, NgD
 
     // 1) (htmlValue, dtValue) => dtValue
     this.dtValue = this.convertHtmlValueToDtValue(htmlValue, this.dtValue);
-    this.dtValue.setMinutes(Math.round(this.dtValue.getMinutes() / this.timeStep) * this.timeStep);
+    this.dtValue?.setMinutes(Math.round(this.dtValue.getMinutes() / this.timeStep) * this.timeStep);
 
     // 2) (dtValue, ngValue) => ngValue
     this.ngValue = this.convertDtValueToNgModel(this.dtValue, this.ngValue);
