@@ -133,12 +133,9 @@ export class NgDateDirective implements ControlValueAccessor, HasNgDateConf, NgD
     if (this._compositionMode == null) {
       this._compositionMode = !isAndroid();
     }
-
-   
   }
 
   ngOnInit() {
-
     if (!this.disablePopup) {
       const componentFactory = this._componentFactoryResolver.resolveComponentFactory(PopupComponent);
       this.popupComponent = this._viewContainerRef.createComponent<PopupComponent>(componentFactory);
@@ -150,13 +147,12 @@ export class NgDateDirective implements ControlValueAccessor, HasNgDateConf, NgD
       this.popupComponent.instance.keepOpen = this.keepOpen;
       this.popupComponent.instance.timeStep = this.timeStep;
     }
-
   }
 
   ngOnDestroy() {
     if (!!this.popupComponent) {
       this.popupComponent.destroy();
-    }  
+    }
   }
 
   addEventListenerToInput<K extends keyof HTMLElementEventMap>(
@@ -219,30 +215,32 @@ export class NgDateDirective implements ControlValueAccessor, HasNgDateConf, NgD
     this._renderer.setProperty(this.elementRef.nativeElement, 'disabled', isDisabled);
   }
 
-  @HostListener('blur')
-  _handleBlur() {
+  @HostListener('blur', ['$event.target.value'])
+  _handleBlur(value) {
     if (!this.popupComponent?.instance?.isOpen) {
       this.onTouched();
     }
 
     if (!this.dtValue) {
-      // TODO - mfilo - 27.01.2021 - @psl - podla rozhovoru nemazeme obsah inputu v pripade ze neexistuje dtValue
-      // clean user input
-      // this.writeValue('');
       return;
     }
 
     // toto chceme zavolat 'on blur' aby sme opravili format napr: 1.1.2020 -> 01.01.2020
+    let parsedDate = this.valueParser(value);    
+    this.dtValue = parsedDate.dtValue;
+    this.ngValue = parsedDate.ngValue;
+    
+    this.onChange(this.ngValue);
     const val = NgDateConfigUtil.resolveModelConverter(this).toModel(this.dtValue, this.ngValue);
     this.writeValue(val);
   }
 
-  @HostListener('input', ['$event.target.value'])
-  _handleInput(value: any): void {
-    if (!this._compositionMode || (this._compositionMode && !this._composing)) {
-      this.onChange(this.valueParser(value));
-    }
-  }
+  // @HostListener('input', ['$event.target.value'])
+  // _handleInput(value: any): void {
+  //   if (!this._compositionMode || (this._compositionMode && !this._composing)) {
+  //     // this.onChange(this.valueParser(value));
+  //   }
+  // }
 
   /** @internal */
   @HostListener('compositionstart')
@@ -254,13 +252,13 @@ export class NgDateDirective implements ControlValueAccessor, HasNgDateConf, NgD
   @HostListener('compositionend', ['$event.target.value'])
   _compositionEnd(value: any): void {
     this._composing = false;
-    if (this._compositionMode) this.onChange(this.valueParser(value));
+    if (this._compositionMode) this.onChange(this.valueParser(value).ngValue);
   }
 
   /// /////////////////////////////////////////////////////////////////////////////////////////////////////////////
   /// Converters only
   // 1) convert(ngValue, dtValue/old) => dtValue/new
-  private convertNgValueToDtValue(newNgValue: any, dtValue: Date): Date | null{
+  private convertNgValueToDtValue(newNgValue: any, dtValue: Date): Date | null {
     if (!newNgValue) {
       return null;
     }
@@ -282,7 +280,7 @@ export class NgDateDirective implements ControlValueAccessor, HasNgDateConf, NgD
   }
 
   // 3) convert(htmlValue, dtValue/old) => dtValue/new
-  private convertHtmlValueToDtValue(htmlValue: string, dtValue: Date): Date | null{
+  private convertHtmlValueToDtValue(htmlValue: string, dtValue: Date): Date | null {
     const htmlValueConfig = NgDateConfigUtil.resolveHtmlValueConfig(this);
     return parseDate(htmlValue, htmlValueConfig.displayFormat, htmlValueConfig.locale, dtValue);
   }
@@ -304,22 +302,19 @@ export class NgDateDirective implements ControlValueAccessor, HasNgDateConf, NgD
     return this.convertDtValueToHtmlValue(this.dtValue);
   }
 
-  private valueParser(htmlValue: string): any {
+  private valueParser(htmlValue: string): { dtValue: Date, ngValue: string } {
     // TODO - mfilo - 27.01.2021 - @psl - check me - bez tohto prazdny string je 1.1.1970
     if (!htmlValue.trim()) {
-      this.dtValue = null;
-      this.ngValue = '';
-
-      return this.ngValue;
+      return { dtValue: null, ngValue: '' };
     }
 
     // 1) (htmlValue, dtValue) => dtValue
-    this.dtValue = this.convertHtmlValueToDtValue(htmlValue, this.dtValue);
-    this.dtValue?.setMinutes(Math.round(this.dtValue.getMinutes() / this.timeStep) * this.timeStep);
+    let dtValue = this.convertHtmlValueToDtValue(htmlValue, this.dtValue);
+    dtValue?.setMinutes(Math.round(dtValue.getMinutes() / this.timeStep) * this.timeStep);
 
     // 2) (dtValue, ngValue) => ngValue
-    this.ngValue = this.convertDtValueToNgModel(this.dtValue, this.ngValue);
-    return this.ngValue;
+    let ngValue = this.convertDtValueToNgModel(dtValue, this.ngValue);
+    return { ngValue, dtValue };
   }
 
   public readValue(): NgDateValue {
@@ -336,7 +331,11 @@ export class NgDateDirective implements ControlValueAccessor, HasNgDateConf, NgD
     if (newHtmlValue === oldHtmlValue) return; // no change is there
 
     // 2) update values
-    this.onChange(this.valueParser(newHtmlValue));
+    let parsed = this.valueParser(newHtmlValue);
+    this.dtValue = parsed.dtValue;
+    this.ngValue = parsed.ngValue;
+
+    this.onChange(this.ngValue);
     this.writeValue(this.ngValue);
     this.onTouched();
   }
