@@ -10,7 +10,8 @@
     "lint": "ng lint",
     "packagr": "ng-packagr -p projects/ng-datepicker/ng-package.json",
     "e2e": "ng e2e",
-    "release": "dotenv release-it"
+    "release": "dotenv release-it",
+    "build-lib": "ng build ng-datepicker --prod"
   },
   "private": true,
   "dependencies": {
