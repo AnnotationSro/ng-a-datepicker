@@ -10,7 +10,7 @@
     "lint": "ng lint",
     "packagr": "ng-packagr -p projects/ng-datepicker/ng-package.json",
     "e2e": "ng e2e",
-    "release": "release-it"
+    "release": "dotenv release-it"
   },
   "private": true,
   "dependencies": {
@@ -41,6 +41,7 @@
     "@typescript-eslint/eslint-plugin": "^4.14.2",
     "@typescript-eslint/parser": "^4.14.2",
     "codelyzer": "^6.0.0",
+    "dotenv-cli": "^4.0.0",
     "eslint": "^7.19.0",
     "eslint-config-airbnb-typescript": "^12.0.0",
     "eslint-config-prettier": "^7.2.0",
