@@ -64,6 +64,7 @@ export class NgDateDirective implements ControlValueAccessor, HasNgDateConf, NgD
   @Input() disabled: boolean;
 
   @Input() disablePopup: boolean = false;
+  @Input() disableSelectOnFocus: boolean = false;
   @Input() keepOpen: boolean = false;
   @Input() timeStep: number = 1;
 
@@ -146,11 +147,19 @@ export class NgDateDirective implements ControlValueAccessor, HasNgDateConf, NgD
 
       this.popupComponent.instance.keepOpen = this.keepOpen;
       this.popupComponent.instance.timeStep = this.timeStep;
+
+      if (this.minDate) {
+        this.popupComponent.instance.minDate = this.minDate;
+      }
+
+      if (this.maxDate) {
+        this.popupComponent.instance.maxDate = this.maxDate;
+      }
     }
   }
 
   ngOnDestroy() {
-    if (!!this.popupComponent) {
+    if (this.popupComponent) {
       this.popupComponent.destroy();
     }
   }
@@ -215,21 +224,29 @@ export class NgDateDirective implements ControlValueAccessor, HasNgDateConf, NgD
     this._renderer.setProperty(this.elementRef.nativeElement, 'disabled', isDisabled);
   }
 
+  @HostListener('focus', ['$event.target.value'])
+  _handleFocus() {
+    if (!this.disableSelectOnFocus) {
+      this.elementRef.nativeElement.select();
+    }
+  }
+
   @HostListener('blur', ['$event.target.value'])
   _handleBlur(value) {
     if (!this.popupComponent?.instance?.isOpen) {
       this.onTouched();
     }
 
+    // toto chceme zavolat 'on blur' aby sme opravili format napr: 1.1.2020 -> 01.01.2020
+    const parsedDate = this.valueParser(value);
+    this.dtValue = parsedDate.dtValue;
+    this.ngValue = parsedDate.ngValue;
+
     if (!this.dtValue) {
+      this.writeValue('');
       return;
     }
 
-    // toto chceme zavolat 'on blur' aby sme opravili format napr: 1.1.2020 -> 01.01.2020
-    let parsedDate = this.valueParser(value);    
-    this.dtValue = parsedDate.dtValue;
-    this.ngValue = parsedDate.ngValue;
-    
     this.onChange(this.ngValue);
     const val = NgDateConfigUtil.resolveModelConverter(this).toModel(this.dtValue, this.ngValue);
     this.writeValue(val);
@@ -302,18 +319,18 @@ export class NgDateDirective implements ControlValueAccessor, HasNgDateConf, NgD
     return this.convertDtValueToHtmlValue(this.dtValue);
   }
 
-  private valueParser(htmlValue: string): { dtValue: Date, ngValue: string } {
+  private valueParser(htmlValue: string): { dtValue: Date; ngValue: string } {
     // TODO - mfilo - 27.01.2021 - @psl - check me - bez tohto prazdny string je 1.1.1970
     if (!htmlValue.trim()) {
       return { dtValue: null, ngValue: '' };
     }
 
     // 1) (htmlValue, dtValue) => dtValue
-    let dtValue = this.convertHtmlValueToDtValue(htmlValue, this.dtValue);
+    const dtValue = this.convertHtmlValueToDtValue(htmlValue, this.dtValue);
     dtValue?.setMinutes(Math.round(dtValue.getMinutes() / this.timeStep) * this.timeStep);
 
     // 2) (dtValue, ngValue) => ngValue
-    let ngValue = this.convertDtValueToNgModel(dtValue, this.ngValue);
+    const ngValue = this.convertDtValueToNgModel(dtValue, this.ngValue);
     return { ngValue, dtValue };
   }
 
@@ -331,7 +348,7 @@ export class NgDateDirective implements ControlValueAccessor, HasNgDateConf, NgD
     if (newHtmlValue === oldHtmlValue) return; // no change is there
 
     // 2) update values
-    let parsed = this.valueParser(newHtmlValue);
+    const parsed = this.valueParser(newHtmlValue);
     this.dtValue = parsed.dtValue;
     this.ngValue = parsed.ngValue;
 
