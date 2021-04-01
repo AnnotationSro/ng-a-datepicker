@@ -1,7 +1,10 @@
 {
   "name": "@annotation/ng-datepicker",
-  "version": "0.1.18-alpha",
+  "version": "0.1.19-alpha",
   "description": "Angular datepicker - work in progress",
+  "scripts": {
+    "release": "dotenv release-it"
+  },
   "peerDependencies": {
     "@angular/common": "^11.0.5",
     "@angular/core": "^11.0.5",
@@ -15,7 +18,8 @@
   },
   "author": "Pavol Slaný <pavol.slany@annotation.sk> (https://github.com/slany/)",
   "contributors": [
-    "Martin Filo <martin.filo@annotation.sk> (https://github.com/Chiff/)"
+    "Martin Filo <martin.filo@annotation.sk> (https://github.com/Chiff/)",
+    "Igor Kvasnička <igor.kvasnicka@annotation.sk (https://github.com/IgorKvasn)>"
   ],
   "license": "MIT",
   "dependencies": {
