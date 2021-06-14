@@ -244,6 +244,7 @@ export class NgDateDirective implements ControlValueAccessor, HasNgDateConf, NgD
 
     if (!this.dtValue) {
       this.writeValue('');
+      this.onChange(this.ngValue); // ngValue should be null
       return;
     }
 

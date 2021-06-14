@@ -2,7 +2,28 @@
 ng new ng-a-date-picker --defaults=true --inlineStyle=true --package-manager=yarn --prefix=a-date --skipTests=true --style=scss --create-application=false
 ```
 
+### Local development
 
+Option 1 - in this project (runs ng-datepicker-showcase app)
+```
+yarn start 
+```
+
+Option 2 - link this project to any other
+```
+yarn build --watch
+cd dist/ng-datepicker
+yarn link
+cd ../path/to/any/other/project
+yarn link "@annotation/ng-datepicker"
+
+## serve your own project
+yarn start 
+
+## remove link 
+yarn unlink "@annotation/ng-datepicker"
+yarn install --force
+```
 
 ### TypeScript
 date for TypeScript can be defined as:
@@ -74,7 +95,7 @@ Dates in JSON:
 
 
 
-```javascript
+```json
 {
 "lt" : "00:45:55.7942",
 "lt" : [ 0, 47, 58, 703928000 ],
@@ -103,8 +124,7 @@ Dates in JSON:
 "dsql" : "2021-01-09",
 "dsql" : 1610149678708,
 
-"dtimestamp" : "2021-01-08T23:45:55.799+0000"
+"dtimestamp" : "2021-01-08T23:45:55.799+0000",
 "dtimestamp" : 1610149678708
-};
-
+}
 ```
