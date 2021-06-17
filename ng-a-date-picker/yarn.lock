@@ -276,6 +276,13 @@
   dependencies:
     tslib "^2.0.0"
 
+"@annotation/ng-parse@^1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@annotation/ng-parse/-/ng-parse-1.0.0.tgz#27e59f0cc6829cdafcb60413007a997fa45b784d"
+  integrity sha512-ZBjleIqjDwY9PkkTKjNrhRfwZN73QRkrFCZjRbGo/95FahiFKTqQGJm+6BzGS4TCuRUq1I5KKr1JR9pK4x8+kw==
+  dependencies:
+    tslib "^2.0.0"
+
 "@babel/code-frame@^7.0.0", "@babel/code-frame@^7.10.4":
   version "7.12.11"
   resolved "https://registry.yarnpkg.com/@babel/code-frame/-/code-frame-7.12.11.tgz#f4ad435aa263db935b8f10f2c552d23fb716a63f"

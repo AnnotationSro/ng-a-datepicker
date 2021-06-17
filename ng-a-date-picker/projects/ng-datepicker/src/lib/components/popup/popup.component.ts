@@ -1,17 +1,11 @@
-import {Component, ElementRef, Input, OnDestroy, OnInit, ViewEncapsulation} from '@angular/core';
-import {
-  formatDate,
-  FormStyle,
-  getLocaleDayNames,
-  getLocaleFirstDayOfWeek,
-  TranslationWidth,
-  WeekDay
-} from '@angular/common';
-import {NgModel} from '@angular/forms';
-import {NgDateDirectiveApi} from '../../directives/ng-date/ng-date.directive.api';
-import {NgDateConfigUtil} from '../../conf/ng-date.config.util';
-import {BasicDateFormat, HtmlValueConfig} from '../../model/ng-date-public.model';
-import {DateType, getDateFormatParser} from '../../parsers/parse-date';
+import { Component, ElementRef, Input, OnDestroy, OnInit, ViewEncapsulation } from '@angular/core';
+import { formatDate, FormStyle, getLocaleDayNames, getLocaleFirstDayOfWeek, TranslationWidth, WeekDay } from '@angular/common';
+import { NgModel } from '@angular/forms';
+import { BasicDateFormat, DateType } from '@annotation/ng-parse';
+import { NgDateDirectiveApi } from '../../directives/ng-date/ng-date.directive.api';
+import { NgDateConfigUtil } from '../../conf/ng-date.config.util';
+import { HtmlValueConfig } from '../../model/ng-date-public.model';
+import { ParseService } from '../../services/parse.service';
 
 @Component({
   selector: 'ng-date-popup',
@@ -59,7 +53,7 @@ export class PopupComponent implements OnInit, OnDestroy {
     return this._val;
   }
 
-  constructor(private _elementRef: ElementRef<HTMLElement>) {
+  constructor(private _elementRef: ElementRef<HTMLElement>, private parse: ParseService) {
     const myDate = new Date();
     const timePortion = (myDate.getTime() - myDate.getTimezoneOffset() * 60 * 1000) % (3600 * 1000 * 24);
     this._today = new Date(+myDate - timePortion);
@@ -111,7 +105,7 @@ export class PopupComponent implements OnInit, OnDestroy {
   };
 
   private configureCalendarContent(conf: HtmlValueConfig) {
-    const {types} = getDateFormatParser(this.locale, conf.displayFormat as BasicDateFormat);
+    const { types } = this.parse.getDateFormatParser(this.locale, conf.displayFormat as BasicDateFormat);
 
     if (!this.config) {
       // TODO - mfilo - 27.01.2021 - typings!!!
@@ -342,19 +336,19 @@ const utils = {
       const day = prevMonthStart + i;
       const date = new Date(prevYearNumber, prevMonthNumber, day);
       const dayOfWeek = utils.getDayOfWeek(date, firstDayOfWeek);
-      days.push({day, currentMonth: false, date, dayOfWeek});
+      days.push({ day, currentMonth: false, date, dayOfWeek });
     }
 
     for (let j = 1; j <= currMonthDays; j++) {
       const date = new Date(year, month, j);
       const dayOfWeek = utils.getDayOfWeek(date, firstDayOfWeek);
-      days.push({day: j, currentMonth: true, date, dayOfWeek});
+      days.push({ day: j, currentMonth: true, date, dayOfWeek });
     }
 
     for (let k = 1; k <= lastDayOfMonth; k++) {
       const date = new Date(nexyYearNumber, nextMonthNumber, k);
       const dayOfWeek = utils.getDayOfWeek(date, firstDayOfWeek);
-      days.push({day: k, currentMonth: false, date, dayOfWeek});
+      days.push({ day: k, currentMonth: false, date, dayOfWeek });
     }
 
     return days;

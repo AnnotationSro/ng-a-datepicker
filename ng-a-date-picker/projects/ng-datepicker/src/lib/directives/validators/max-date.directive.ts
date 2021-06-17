@@ -1,12 +1,8 @@
 import { Directive, forwardRef, Inject, Input, LOCALE_ID, Optional } from '@angular/core';
 import { AbstractControl, NG_VALIDATORS, ValidationErrors, Validator } from '@angular/forms';
+import { BasicDateFormat } from '@annotation/ng-parse';
 import { NgDateValidators } from './validate.conf';
-import {
-  ApiNgDateModelValueConverter,
-  BasicDateFormat,
-  NgDateConfig,
-  StandardModelValueConverters,
-} from '../../model/ng-date-public.model';
+import { ApiNgDateModelValueConverter, NgDateConfig, StandardModelValueConverters } from '../../model/ng-date-public.model';
 import { NG_DATEPICKER_CONF } from '../../conf/ng-datepicker.conf.token';
 import { NgDatepickerConf } from '../../conf/ng-datepicker.conf';
 import { HasNgDateConf } from '../../conf/has-ng-date-conf';

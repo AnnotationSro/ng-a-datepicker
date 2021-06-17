@@ -1,8 +1,8 @@
 import { formatDate } from '@angular/common';
-import { parseDate } from '../parsers/parse-date';
-import { toDate } from '../parsers/format-date';
 import { NgDateConfigUtil } from '../conf/ng-date.config.util';
 import { ApiNgDateModelValueConverter, ApiNgDateModelValueConverterConf } from '../model/ng-date-public.model';
+import { ParseService } from '../services/parse.service';
+import { ServiceLocator } from '../services/service-locator';
 
 const localeIso = 'en-US';
 
@@ -33,7 +33,19 @@ export class DefaultFormattedModelValueConverter implements ApiNgDateModelValueC
     localeIso
   );
 
-  constructor(private dateFormat: string, private locale?: string, private timezone?: string) {}
+  private parse: ParseService;
+  constructor(private dateFormat: string, private locale?: string, private timezone?: string) {
+    const isReady = ServiceLocator.onReady.getValue();
+    if (!isReady) {
+      ServiceLocator.onReady.subscribe((value) => {
+        if (value) {
+          this.parse = ServiceLocator.injector.get(ParseService);
+        }
+      });
+    } else {
+      this.parse = ServiceLocator.injector.get(ParseService);
+    }
+  }
 
   fromModel(value: any, oldValue: Date, opts: ApiNgDateModelValueConverterConf): Date {
     if (NgDateConfigUtil.isStringConstant(value)) {
@@ -42,9 +54,9 @@ export class DefaultFormattedModelValueConverter implements ApiNgDateModelValueC
       if (!locale && opts) locale = opts.locale; // tuto je defaultne definovane 'en-US' a teda ignoruje locale z conf
       if (!locale) locale = localeIso;
 
-      return parseDate(value, this.dateFormat, locale);
+      return this.parse.parseDate(value, this.dateFormat, locale);
     }
-    return toDate(value);
+    return this.parse.toDate(value);
   }
 
   toModel(value: Date, oldModel: string, opts: ApiNgDateModelValueConverterConf): string {

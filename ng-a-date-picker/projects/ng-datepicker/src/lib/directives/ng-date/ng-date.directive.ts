@@ -16,19 +16,15 @@ import {
   ViewContainerRef,
 } from '@angular/core';
 import { COMPOSITION_BUFFER_MODE, ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
-import { parseDate } from '../../parsers/parse-date';
+import { BasicDateFormat } from '@annotation/ng-parse';
 import { NG_DATEPICKER_CONF } from '../../conf/ng-datepicker.conf.token';
 import { NgDatepickerConf } from '../../conf/ng-datepicker.conf';
-import {
-  ApiNgDateModelValueConverter,
-  BasicDateFormat,
-  NgDateConfig,
-  StandardModelValueConverters,
-} from '../../model/ng-date-public.model';
+import { ApiNgDateModelValueConverter, NgDateConfig, StandardModelValueConverters } from '../../model/ng-date-public.model';
 import { PopupComponent } from '../../components/popup/popup.component';
 import { NgDateConfigUtil } from '../../conf/ng-date.config.util';
 import { HasNgDateConf } from '../../conf/has-ng-date-conf';
 import { NgDateDirectiveApi, NgDateValue } from './ng-date.directive.api';
+import { ParseService } from '../../services/parse.service';
 
 /**
  * We must check whether the agent is Android because composition events
@@ -127,6 +123,7 @@ export class NgDateDirective implements ControlValueAccessor, HasNgDateConf, NgD
     private elementRef: ElementRef,
     private _viewContainerRef: ViewContainerRef,
     private _componentFactoryResolver: ComponentFactoryResolver,
+    private parse: ParseService,
     @Optional() @Inject(NG_DATEPICKER_CONF) public ngDatepickerConf: NgDatepickerConf,
     @Inject(LOCALE_ID) public locale: string,
     @Optional() @Inject(COMPOSITION_BUFFER_MODE) private _compositionMode: boolean
@@ -300,7 +297,7 @@ export class NgDateDirective implements ControlValueAccessor, HasNgDateConf, NgD
   // 3) convert(htmlValue, dtValue/old) => dtValue/new
   private convertHtmlValueToDtValue(htmlValue: string, dtValue: Date): Date | null {
     const htmlValueConfig = NgDateConfigUtil.resolveHtmlValueConfig(this);
-    return parseDate(htmlValue, htmlValueConfig.displayFormat, htmlValueConfig.locale, dtValue);
+    return this.parse.parseDate(htmlValue, htmlValueConfig.displayFormat, htmlValueConfig.locale, dtValue);
   }
 
   // 4) convert(dtValue, ngValue/old) => ngValue/new

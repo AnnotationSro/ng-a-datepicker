@@ -1,10 +1,6 @@
+import { BasicDateFormat } from '@annotation/ng-parse';
 import { NgDatepickerConf } from './ng-datepicker.conf';
-import {
-  ApiNgDateModelValueConverter,
-  BasicDateFormat,
-  NgDateConfig,
-  StandardModelValueConverters,
-} from '../model/ng-date-public.model';
+import { ApiNgDateModelValueConverter, NgDateConfig, StandardModelValueConverters } from '../model/ng-date-public.model';
 
 export interface HasNgDateConf {
   ngDateConfig?: BasicDateFormat | NgDateConfig;

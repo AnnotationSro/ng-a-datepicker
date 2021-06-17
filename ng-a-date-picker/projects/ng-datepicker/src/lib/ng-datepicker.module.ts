@@ -1,4 +1,4 @@
-import { ModuleWithProviders, NgModule } from '@angular/core';
+import { Injector, ModuleWithProviders, NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NgDatepickerConf } from './conf/ng-datepicker.conf';
@@ -7,6 +7,7 @@ import { NgDateDirective } from './directives/ng-date/ng-date.directive';
 import { MinDateDirective } from './directives/validators/min-date.directive';
 import { MaxDateDirective } from './directives/validators/max-date.directive';
 import { PopupComponent } from './components/popup/popup.component';
+import { ServiceLocator } from './services/service-locator';
 
 @NgModule({
   declarations: [NgDateDirective, MinDateDirective, MaxDateDirective, PopupComponent],
@@ -14,6 +15,12 @@ import { PopupComponent } from './components/popup/popup.component';
   exports: [NgDateDirective, MinDateDirective, MaxDateDirective, PopupComponent],
 })
 export class NgDatepickerModule {
+  // https://stackoverflow.com/a/42462579/5011810
+  constructor(private injector: Injector) {
+    ServiceLocator.injector = this.injector;
+    ServiceLocator.onReady.next(true);
+  }
+
   static forRoot(ngDatepickerConf: NgDatepickerConf): ModuleWithProviders<NgDatepickerModule> {
     return {
       ngModule: NgDatepickerModule,

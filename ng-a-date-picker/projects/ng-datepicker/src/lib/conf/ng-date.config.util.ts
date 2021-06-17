@@ -1,3 +1,4 @@
+import { BasicDateFormat } from '@annotation/ng-parse';
 import { DefaultFormattedModelValueConverter } from '../converters/DefaultFormattedModelValueConverter';
 import { DefaultDateModelValueConverter } from '../converters/DefaultDateModelValueConverter';
 import { DefaultNumberModelValueConverter } from '../converters/DefaultNumberModelValueConverter';
@@ -6,7 +7,6 @@ import { NgDatepickerConf } from './ng-datepicker.conf';
 import { HasNgDateConf } from './has-ng-date-conf';
 import {
   ApiNgDateModelValueConverter,
-  BasicDateFormat,
   HtmlValueConfig,
   NgDateConfig,
   StandardModelValueConverters,

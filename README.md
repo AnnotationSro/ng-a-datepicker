@@ -11,8 +11,10 @@
 ## Install
 
 ```sh
+yarn add @annotation/ng-parser ## peer dependency
 yarn add @annotation/ng-datepicker
 ## OR ##
+npm install @annotation/ng-parser --save  ## peer dependency
 npm install @annotation/ng-datepicker --save
 ```
 
