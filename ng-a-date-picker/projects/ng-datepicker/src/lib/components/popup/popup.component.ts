@@ -46,7 +46,8 @@ export class PopupComponent implements OnInit, OnDestroy {
       }
     }
 
-    this._val = new Date(v.getTime());
+    const date = new Date(v.getTime());
+    this._val = this.getClosestAllowedDate(date);
   }
 
   get val() {
@@ -120,11 +121,12 @@ export class PopupComponent implements OnInit, OnDestroy {
   }
 
   private readDays() {
-    if (this.maxDate && +this.val > +this.maxDate) {
-      this.val = this.maxDate;
-    } else if (this.minDate && +this.val < +this.minDate) {
-      this.val = this.minDate;
-    }
+    // replaced by `getClosestAllowedDate`
+    // if (this.maxDate && +this.val > +this.maxDate) {
+    //   this.val = this.maxDate;
+    // } else if (this.minDate && +this.val < +this.minDate) {
+    //   this.val = this.minDate;
+    // }
 
     this.days = utils.createCalendar(this.val.getFullYear(), this.val.getMonth(), this.firstDayOfWeek);
   }
@@ -135,7 +137,7 @@ export class PopupComponent implements OnInit, OnDestroy {
   private onInputTouch = () => {
     document.removeEventListener('pointerdown', this.onFocusOut);
 
-    this.realVal = this.ngDateDirective.readValue().dtValue;
+    this.realVal = this.getClosestAllowedDate(this.ngDateDirective.readValue().dtValue);
     this.val = this.realVal;
 
     this.readDays();
@@ -148,6 +150,18 @@ export class PopupComponent implements OnInit, OnDestroy {
     });
 
     document.addEventListener('pointerdown', this.onFocusOut);
+  };
+
+  private getClosestAllowedDate = (date: Date) => {
+    if (this.isOutOfBounds(date)) {
+      if (this.isLowerThanMinDate(date)) {
+        return new Date(this.minDate.getTime());
+      }
+
+      return new Date(this.maxDate.getTime());
+    }
+
+    return new Date(date.getTime());
   };
 
   private onFocusOut = (e: Event) => {
@@ -164,24 +178,12 @@ export class PopupComponent implements OnInit, OnDestroy {
   /// ///////////////////////////////////
   // Handle user interaction with popup
   /// ///////////////////////////////////
-  setYear($event: number, ngModelYear: NgModel) {
-    if (this.minDate || this.maxDate) {
-      const tmp = new Date(this.val);
-      tmp.setDate(1);
-      tmp.setFullYear($event);
-
-      if (this.isOutOfBounds(tmp)) {
-        const v = formatDate(this.val, 'yyyy', this.locale);
-        ngModelYear.reset(v);
-        return;
-      }
-    }
-
+  setYear($event: number) {
     this.val.setDate(1);
     this.val.setFullYear($event);
 
     // date pipe is 'pure'
-    this.val = new Date(this.val.getTime());
+    this.val = this.getClosestAllowedDate(this.val);
 
     this.readDays();
   }
@@ -212,7 +214,7 @@ export class PopupComponent implements OnInit, OnDestroy {
     this.val.setMonth(this.val.getMonth() + 1);
 
     // date pipe is 'pure'
-    this.val = new Date(this.val.getTime());
+    this.val = this.getClosestAllowedDate(this.val);
 
     this.readDays();
   }
@@ -222,7 +224,7 @@ export class PopupComponent implements OnInit, OnDestroy {
     this.val.setMonth(this.val.getMonth() - 1);
 
     // date pipe is 'pure'
-    this.val = new Date(this.val.getTime());
+    this.val = this.getClosestAllowedDate(this.val);
 
     this.readDays();
   }
@@ -274,7 +276,15 @@ export class PopupComponent implements OnInit, OnDestroy {
   }
 
   isOutOfBounds(date: Date) {
-    return (this.maxDate && +date > +this.maxDate) || (this.minDate && +date < +this.minDate);
+    return this.isLowerThanMinDate(date) || this.isHigherThanMaxDate(date);
+  }
+
+  isHigherThanMaxDate(date: Date) {
+    return this.maxDate && +date > +this.maxDate;
+  }
+
+  isLowerThanMinDate(date: Date) {
+    return this.minDate && +date < +this.minDate;
   }
 
   wouldBeOutOfBounds(isAdd: boolean) {

@@ -17,8 +17,7 @@
         class="ng-date-popup--year"
         *ngIf="config.year"
         [ngModel]="val.getFullYear()"
-        (ngModelChange)="setYear($event, ngModelYear)"
-        #ngModelYear="ngModel"
+        (ngModelChange)="setYear($event)"
       />
     </div>
 
