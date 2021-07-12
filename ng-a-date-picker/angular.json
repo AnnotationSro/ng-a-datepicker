@@ -53,7 +53,6 @@
             "main": "projects/ng-datepicker-showcase/src/main.ts",
             "polyfills": "projects/ng-datepicker-showcase/src/polyfills.ts",
             "tsConfig": "projects/ng-datepicker-showcase/tsconfig.app.json",
-            "aot": true,
             "assets": [
               "projects/ng-datepicker-showcase/src/favicon.ico",
               "projects/ng-datepicker-showcase/src/assets"
@@ -61,7 +60,13 @@
             "styles": [
               "projects/ng-datepicker-showcase/src/styles.scss"
             ],
-            "scripts": []
+            "scripts": [],
+            "vendorChunk": true,
+            "extractLicenses": false,
+            "buildOptimizer": false,
+            "sourceMap": true,
+            "optimization": false,
+            "namedChunks": true
           },
           "configurations": {
             "production": {
@@ -91,7 +96,8 @@
                 }
               ]
             }
-          }
+          },
+          "defaultConfiguration": ""
         },
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
