@@ -153,6 +153,8 @@ export class PopupComponent implements OnInit, OnDestroy {
   };
 
   private getClosestAllowedDate = (date: Date) => {
+    if (typeof date?.getDate !== 'function') return null;
+
     if (this.isOutOfBounds(date)) {
       if (this.isLowerThanMinDate(date)) {
         return new Date(this.minDate.getTime());

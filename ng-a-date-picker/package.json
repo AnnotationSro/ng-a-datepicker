@@ -9,8 +9,7 @@
     "test": "ng test --project=ng-datepicker",
     "lint": "ng lint",
     "packagr": "ng-packagr -p projects/ng-datepicker/ng-package.json",
-    "e2e": "ng e2e",
-    "build-lib": "ng build ng-datepicker --configuration production"
+    "e2e": "ng e2e"
   },
   "private": true,
   "dependencies": {
