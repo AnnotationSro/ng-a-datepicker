@@ -9,10 +9,12 @@ import {
   Inject,
   Input,
   LOCALE_ID,
+  OnChanges,
   OnDestroy,
   OnInit,
   Optional,
   Renderer2,
+  SimpleChanges,
   ViewContainerRef,
 } from '@angular/core';
 import { COMPOSITION_BUFFER_MODE, ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
@@ -56,7 +58,7 @@ function isAndroid(): boolean {
   //   '(compositionend)': '$any(this)._compositionEnd($event.target.value)',
   // },
 })
-export class NgDateDirective implements ControlValueAccessor, HasNgDateConf, NgDateDirectiveApi, OnInit, OnDestroy {
+export class NgDateDirective implements ControlValueAccessor, HasNgDateConf, NgDateDirectiveApi, OnInit, OnDestroy, OnChanges {
   @Input() disabled: boolean;
 
   @Input() disablePopup: boolean = false;
@@ -151,6 +153,23 @@ export class NgDateDirective implements ControlValueAccessor, HasNgDateConf, NgD
 
       if (this.maxDate) {
         this.popupComponent.instance.maxDate = this.maxDate;
+      }
+    }
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (this.popupComponent && changes.disabled?.previousValue !== changes.disabled?.currentValue) {
+      console.warn(changes);
+      if (`${this.disabled}` === 'true') {
+        this.popupComponent.instance.ngOnDestroy();
+        // alternative
+        // this.removeEventListenerFromInput('pointerup', this.popupComponent.instance.onInputTouch);
+      }
+
+      if (`${this.disabled}` === 'false') {
+        this.popupComponent.instance.ngOnInit();
+        // alternative
+        // this.addEventListenerToInput('pointerup', this.popupComponent.instance.onInputTouch);
       }
     }
   }

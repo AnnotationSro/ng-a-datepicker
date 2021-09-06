@@ -1,91 +1,101 @@
 <h1>Showcase</h1>
 
-
 <div>
   //short = +0430, short:GMT = GMT+4, long = GMT+04:30, * extended = +04:30
-  <br/>ISO = {{dt.toISOString()}}
-  <br/>z = {{dt | date: 'y-MM-dd HH:mm:ss  z'}}
-  <br/>zz = {{dt | date: 'y-MM-dd HH:mm:ss  zz'}}
-  <br/>zzz = {{dt | date: 'y-MM-dd HH:mm:ss  zzz'}}
-  <br/>zzzz = {{dt | date: 'y-MM-dd HH:mm:ss  zzzz'}}
+  <br />ISO = {{ dt.toISOString() }} <br />z = {{ dt | date: 'y-MM-dd HH:mm:ss  z' }} <br />zz =
+  {{ dt | date: 'y-MM-dd HH:mm:ss  zz' }} <br />zzz = {{ dt | date: 'y-MM-dd HH:mm:ss  zzz' }} <br />zzzz =
+  {{ dt | date: 'y-MM-dd HH:mm:ss  zzzz' }}
   <hr />
-  <br/>Z = {{dt | date: 'y-MM-dd HH:mm:ss  Z'}}
-  <br/>ZZ = {{dt | date: 'y-MM-dd HH:mm:ss  ZZ'}}
-  <br/>ZZZ = {{dt | date: 'y-MM-dd HH:mm:ss  ZZZ'}}
-  <br/>ZZZZZ = {{dt | date: 'y-MM-dd HH:mm:ss  ZZZZZ'}}
+  <br />Z = {{ dt | date: 'y-MM-dd HH:mm:ss  Z' }} <br />ZZ = {{ dt | date: 'y-MM-dd HH:mm:ss  ZZ' }} <br />ZZZ =
+  {{ dt | date: 'y-MM-dd HH:mm:ss  ZZZ' }} <br />ZZZZZ = {{ dt | date: 'y-MM-dd HH:mm:ss  ZZZZZ' }}
   <hr />
-  <br/>zzzz = {{dt | date: 'y-MM-dd HH:mm:ss  zzzz'}}
-  <br/>ZZZZ = {{dt | date: 'y-MM-dd HH:mm:ss  ZZZZ': '-03:30'}}
-  <br/>ZZZZ = {{dt | date: 'y-MM-dd HH:mm:ss O' : '-03:30'}}
-
+  <br />zzzz = {{ dt | date: 'y-MM-dd HH:mm:ss  zzzz' }} <br />ZZZZ = {{ dt | date: 'y-MM-dd HH:mm:ss  ZZZZ':'-03:30' }}
+  <br />ZZZZ = {{ dt | date: 'y-MM-dd HH:mm:ss O':'-03:30' }}
 </div>
 
 <h2>Custom conf in component (+ mindate validation</h2>
 <pre>
   currentDateTime1 = new Date();
   ngDateConf2: DirectiveDateConfig =
-  {{ngDateConf | json}}
+  {{ ngDateConf | json }}
 </pre>
-<input type="text" [(ngModel)]="currentDateTime" [ngDate]="ngDateConf" #ngm1="ngModel"
-       (change)="log($event)" (ngModelChange)="logM($event)" minDate="2020-01-01T00:00"/>
+<input
+  type="text"
+  [(ngModel)]="currentDateTime"
+  [ngDate]="ngDateConf"
+  #ngm1="ngModel"
+  [disabled]="disabled"
+  (change)="log($event)"
+  (ngModelChange)="logM($event)"
+  minDate="2020-01-01T00:00"
+/>
 
-<br>
-Value 1 = {{currentDateTime}}
-
-<br>
-pristine = {{ngm1.control.pristine}}<br>
-dirty = {{ngm1.control.dirty}}<br>
-touched = {{ngm1.control.touched}}<br>
-valid = {{ngm1.control.valid}}<br>
-errors = {{ngm1.control.errors | json}}<br>
+<div><button (click)="disabled = !disabled">toggleDisabled</button> - disabled={{ disabled }}</div>
 
 <br />
-<hr>
+Value 1 = {{ currentDateTime }}
 
+<br />
+pristine = {{ ngm1.control.pristine }}<br />
+dirty = {{ ngm1.control.dirty }}<br />
+touched = {{ ngm1.control.touched }}<br />
+valid = {{ ngm1.control.valid }}<br />
+errors = {{ ngm1.control.errors | json }}<br />
+
+<br />
+<hr />
 
 <h2>Time only</h2>
 <pre>
   currentDateTime2 = new Date();
   ngDateConf2: DirectiveDateConfig =
-  {{ngDateConf2 | json}}
+  {{ ngDateConf2 | json }}
 </pre>
-<input type="text" [(ngModel)]="currentDateTime2" [ngDate]="ngDateConf2" #ngm2="ngModel"
-       (change)="log($event)" (ngModelChange)="logM($event)"/>
-
-<br>
-Value 2 = {{currentDateTime2}}
-<br>
-pristine = {{ngm2.control.pristine}}<br>
-dirty = {{ngm2.control.dirty}}<br>
-touched = {{ngm2.control.touched}}<br>
-valid = {{ngm2.control.valid}}<br>
-errors = {{ngm2.control.errors}}<br>
+<input
+  type="text"
+  [(ngModel)]="currentDateTime2"
+  [ngDate]="ngDateConf2"
+  #ngm2="ngModel"
+  (change)="log($event)"
+  (ngModelChange)="logM($event)"
+/>
 
 <br />
-<hr>
+Value 2 = {{ currentDateTime2 }}
+<br />
+pristine = {{ ngm2.control.pristine }}<br />
+dirty = {{ ngm2.control.dirty }}<br />
+touched = {{ ngm2.control.touched }}<br />
+valid = {{ ngm2.control.valid }}<br />
+errors = {{ ngm2.control.errors }}<br />
 
-
+<br />
+<hr />
 
 <h2>Default conf (from AppModule)</h2>
 <pre>
   currentDateTime3 = new Date();
   ngDateConf3: DirectiveDateConfig = undefined
 </pre>
-<input type="text" [(ngModel)]="currentDateTime3" #ngm3="ngModel" ngDate="shortDate"
-       (change)="log($event)" (ngModelChange)="logM($event)"/>
+<input
+  type="text"
+  [(ngModel)]="currentDateTime3"
+  #ngm3="ngModel"
+  ngDate="shortDate"
+  (change)="log($event)"
+  (ngModelChange)="logM($event)"
+/>
 <!--<input type="text" [(ngModel)]="currentDateTime3" #ngm3="ngModel" [ngDate]="{firstValueConverter: 'date'}"-->
 <!--       (change)="log($event)" (ngModelChange)="logM($event)"/>-->
 
-<br>
-Value 3 = {{currentDateTime3 }}
-<br>
-pristine = {{ngm3.control.pristine}}<br>
-dirty = {{ngm3.control.dirty}}<br>
-touched = {{ngm3.control.touched}}<br>
-valid = {{ngm3.control.valid}}<br>
-errors = {{ngm3.control.errors}}<br>
-
-
+<br />
+Value 3 = {{ currentDateTime3 }}
+<br />
+pristine = {{ ngm3.control.pristine }}<br />
+dirty = {{ ngm3.control.dirty }}<br />
+touched = {{ ngm3.control.touched }}<br />
+valid = {{ ngm3.control.valid }}<br />
+errors = {{ ngm3.control.errors }}<br />
 
 <!--<hr />-->
 <!--Priklady pouzitia:-->
@@ -119,4 +129,3 @@ errors = {{ngm3.control.errors}}<br>
 <!--  </div>-->
 <!--  <small>Neotvara sa popup (vobec)</small >-->
 <!--</div>-->
-

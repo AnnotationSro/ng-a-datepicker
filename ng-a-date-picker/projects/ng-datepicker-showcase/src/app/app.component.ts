@@ -25,6 +25,7 @@ export class AppComponent {
   };
 
   currentDateTime3 = new Date();
+  disabled = false;
 
   log($event: Event) {
     // console.log('change');
