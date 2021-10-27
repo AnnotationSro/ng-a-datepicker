@@ -1,4 +1,16 @@
-$border-color: #ced4da;
+$text-light: #ffffff !default;
+$text-lighter: #d8d8d8 !default;
+$text-dark: #212529 !default;
+
+$bg-light: #ffffff !default;
+$bg-active: #52b4f6 !default;
+
+$border-radius: 5px !default;
+$border-color: #ced4da !default;
+$border-color-active: #9fd6fa !default;
+$border-color-shadow: #3facf5 !default;
+
+
 
 .ng-date-popup {
   position: absolute;
@@ -10,9 +22,9 @@ $border-color: #ced4da;
   transform: translateY(100%);
   padding: 10px;
 
-  background: white;
+  background: $bg-light;
   border: 2px solid $border-color;
-  border-radius: 5px;
+  border-radius: $border-radius;
 
   width: 300px;
 
@@ -35,17 +47,17 @@ $border-color: #ced4da;
 
 .ng-date-popup--prev,
 .ng-date-popup--next {
-  color: #52b4f6;
+  color: $bg-active;
   display: inline-block;
   text-decoration: none;
   cursor: pointer;
   background-color: transparent;
   border: 2px solid transparent;
-  border-radius: 5px;
+  border-radius: $border-radius;
 }
 .ng-date-popup--prev[disabled],
 .ng-date-popup--next[disabled] {
-  color: #d8d8d8;
+  color: $text-lighter;
   cursor: default;
 }
 
@@ -65,15 +77,15 @@ $border-color: #ced4da;
   flex-grow: 1;
 
   border: 2px solid $border-color;
-  border-radius: 5px;
+  border-radius: $border-radius;
   padding: 4px 12px;
 
   &:focus {
-    color: #212529;
-    background-color: #fff;
-    border-color: #9fd6fa;
+    color: $text-dark;
+    background-color: $bg-light;
+    border-color: $border-color-active;
     outline: 0;
-    box-shadow: 0 0 0 0.25rem rgba(63, 172, 245, 0.25);
+    box-shadow: 0 0 0 0.25rem rgba($border-color-shadow, 0.25);
   }
 }
 
@@ -111,17 +123,17 @@ $border-color: #ced4da;
 }
 
 .ng-date-popup--date-weekend {
-  background: rgba(#52b4f6, 0.15);
+  background: rgba($bg-active, 0.15);
 }
 
 .ng-date-popup--date-disabled {
   background: rgba($border-color, 0.25);
-  color: #212529;
+  color: $text-dark;
 }
 
 .ng-date-popup--date-active {
-  background: #52b4f6;
-  color: white;
+  background: $bg-active;
+  color: $text-light;
 }
 
 .ng-date-popup--relative-wrapper {

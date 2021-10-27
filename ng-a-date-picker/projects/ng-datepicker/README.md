@@ -3,7 +3,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](#)
 
 > Angular date picker and parser
->
+> 
 > *this project is currently a work in progress*
 
 ### 🏠 [Homepage](https://github.com/AnnotationSro/ng-a-datepicker)
@@ -26,7 +26,7 @@ yarn start
 npm run start
 ```
 
-## Styles
+## Styles 
 You can import stylesheet and change variables
 ```scss
 $text-light: #ffffff; // !default
