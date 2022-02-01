@@ -9,5 +9,5 @@
   "assets": [
     "./ng-datepicker.scss",
     "./README.md"
-  ],
+  ]
 }
