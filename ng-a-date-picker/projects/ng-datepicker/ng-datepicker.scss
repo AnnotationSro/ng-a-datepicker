@@ -116,6 +116,7 @@ $border-color-shadow: #3facf5 !default;
   flex-basis: calc(100% / 7);
   text-align: center;
   border: 1px solid $border-color;
+  box-sizing: border-box;
 }
 
 .ng-date-popup--date-day:not(.ng-date-popup--date-disabled ) {

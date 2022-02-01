@@ -1,17 +1,17 @@
 {
   "name": "@annotation/ng-datepicker",
-  "version": "0.3.0-alpha",
+  "version": "0.4.0-alpha",
   "description": "Angular datepicker - work in progress",
   "scripts": {
     "release": "dotenv release-it"
   },
   "peerDependencies": {
-    "@angular/common": "^12.1.1",
-    "@angular/core": "^12.1.1",
-    "@angular/forms": "^12.1.1",
-    "@angular/localize": "^12.1.1",
-    "rxjs": "^6.6.3",
-    "@annotation/ng-parse": "^1.1.0"
+    "@angular/common": "^13.2.0",
+    "@angular/core": "^13.2.0",
+    "@angular/forms": "^13.2.0",
+    "@angular/localize": "^13.2.0",
+    "rxjs": "^6.6.6",
+    "@annotation/ng-parse": "^1.2.0"
   },
   "repository": {
     "type": "git",

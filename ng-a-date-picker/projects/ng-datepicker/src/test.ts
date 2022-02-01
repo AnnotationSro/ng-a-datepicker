@@ -26,7 +26,9 @@ declare const require: {
 };
 
 // First, initialize the Angular testing environment.
-getTestBed().initTestEnvironment(BrowserDynamicTestingModule, platformBrowserDynamicTesting());
+getTestBed().initTestEnvironment(BrowserDynamicTestingModule, platformBrowserDynamicTesting(), {
+    teardown: { destroyAfterEach: false }
+});
 
 // // Add this line to register a locale (german in this case).
 registerLocaleData(localeEn, localeEnExtra);
