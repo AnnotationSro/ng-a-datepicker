@@ -147,6 +147,5 @@
         }
       }
     }
-  },
-  "defaultProject": "ng-datepicker"
+  }
 }
