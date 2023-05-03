@@ -20,7 +20,8 @@
   "author": "Pavol Slaný <pavol.slany@annotation.sk> (https://github.com/slany/)",
   "contributors": [
     "Martin Filo <martin.filo@annotation.sk> (https://github.com/Chiff/)",
-    "Igor Kvasnička <igor.kvasnicka@annotation.sk (https://github.com/IgorKvasn)>"
+    "Igor Kvasnička <igor.kvasnicka@annotation.sk (https://github.com/IgorKvasn)>",
+    "Dinh Nguyen Tien <dinh@annotation.sk (https://github.com/Mr-SvaRoq)>"
   ],
   "license": "MIT",
   "dependencies": {
