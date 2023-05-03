@@ -320,10 +320,10 @@
   dependencies:
     tslib "^2.3.0"
 
-"@annotation/ng-parse@^2.0.2":
-  version "2.0.2"
-  resolved "https://registry.npmjs.org/@annotation/ng-parse/-/ng-parse-2.0.2.tgz"
-  integrity sha512-33lON12wV88o09TYkawZMztTnOG/K3EdSqLwwEzRXEVmelhT0jAOF0rTnSoBwHN1eu483xhFxwyw0zUgCN1pnw==
+"@annotation/ng-parse@^2.0.3":
+  version "2.0.3"
+  resolved "https://registry.yarnpkg.com/@annotation/ng-parse/-/ng-parse-2.0.3.tgz#8e517e787df48e0fc4f0c1b45ed2827a13edb83f"
+  integrity sha512-HumqsOBcias0x061sp6c6GqBh8Gez3R6DrkBONMzpf7DuhN2NmkFYiSZO82yo+VYjGj7koWd0qele8795gkFYA==
   dependencies:
     tslib "^2.2.0"
 
