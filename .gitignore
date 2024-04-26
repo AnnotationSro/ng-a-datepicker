@@ -22,3 +22,4 @@
 # System Files
 .DS_Store
 Thumbs.db
+/ng-a-date-picker/.nx/

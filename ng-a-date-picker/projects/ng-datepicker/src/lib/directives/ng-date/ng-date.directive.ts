@@ -124,7 +124,6 @@ export class NgDateDirective implements ControlValueAccessor, HasNgDateConf, NgD
     private _renderer: Renderer2,
     private elementRef: ElementRef,
     private _viewContainerRef: ViewContainerRef,
-    private _componentFactoryResolver: ComponentFactoryResolver,
     private parse: ParseService,
     @Optional() @Inject(NG_DATEPICKER_CONF) public ngDatepickerConf: NgDatepickerConf,
     @Inject(LOCALE_ID) public locale: string,
@@ -137,8 +136,7 @@ export class NgDateDirective implements ControlValueAccessor, HasNgDateConf, NgD
 
   ngOnInit() {
     if (!this.disablePopup) {
-      const componentFactory = this._componentFactoryResolver.resolveComponentFactory(PopupComponent);
-      this.popupComponent = this._viewContainerRef.createComponent<PopupComponent>(componentFactory);
+      this.popupComponent = this._viewContainerRef.createComponent(PopupComponent);
       this.popupComponent.instance.ngDateDirective = this;
 
       // browser autocomplete would overlay popup
@@ -159,7 +157,6 @@ export class NgDateDirective implements ControlValueAccessor, HasNgDateConf, NgD
 
   ngOnChanges(changes: SimpleChanges) {
     if (this.popupComponent && changes.disabled?.previousValue !== changes.disabled?.currentValue) {
-      console.warn(changes);
       if (`${this.disabled}` === 'true') {
         this.popupComponent.instance.ngOnDestroy();
         // alternative
@@ -259,7 +256,7 @@ export class NgDateDirective implements ControlValueAccessor, HasNgDateConf, NgD
     this.ngValue = parsedDate.ngValue;
 
     if (!this.dtValue) {
-      this.writeValue('');
+      this.writeValue(null);
       this.onChange(this.ngValue); // ngValue should be null
       return;
     }
