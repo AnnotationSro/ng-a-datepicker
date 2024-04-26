@@ -1,7 +1,7 @@
 {
   "name": "@annotation/ng-datepicker",
-  "version": "0.5.2",
-  "description": "Angular datepicker - work in progress",
+  "version": "1.0.0",
+  "description": "Angular datepicker",
   "scripts": {
     "release": "dotenv release-it"
   },
