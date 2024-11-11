@@ -46,12 +46,15 @@
       "prefix": "app",
       "architect": {
         "build": {
-          "builder": "@angular-devkit/build-angular:browser",
+          "builder": "@angular-devkit/build-angular:application",
           "options": {
-            "outputPath": "dist/ng-datepicker-showcase",
+            "outputPath": {
+              "base": "dist/ng-datepicker-showcase"
+            },
             "index": "projects/ng-datepicker-showcase/src/index.html",
-            "main": "projects/ng-datepicker-showcase/src/main.ts",
-            "polyfills": "projects/ng-datepicker-showcase/src/polyfills.ts",
+            "polyfills": [
+              "projects/ng-datepicker-showcase/src/polyfills.ts"
+            ],
             "tsConfig": "projects/ng-datepicker-showcase/tsconfig.app.json",
             "assets": [
               "projects/ng-datepicker-showcase/src/favicon.ico",
@@ -61,12 +64,11 @@
               "projects/ng-datepicker-showcase/src/styles.scss"
             ],
             "scripts": [],
-            "vendorChunk": true,
             "extractLicenses": false,
-            "buildOptimizer": false,
             "sourceMap": true,
             "optimization": false,
-            "namedChunks": true
+            "namedChunks": true,
+            "browser": "projects/ng-datepicker-showcase/src/main.ts"
           },
           "configurations": {
             "production": {
@@ -81,8 +83,6 @@
               "sourceMap": false,
               "namedChunks": false,
               "extractLicenses": true,
-              "vendorChunk": false,
-              "buildOptimizer": true,
               "budgets": [
                 {
                   "type": "initial",
