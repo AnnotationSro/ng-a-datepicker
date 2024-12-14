@@ -1,11 +1,13 @@
 import { Component, ElementRef, Input, OnDestroy, OnInit, ViewEncapsulation } from '@angular/core';
-import { formatDate, FormStyle, getLocaleDayNames, getLocaleFirstDayOfWeek, TranslationWidth, WeekDay } from '@angular/common';
+import {formatDate} from '@angular/common';
 import { NgModel } from '@angular/forms';
 import { BasicDateFormat, DateType } from '@annotation/ng-parse';
 import { NgDateDirectiveApi } from '../../directives/ng-date/ng-date.directive.api';
 import { NgDateConfigUtil } from '../../conf/ng-date.config.util';
 import { HtmlValueConfig } from '../../model/ng-date-public.model';
 import { ParseService } from '../../services/parse.service';
+import {WeekDay} from "../../ng-datepicker.module";
+import {getWeekStartByLocale} from 'weekstart';
 
 @Component({
   selector: 'ng-date-popup',
@@ -86,11 +88,17 @@ export class PopupComponent implements OnInit, OnDestroy {
     // TODO - mfilo - 27.01.2021 - presunut na lepsie miesto (onInit) :)
     this.configureCalendarContent(conf);
 
-    this.firstDayOfWeek = getLocaleFirstDayOfWeek(this.locale);
+    this.firstDayOfWeek = getWeekStartByLocale(this.locale); // 0 - Sunday, 1 - Monday, 2 - Tuesday, 3 - Wednesday, 4 - Thursday, 5 - Friday, 6 - Saturday
 
-    this.localizedDays = JSON.parse(JSON.stringify(getLocaleDayNames(this.locale, FormStyle.Standalone, TranslationWidth.Short)));
+    this.localizedDays = JSON.parse(JSON.stringify(this.daysForLocale(this.locale)));
+
     const tmp = this.localizedDays.splice(0, this.firstDayOfWeek);
     this.localizedDays = this.localizedDays.concat(tmp);
+  }
+
+  daysForLocale(localeName = 'en-US') {
+    const format = new Intl.DateTimeFormat(localeName, { weekday: 'short' });
+    return Array.from({length: 7}, (_, i) => format.format(new Date(`2023-01-${i + 1}`)));
   }
 
   // TODO - mfilo - 27.01.2021 - WIP!!!
@@ -335,7 +343,7 @@ const utils = {
     const firstDayOfMonth = utils.getDayOfWeek(new Date(year, month, 1), firstDayOfWeek) || 7;
     const lastDayOfMonth = 6 - utils.getDayOfWeek(new Date(year, month, currMonthDays), firstDayOfWeek) || 7;
 
-    const nexyYearNumber = month === 11 ? year - 1 : year;
+    const nextYearNumber = month === 11 ? year + 1 : year;
     const nextMonthNumber = (month + 1 + 12) % 12;
 
     const prevYearNumber = month === 0 ? year - 1 : year;
@@ -357,7 +365,7 @@ const utils = {
     }
 
     for (let k = 1; k <= lastDayOfMonth; k++) {
-      const date = new Date(nexyYearNumber, nextMonthNumber, k);
+      const date = new Date(nextYearNumber, nextMonthNumber, k);
       const dayOfWeek = utils.getDayOfWeek(date, firstDayOfWeek);
       days.push({ day: k, currentMonth: false, date, dayOfWeek });
     }

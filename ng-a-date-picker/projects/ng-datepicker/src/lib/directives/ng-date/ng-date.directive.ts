@@ -1,6 +1,5 @@
 import { formatDate, ɵgetDOM as getDOM } from '@angular/common';
 import {
-  ComponentFactoryResolver,
   ComponentRef,
   Directive,
   ElementRef,
