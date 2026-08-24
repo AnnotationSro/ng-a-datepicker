@@ -137,6 +137,11 @@ $border-color-shadow: #3facf5 !default;
   color: $text-light;
 }
 
+.ng-date-popup--date-focused {
+  outline: 2px solid $border-color-shadow;
+  outline-offset: -1px;
+}
+
 .ng-date-popup--relative-wrapper {
   position: relative;
 }

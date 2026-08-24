@@ -25,6 +25,7 @@ export class PopupComponent implements OnInit, OnDestroy {
   @Input() public timeStep: number = 1;
   @Input() public showActionButtons: boolean = false;
   @Input() public appendTo: string;
+  @Input() public popupId: string;
 
   @Input() public maxDate: Date;
   @Input() public minDate: Date;
@@ -36,6 +37,8 @@ export class PopupComponent implements OnInit, OnDestroy {
 
   public appendedLeft: number;
   public appendedTop: number;
+
+  public focusedDate: Date;
 
   private pendingCommit = false;
 
@@ -71,6 +74,7 @@ export class PopupComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.localizeComponent();
     this.ngDateDirective.addEventListenerToInput('pointerup', this.onInputTouch);
+    this.ngDateDirective.addEventListenerToInput('keydown', this.onInputKeydown);
 
     if (this.appendTo) {
       const targetEl = document.querySelector(this.appendTo);
@@ -82,6 +86,7 @@ export class PopupComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.ngDateDirective.removeEventListenerFromInput('pointerup', this.onInputTouch);
+    this.ngDateDirective.removeEventListenerFromInput('keydown', this.onInputKeydown);
     this.removeAppendedListeners();
   }
 
@@ -169,9 +174,12 @@ export class PopupComponent implements OnInit, OnDestroy {
     this.pendingCommit = false;
     this.realVal = this.getClosestAllowedDate(this.ngDateDirective.readValue().dtValue);
     this.val = this.realVal;
+    this.focusedDate = this.realVal || this._today;
 
     this.readDays();
     this.isOpen = true;
+    this.ngDateDirective.setAriaExpanded(true);
+    this.updateActiveDescendant();
 
     if (this.appendTo) {
       setTimeout(() => {
@@ -213,9 +221,20 @@ export class PopupComponent implements OnInit, OnDestroy {
 
   private closePopupInternal(): void {
     this.isOpen = false;
+    this.ngDateDirective.setAriaExpanded(false);
+    this.ngDateDirective.setActiveDescendant(null);
     if (this.appendTo) {
       this.removeAppendedListeners();
     }
+  }
+
+  private updateActiveDescendant(): void {
+    if (!this.focusedDate || !this.popupId) {
+      this.ngDateDirective.setActiveDescendant(null);
+      return;
+    }
+
+    this.ngDateDirective.setActiveDescendant(`${this.popupId}-day-${utils.dayCellId(this.focusedDate)}`);
   }
 
   private getClosestAllowedDate = (date: Date) => {
@@ -437,6 +456,102 @@ export class PopupComponent implements OnInit, OnDestroy {
     return this.realVal.toLocaleDateString() === date.toLocaleDateString();
   }
 
+  isFocused(date: Date): boolean {
+    return !!this.focusedDate && this.focusedDate.toLocaleDateString() === date.toLocaleDateString();
+  }
+
+  private onInputKeydown = (e: KeyboardEvent) => {
+    if (!this.isOpen) {
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        this.onInputTouch();
+      }
+      return;
+    }
+
+    switch (e.key) {
+      case 'Escape':
+        e.preventDefault();
+        if (this.showActionButtons && this.pendingCommit) {
+          this.closePopup();
+        } else {
+          this.closePopupInternal();
+        }
+        break;
+      case 'ArrowLeft':
+        if (this.config.date) {
+          e.preventDefault();
+          this.moveFocusedDate(-1);
+        }
+        break;
+      case 'ArrowRight':
+        if (this.config.date) {
+          e.preventDefault();
+          this.moveFocusedDate(1);
+        }
+        break;
+      case 'ArrowUp':
+        if (this.config.date) {
+          e.preventDefault();
+          this.moveFocusedDate(-7);
+        }
+        break;
+      case 'ArrowDown':
+        if (this.config.date) {
+          e.preventDefault();
+          this.moveFocusedDate(7);
+        }
+        break;
+      case 'PageUp':
+        if (this.config.date && !this.wouldBeOutOfBounds(false)) {
+          e.preventDefault();
+          this.removeMonth();
+          this.clampFocusedDateIntoView();
+        }
+        break;
+      case 'PageDown':
+        if (this.config.date && !this.wouldBeOutOfBounds(true)) {
+          e.preventDefault();
+          this.addMonth();
+          this.clampFocusedDateIntoView();
+        }
+        break;
+      case 'Enter':
+      case ' ':
+        if (this.config.date && !this.isOutOfBounds(this.focusedDate)) {
+          e.preventDefault();
+          this.setDate(new Date(this.focusedDate));
+        }
+        break;
+    }
+  };
+
+  private moveFocusedDate(deltaDays: number): void {
+    const candidate = new Date(this.focusedDate);
+    candidate.setDate(candidate.getDate() + deltaDays);
+
+    if (this.isOutOfBounds(candidate)) return;
+
+    this.focusedDate = candidate;
+
+    if (candidate.getMonth() !== this.val.getMonth() || candidate.getFullYear() !== this.val.getFullYear()) {
+      this.val.setDate(1);
+      this.val.setFullYear(candidate.getFullYear());
+      this.val.setMonth(candidate.getMonth());
+      this.readDays();
+    }
+
+    this.updateActiveDescendant();
+  }
+
+  private clampFocusedDateIntoView(): void {
+    const lastDayOfMonth = new Date(this.val.getFullYear(), this.val.getMonth() + 1, 0).getDate();
+    const day = Math.min(this.focusedDate.getDate(), lastDayOfMonth);
+
+    this.focusedDate = new Date(this.val.getFullYear(), this.val.getMonth(), day);
+    this.updateActiveDescendant();
+  }
+
   isOutOfBounds(date: Date) {
     return this.isLowerThanMinDate(date) || this.isHigherThanMaxDate(date);
   }
@@ -543,6 +658,10 @@ const utils = {
 
   getDayOfWeek: (date: Date, firstDayOfWeek: WeekDay): number => {
     return (date.getDay() - firstDayOfWeek + 7) % 7;
+  },
+
+  dayCellId: (date: Date): number => {
+    return new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
   },
 };
 

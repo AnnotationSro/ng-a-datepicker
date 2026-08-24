@@ -4,6 +4,8 @@
     [class.ng-date-popup--appended]="appendTo"
     [style.left.px]="appendTo ? appendedLeft : null"
     [style.top.px]="appendTo ? appendedTop : null"
+    role="dialog"
+    aria-label="Choose date"
     *ngIf="isOpen"
   >
     <div class="ng-date-popup--header">
@@ -32,14 +34,20 @@
         <div *ngFor="let day of localizedDays">{{ day }}</div>
       </div>
 
-      <div class="ng-date-popup--date-row">
+      <div class="ng-date-popup--date-row" role="grid">
         <ng-container *ngFor="let day of days; let i = index">
           <div
+            [id]="popupId + '-day-' + day.date.getTime()"
             class="ng-date-popup--date-day"
+            role="gridcell"
+            [attr.aria-selected]="compareDate(day.date)"
+            [attr.aria-disabled]="isOutOfBounds(day.date)"
+            [attr.aria-label]="day.date | date: 'fullDate'"
             [ngClass]="{
               'ng-date-popup--date-weekend': !day.currentMonth,
               'ng-date-popup--date-disabled': isOutOfBounds(day.date),
-              'ng-date-popup--date-active': compareDate(day.date)
+              'ng-date-popup--date-active': compareDate(day.date),
+              'ng-date-popup--date-focused': isFocused(day.date)
             }"
             (click)="!isOutOfBounds(day.date) && setDate(day.date)"
           >

@@ -67,6 +67,9 @@ export class NgDateDirective implements ControlValueAccessor, HasNgDateConf, NgD
   @Input() showActionButtons: boolean = false;
   @Input() appendTo: string;
 
+  private static idCounter = 0;
+  private popupId = `ng-date-popup-${NgDateDirective.idCounter++}`;
+
   private _minDate: any;
   @Input() set minDate(val: any) {
     this._minDate = val;
@@ -147,6 +150,12 @@ export class NgDateDirective implements ControlValueAccessor, HasNgDateConf, NgD
       this.popupComponent.instance.timeStep = this.timeStep;
       this.popupComponent.instance.showActionButtons = this.showActionButtons;
       this.popupComponent.instance.appendTo = this.appendTo;
+      this.popupComponent.instance.popupId = this.popupId;
+
+      this._renderer.setAttribute(this.elementRef.nativeElement, 'aria-haspopup', 'dialog');
+      this._renderer.setAttribute(this.elementRef.nativeElement, 'aria-controls', this.popupId);
+      this._renderer.setAttribute(this.elementRef.nativeElement, 'aria-expanded', 'false');
+      this._renderer.setAttribute(this.popupComponent.location.nativeElement, 'id', this.popupId);
 
       if (this.minDate) {
         this.popupComponent.instance.minDate = this.minDate;
@@ -206,6 +215,18 @@ export class NgDateDirective implements ControlValueAccessor, HasNgDateConf, NgD
 
   getInputRect(): DOMRect {
     return (this.elementRef.nativeElement as HTMLElement).getBoundingClientRect();
+  }
+
+  setAriaExpanded(expanded: boolean): void {
+    this._renderer.setAttribute(this.elementRef.nativeElement, 'aria-expanded', String(expanded));
+  }
+
+  setActiveDescendant(id: string | null): void {
+    if (id) {
+      this._renderer.setAttribute(this.elementRef.nativeElement, 'aria-activedescendant', id);
+    } else {
+      this._renderer.removeAttribute(this.elementRef.nativeElement, 'aria-activedescendant');
+    }
   }
 
   // registration for ControlValueAccessor
