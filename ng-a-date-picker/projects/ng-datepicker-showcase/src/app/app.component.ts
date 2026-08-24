@@ -27,6 +27,36 @@ export class AppComponent {
   currentDateTime3 = new Date();
   disabled = false;
 
+  currentDateTime4 = new Date();
+  ngDateConfSeconds: NgDateConfig = {
+    displayFormat: 'dd.MM.yyyy HH:mm:ss',
+    modelConverter: 'string-iso-datetime',
+  };
+
+  currentDateTime5 = new Date();
+  ngDateConf12h: NgDateConfig = {
+    displayFormat: 'dd.MM.yyyy hh:mm a',
+    modelConverter: 'string-iso-datetime',
+  };
+
+  currentDateTime6 = new Date();
+  ngDateConfActionButtons: NgDateConfig = {
+    displayFormat: 'dd.MM.yyyy HH:mm',
+    modelConverter: 'string-iso-datetime',
+  };
+
+  currentDateTime7 = new Date();
+  ngDateConfAppendTo: NgDateConfig = {
+    displayFormat: 'dd.MM.yyyy HH:mm',
+    modelConverter: 'string-iso-datetime',
+  };
+
+  currentDateTime8: Date | null = new Date();
+  ngDateConfClearable: NgDateConfig = {
+    displayFormat: 'dd.MM.yyyy',
+    modelConverter: 'string-iso-date',
+  };
+
   log($event: Event) {
     // console.log('change');
     // console.log($event);

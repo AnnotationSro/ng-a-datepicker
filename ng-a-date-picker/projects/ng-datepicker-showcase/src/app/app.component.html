@@ -1,131 +1,187 @@
-<h1>Showcase</h1>
+<div class="showcase">
+  <header class="showcase__header">
+    <h1>ng-datepicker Showcase</h1>
+    <p class="showcase__subtitle">Live examples of the <code>[ngDate]</code> directive and its configuration options.</p>
+  </header>
 
-<div>
-  //short = +0430, short:GMT = GMT+4, long = GMT+04:30, * extended = +04:30
-  <br />ISO = {{ dt.toISOString() }} <br />z = {{ dt | date: 'y-MM-dd HH:mm:ss  z' }} <br />zz =
-  {{ dt | date: 'y-MM-dd HH:mm:ss  zz' }} <br />zzz = {{ dt | date: 'y-MM-dd HH:mm:ss  zzz' }} <br />zzzz =
-  {{ dt | date: 'y-MM-dd HH:mm:ss  zzzz' }}
-  <hr />
-  <br />Z = {{ dt | date: 'y-MM-dd HH:mm:ss  Z' }} <br />ZZ = {{ dt | date: 'y-MM-dd HH:mm:ss  ZZ' }} <br />ZZZ =
-  {{ dt | date: 'y-MM-dd HH:mm:ss  ZZZ' }} <br />ZZZZZ = {{ dt | date: 'y-MM-dd HH:mm:ss  ZZZZZ' }}
-  <hr />
-  <br />zzzz = {{ dt | date: 'y-MM-dd HH:mm:ss  zzzz' }} <br />ZZZZ = {{ dt | date: 'y-MM-dd HH:mm:ss  ZZZZ':'-03:30' }}
-  <br />ZZZZ = {{ dt | date: 'y-MM-dd HH:mm:ss O':'-03:30' }}
+  <section class="card">
+    <h2 class="card__title">Format reference</h2>
+    <div class="format-grid">
+      <div class="format-grid__col">
+        <div class="format-row"><span class="format-row__label">ISO</span><span class="format-row__value">{{ dt.toISOString() }}</span></div>
+        <div class="format-row"><span class="format-row__label">z</span><span class="format-row__value">{{ dt | date: 'y-MM-dd HH:mm:ss  z' }}</span></div>
+        <div class="format-row"><span class="format-row__label">zz</span><span class="format-row__value">{{ dt | date: 'y-MM-dd HH:mm:ss  zz' }}</span></div>
+        <div class="format-row"><span class="format-row__label">zzz</span><span class="format-row__value">{{ dt | date: 'y-MM-dd HH:mm:ss  zzz' }}</span></div>
+        <div class="format-row"><span class="format-row__label">zzzz</span><span class="format-row__value">{{ dt | date: 'y-MM-dd HH:mm:ss  zzzz' }}</span></div>
+      </div>
+      <div class="format-grid__col">
+        <div class="format-row"><span class="format-row__label">Z</span><span class="format-row__value">{{ dt | date: 'y-MM-dd HH:mm:ss  Z' }}</span></div>
+        <div class="format-row"><span class="format-row__label">ZZ</span><span class="format-row__value">{{ dt | date: 'y-MM-dd HH:mm:ss  ZZ' }}</span></div>
+        <div class="format-row"><span class="format-row__label">ZZZ</span><span class="format-row__value">{{ dt | date: 'y-MM-dd HH:mm:ss  ZZZ' }}</span></div>
+        <div class="format-row"><span class="format-row__label">ZZZZZ</span><span class="format-row__value">{{ dt | date: 'y-MM-dd HH:mm:ss  ZZZZZ' }}</span></div>
+      </div>
+      <div class="format-grid__col">
+        <div class="format-row"><span class="format-row__label">ZZZZ (-03:30)</span><span class="format-row__value">{{ dt | date: 'y-MM-dd HH:mm:ss  ZZZZ':'-03:30' }}</span></div>
+        <div class="format-row"><span class="format-row__label">O (-03:30)</span><span class="format-row__value">{{ dt | date: 'y-MM-dd HH:mm:ss O':'-03:30' }}</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2 class="card__title">Custom conf in component <span class="card__badge">minDate validation</span></h2>
+    <pre class="card__code">ngDateConf: NgDateConfig = {{ ngDateConf | json }}</pre>
+
+    <div class="example">
+      <input
+        type="text"
+        class="example__input"
+        [(ngModel)]="currentDateTime"
+        [ngDate]="ngDateConf"
+        #ngm1="ngModel"
+        [disabled]="disabled"
+        (change)="log($event)"
+        (ngModelChange)="logM($event)"
+        minDate="2020-01-01T00:00"
+      />
+      <button type="button" class="example__toggle-btn" (click)="disabled = !disabled">
+        {{ disabled ? 'Enable' : 'Disable' }}
+      </button>
+    </div>
+
+    <div class="example__status">
+      <span class="status-pill">value: {{ currentDateTime }}</span>
+      <span class="status-pill" [class.status-pill--on]="ngm1.control.pristine">pristine</span>
+      <span class="status-pill" [class.status-pill--on]="ngm1.control.dirty">dirty</span>
+      <span class="status-pill" [class.status-pill--on]="ngm1.control.touched">touched</span>
+      <span class="status-pill" [class.status-pill--on]="ngm1.control.valid">valid</span>
+      <span class="status-pill" *ngIf="ngm1.control.errors">errors: {{ ngm1.control.errors | json }}</span>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2 class="card__title">Time only</h2>
+    <pre class="card__code">ngDateConf2: NgDateConfig = {{ ngDateConf2 | json }}</pre>
+
+    <div class="example">
+      <input
+        type="text"
+        class="example__input"
+        [(ngModel)]="currentDateTime2"
+        [ngDate]="ngDateConf2"
+        #ngm2="ngModel"
+        (change)="log($event)"
+        (ngModelChange)="logM($event)"
+      />
+    </div>
+
+    <div class="example__status">
+      <span class="status-pill">value: {{ currentDateTime2 }}</span>
+      <span class="status-pill" [class.status-pill--on]="ngm2.control.valid">valid</span>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2 class="card__title">Default conf <span class="card__badge">from AppModule</span></h2>
+    <pre class="card__code">ngDate="shortDate"</pre>
+
+    <div class="example">
+      <input
+        type="text"
+        class="example__input"
+        [(ngModel)]="currentDateTime3"
+        #ngm3="ngModel"
+        ngDate="shortDate"
+        (change)="log($event)"
+        (ngModelChange)="logM($event)"
+      />
+    </div>
+
+    <div class="example__status">
+      <span class="status-pill">value: {{ currentDateTime3 }}</span>
+      <span class="status-pill" [class.status-pill--on]="ngm3.control.valid">valid</span>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2 class="card__title">Seconds support</h2>
+    <pre class="card__code">displayFormat: 'dd.MM.yyyy HH:mm:ss'</pre>
+
+    <div class="example">
+      <input type="text" class="example__input" [(ngModel)]="currentDateTime4" [ngDate]="ngDateConfSeconds" #ngm4="ngModel" />
+    </div>
+
+    <div class="example__status">
+      <span class="status-pill">value: {{ currentDateTime4 }}</span>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2 class="card__title">12h / AM-PM</h2>
+    <pre class="card__code">displayFormat: 'dd.MM.yyyy hh:mm a'</pre>
+
+    <div class="example">
+      <input type="text" class="example__input" [(ngModel)]="currentDateTime5" [ngDate]="ngDateConf12h" #ngm5="ngModel" />
+    </div>
+
+    <div class="example__status">
+      <span class="status-pill">value: {{ currentDateTime5 }}</span>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2 class="card__title">Apply / Close action buttons</h2>
+    <pre class="card__code">[showActionButtons]="true"</pre>
+
+    <div class="example">
+      <input
+        type="text"
+        class="example__input"
+        [(ngModel)]="currentDateTime6"
+        [ngDate]="ngDateConfActionButtons"
+        [showActionButtons]="true"
+        #ngm6="ngModel"
+      />
+    </div>
+
+    <div class="example__status">
+      <span class="status-pill">value: {{ currentDateTime6 }}</span>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2 class="card__title">appendTo <span class="card__badge">escapes overflow: hidden</span></h2>
+    <pre class="card__code">appendTo="body"</pre>
+
+    <div class="example">
+      <div class="clip-demo">
+        <input type="text" class="example__input" [(ngModel)]="currentDateTime7" [ngDate]="ngDateConfAppendTo" appendTo="body" #ngm7="ngModel" />
+      </div>
+    </div>
+
+    <div class="example__status">
+      <span class="status-pill">value: {{ currentDateTime7 }}</span>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2 class="card__title">Keyboard nav / a11y <span class="card__badge">Arrow keys, Enter, Escape, PageUp/Down</span></h2>
+    <pre class="card__code">Focus the input, press ArrowDown to open, arrow keys to move, Enter to pick, Escape to close</pre>
+
+    <div class="example">
+      <input type="text" class="example__input" [(ngModel)]="currentDateTime" [ngDate]="ngDateConf" #ngm8="ngModel" />
+    </div>
+  </section>
+
+  <section class="card">
+    <h2 class="card__title">Clearable <span class="card__badge">[clearable]="true"</span></h2>
+    <pre class="card__code">displayFormat: 'dd.MM.yyyy', clearable: true</pre>
+
+    <div class="example">
+      <input type="text" class="example__input" [(ngModel)]="currentDateTime8" [ngDate]="ngDateConfClearable" [clearable]="true" #ngm9="ngModel" />
+    </div>
+
+    <div class="example__status">
+      <span class="status-pill">value: {{ currentDateTime8 }}</span>
+    </div>
+  </section>
 </div>
-
-<h2>Custom conf in component (+ mindate validation</h2>
-<pre>
-  currentDateTime1 = new Date();
-  ngDateConf2: DirectiveDateConfig =
-  {{ ngDateConf | json }}
-</pre>
-<input
-  type="text"
-  [(ngModel)]="currentDateTime"
-  [ngDate]="ngDateConf"
-  #ngm1="ngModel"
-  [disabled]="disabled"
-  (change)="log($event)"
-  (ngModelChange)="logM($event)"
-  minDate="2020-01-01T00:00"
-/>
-
-<div><button (click)="disabled = !disabled">toggleDisabled</button> - disabled={{ disabled }}</div>
-
-<br />
-Value 1 = {{ currentDateTime }}
-
-<br />
-pristine = {{ ngm1.control.pristine }}<br />
-dirty = {{ ngm1.control.dirty }}<br />
-touched = {{ ngm1.control.touched }}<br />
-valid = {{ ngm1.control.valid }}<br />
-errors = {{ ngm1.control.errors | json }}<br />
-
-<br />
-<hr />
-
-<h2>Time only</h2>
-<pre>
-  currentDateTime2 = new Date();
-  ngDateConf2: DirectiveDateConfig =
-  {{ ngDateConf2 | json }}
-</pre>
-<input
-  type="text"
-  [(ngModel)]="currentDateTime2"
-  [ngDate]="ngDateConf2"
-  #ngm2="ngModel"
-  (change)="log($event)"
-  (ngModelChange)="logM($event)"
-/>
-
-<br />
-Value 2 = {{ currentDateTime2 }}
-<br />
-pristine = {{ ngm2.control.pristine }}<br />
-dirty = {{ ngm2.control.dirty }}<br />
-touched = {{ ngm2.control.touched }}<br />
-valid = {{ ngm2.control.valid }}<br />
-errors = {{ ngm2.control.errors }}<br />
-
-<br />
-<hr />
-
-<h2>Default conf (from AppModule)</h2>
-<pre>
-  currentDateTime3 = new Date();
-  ngDateConf3: DirectiveDateConfig = undefined
-</pre>
-<input
-  type="text"
-  [(ngModel)]="currentDateTime3"
-  #ngm3="ngModel"
-  ngDate="shortDate"
-  (change)="log($event)"
-  (ngModelChange)="logM($event)"
-/>
-<!--<input type="text" [(ngModel)]="currentDateTime3" #ngm3="ngModel" [ngDate]="{firstValueConverter: 'date'}"-->
-<!--       (change)="log($event)" (ngModelChange)="logM($event)"/>-->
-
-<br />
-Value 3 = {{ currentDateTime3 }}
-<br />
-pristine = {{ ngm3.control.pristine }}<br />
-dirty = {{ ngm3.control.dirty }}<br />
-touched = {{ ngm3.control.touched }}<br />
-valid = {{ ngm3.control.valid }}<br />
-errors = {{ ngm3.control.errors }}<br />
-
-<!--<hr />-->
-<!--Priklady pouzitia:-->
-<!--<div>-->
-<!--  Iba INPUT: <input type="text" [(ngModel)]="currentDateTime" [ngDate]="ngDateConf" />-->
-<!--  <small>Ked pride, pusti sa automaticky popup a ked odide, zatvorit sa</small>-->
-<!--</div>-->
-<!--<div>-->
-<!--  Iba INPUT: <input type="text" [(ngModel)]="currentDateTime" [ngDate]="ngDateConf" ngDatePopup="false" />-->
-<!--  <small>Neotvara sa popup (vobec)</small>-->
-<!--</div>-->
-
-<!--<div>-->
-<!--  INLINE COMPONENT:-->
-<!--  1)-->
-<!--  <input type="text" [(ngModel)]="currentDateTime" [ngDate]="ngDateConf" #date="ngDate" />-->
-
-<!--  2)-->
-<!--  <ng-date-component [(ngModel)]="currentDateTime" render="inline|button"></ng-date-component>-->
-<!--</div>-->
-
-<!--<div>-->
-<!--  INPUT s BUTTONOM:-->
-<!--&lt;!&ndash;  <div><input type="text" [(ngModel)]="currentDateTime" [ngDate]="ngDateConf" ngDatePopup="buttonAfter"  />NIE, lebo toto spravime cez ikonky v pozadi</div>&ndash;&gt;-->
-<!--  <div><input type="text" [(ngModel)]="currentDateTime" [ngDate]="ngDateConf" #date="ngDate" /><button ngDatePopup="date">CLICK</button></div>-->
-<!--  <div ngDateContainer><input type="text" [(ngModel)]="currentDateTime" [ngDate]="ngDateConf" /><button ngDatePopup>CLICK</button></div>-->
-<!--  <div ngDateContainer>-->
-<!--    <input type="text" [(ngModel)]="currentDateTime" [ngDate]="ngDateConf" />-->
-<!--    <input type="text" [(ngModel)]="currentDateTime" [ngDate]="ngTimeConf" />-->
-<!--    <ng-date-component [(ngModel)]="currentDateTime" render="inline|button"></ng-date-component>-->
-<!--  </div>-->
-<!--  <small>Neotvara sa popup (vobec)</small >-->
-<!--</div>-->
