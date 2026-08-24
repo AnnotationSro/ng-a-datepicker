@@ -65,6 +65,7 @@ export class NgDateDirective implements ControlValueAccessor, HasNgDateConf, NgD
   @Input() keepOpen: boolean = false;
   @Input() timeStep: number = 1;
   @Input() showActionButtons: boolean = false;
+  @Input() appendTo: string;
 
   private _minDate: any;
   @Input() set minDate(val: any) {
@@ -145,6 +146,7 @@ export class NgDateDirective implements ControlValueAccessor, HasNgDateConf, NgD
       this.popupComponent.instance.keepOpen = this.keepOpen;
       this.popupComponent.instance.timeStep = this.timeStep;
       this.popupComponent.instance.showActionButtons = this.showActionButtons;
+      this.popupComponent.instance.appendTo = this.appendTo;
 
       if (this.minDate) {
         this.popupComponent.instance.minDate = this.minDate;
@@ -200,6 +202,10 @@ export class NgDateDirective implements ControlValueAccessor, HasNgDateConf, NgD
 
   getInputHeight(): number {
     return (this.elementRef.nativeElement as HTMLElement).getBoundingClientRect().height;
+  }
+
+  getInputRect(): DOMRect {
+    return (this.elementRef.nativeElement as HTMLElement).getBoundingClientRect();
   }
 
   // registration for ControlValueAccessor

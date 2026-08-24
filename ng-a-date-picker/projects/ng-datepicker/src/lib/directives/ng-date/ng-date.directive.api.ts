@@ -24,4 +24,6 @@ export interface NgDateDirectiveApi extends HasNgDateConf {
   ): void;
 
   getInputHeight(): number;
+
+  getInputRect(): DOMRect;
 }

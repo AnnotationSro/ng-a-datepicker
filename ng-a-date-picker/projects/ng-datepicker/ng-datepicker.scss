@@ -202,3 +202,17 @@ $border-color-shadow: #3facf5 !default;
   background-color: $bg-active;
   border-color: $bg-active;
 }
+
+.ng-date-popup--appended {
+  position: fixed;
+  bottom: auto;
+  right: auto;
+  transform: none;
+}
+
+// .position-top has higher specificity (two classes) than .ng-date-popup--appended alone, so its
+// `bottom: 100%` would otherwise win and, combined with the inline `top` we set for the appended
+// case, collapse the popup's auto-height to ~0 (only border+padding, content overflowing outside it).
+.ng-date-popup--appended.position-top {
+  bottom: auto;
+}

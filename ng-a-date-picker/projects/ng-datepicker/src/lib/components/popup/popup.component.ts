@@ -24,6 +24,7 @@ export class PopupComponent implements OnInit, OnDestroy {
   @Input() public keepOpen: boolean = false;
   @Input() public timeStep: number = 1;
   @Input() public showActionButtons: boolean = false;
+  @Input() public appendTo: string;
 
   @Input() public maxDate: Date;
   @Input() public minDate: Date;
@@ -32,6 +33,9 @@ export class PopupComponent implements OnInit, OnDestroy {
   public isOpen = false;
   public days: CalendarDay[];
   public localizedDays: string[];
+
+  public appendedLeft: number;
+  public appendedTop: number;
 
   private pendingCommit = false;
 
@@ -67,10 +71,18 @@ export class PopupComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.localizeComponent();
     this.ngDateDirective.addEventListenerToInput('pointerup', this.onInputTouch);
+
+    if (this.appendTo) {
+      const targetEl = document.querySelector(this.appendTo);
+      if (targetEl) {
+        targetEl.appendChild(this._elementRef.nativeElement);
+      }
+    }
   }
 
   ngOnDestroy() {
     this.ngDateDirective.removeEventListenerFromInput('pointerup', this.onInputTouch);
+    this.removeAppendedListeners();
   }
 
   /// ///////////////////////////////////
@@ -161,14 +173,50 @@ export class PopupComponent implements OnInit, OnDestroy {
     this.readDays();
     this.isOpen = true;
 
-    this.position = (<unknown>'bottom-hidden') as any; // reset position
-    setTimeout(() => {
-      // wait for render
-      this.position = utils.getPosition(this._elementRef.nativeElement, this.ngDateDirective.getInputHeight());
-    });
+    if (this.appendTo) {
+      setTimeout(() => {
+        // wait for render
+        this.recomputeAppendedPosition();
+      });
+      this.addAppendedListeners();
+    } else {
+      this.position = (<unknown>'bottom-hidden') as any; // reset position
+      setTimeout(() => {
+        // wait for render
+        this.position = utils.getPosition(this._elementRef.nativeElement, this.ngDateDirective.getInputHeight());
+      });
+    }
 
     document.addEventListener('pointerdown', this.onFocusOut);
   };
+
+  private recomputeAppendedPosition = () => {
+    const inputRect = this.ngDateDirective.getInputRect();
+    const popupEl: HTMLElement = this._elementRef.nativeElement.querySelector('.ng-date-popup');
+    if (!popupEl) return;
+
+    const { top, left, position } = utils.getAppendedPosition(inputRect, popupEl.offsetHeight);
+    this.appendedTop = top;
+    this.appendedLeft = left;
+    this.position = position;
+  };
+
+  private addAppendedListeners(): void {
+    window.addEventListener('scroll', this.recomputeAppendedPosition, { capture: true, passive: true });
+    window.addEventListener('resize', this.recomputeAppendedPosition, { passive: true });
+  }
+
+  private removeAppendedListeners(): void {
+    window.removeEventListener('scroll', this.recomputeAppendedPosition, { capture: true } as any);
+    window.removeEventListener('resize', this.recomputeAppendedPosition as any);
+  }
+
+  private closePopupInternal(): void {
+    this.isOpen = false;
+    if (this.appendTo) {
+      this.removeAppendedListeners();
+    }
+  }
 
   private getClosestAllowedDate = (date: Date) => {
     if (typeof date?.getDate !== 'function') return null;
@@ -195,7 +243,7 @@ export class PopupComponent implements OnInit, OnDestroy {
     if (this.showActionButtons && this.pendingCommit) {
       this.closePopup();
     } else {
-      this.isOpen = false;
+      this.closePopupInternal();
     }
 
     this.ngDateDirective.onTouched();
@@ -220,14 +268,14 @@ export class PopupComponent implements OnInit, OnDestroy {
       this.val = this.realVal;
       this.pendingCommit = false;
     }
-    this.isOpen = false;
+    this.closePopupInternal();
   }
 
   closePopup(): void {
     this.pendingCommit = false;
     this.realVal = this.getClosestAllowedDate(this.ngDateDirective.readValue().dtValue);
     this.val = this.realVal;
-    this.isOpen = false;
+    this.closePopupInternal();
   }
 
   /// ///////////////////////////////////
@@ -255,7 +303,7 @@ export class PopupComponent implements OnInit, OnDestroy {
     this.commitOrStage();
 
     if (!this.keepOpen && !this.showActionButtons && !(this.config.minutes || this.config.hours !== 'off')) {
-      this.isOpen = false;
+      this.closePopupInternal();
     }
 
     this.readDays();
@@ -436,6 +484,21 @@ const utils = {
     }
 
     return 'bottom';
+  },
+
+  getAppendedPosition: (
+    inputRect: DOMRect,
+    popupHeight: number
+  ): { top: number; left: number; position: 'top' | 'bottom' } => {
+    const SPACE_BETWEEN_ELEMENTS = 5; // px
+    const spaceBelow = document.documentElement.clientHeight - inputRect.bottom;
+    const shouldFlipUp = spaceBelow < popupHeight && inputRect.top > popupHeight;
+
+    return {
+      left: inputRect.left,
+      top: shouldFlipUp ? inputRect.top - popupHeight - SPACE_BETWEEN_ELEMENTS : inputRect.bottom + SPACE_BETWEEN_ELEMENTS,
+      position: shouldFlipUp ? 'top' : 'bottom',
+    };
   },
 
   // months are 0 based!!! (january = 0)
