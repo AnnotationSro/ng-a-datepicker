@@ -145,3 +145,60 @@ $border-color-shadow: #3facf5 !default;
   display: flex;
   align-items: center;
 }
+
+.ng-date-popup--dayperiod {
+  margin-left: 8px;
+  display: flex;
+  border: 2px solid $border-color;
+  border-radius: $border-radius;
+  overflow: hidden;
+}
+
+.ng-date-popup--dayperiod-btn {
+  min-width: 36px;
+  padding: 4px 8px;
+  color: $text-dark;
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+
+  &:hover {
+    background: rgba($bg-active, 0.15);
+  }
+}
+
+.ng-date-popup--dayperiod-btn-active {
+  color: $text-light;
+  background-color: $bg-active;
+
+  &:hover {
+    background-color: $bg-active;
+  }
+}
+
+.ng-date-popup--footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid $border-color;
+}
+
+.ng-date-popup--btn {
+  padding: 4px 12px;
+  border: 2px solid $border-color;
+  border-radius: $border-radius;
+  background-color: transparent;
+  cursor: pointer;
+
+  &:hover {
+    border-color: $border-color-active;
+  }
+}
+
+.ng-date-popup--btn-apply {
+  color: $text-light;
+  background-color: $bg-active;
+  border-color: $bg-active;
+}

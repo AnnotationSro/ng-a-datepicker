@@ -23,6 +23,7 @@ export class PopupComponent implements OnInit, OnDestroy {
 
   @Input() public keepOpen: boolean = false;
   @Input() public timeStep: number = 1;
+  @Input() public showActionButtons: boolean = false;
 
   @Input() public maxDate: Date;
   @Input() public minDate: Date;
@@ -31,6 +32,8 @@ export class PopupComponent implements OnInit, OnDestroy {
   public isOpen = false;
   public days: CalendarDay[];
   public localizedDays: string[];
+
+  private pendingCommit = false;
 
   private firstDayOfWeek: WeekDay;
 
@@ -108,7 +111,8 @@ export class PopupComponent implements OnInit, OnDestroy {
     date: boolean;
     hours: 'off' | '12' | '24';
     minutes: boolean;
-    // seconds: boolean;
+    seconds: boolean;
+    dayPeriod: boolean;
     // ostatne podla CalendarContentType
   };
 
@@ -123,8 +127,14 @@ export class PopupComponent implements OnInit, OnDestroy {
     this.config.year = types.includes(DateType.FullYear);
     this.config.month = types.includes(DateType.Month);
     this.config.date = types.includes(DateType.Date);
-    this.config.hours = types.includes(DateType.Hours_24) ? '24' : 'off';
+
+    const has24 = types.includes(DateType.Hours_24);
+    const has12 = types.includes(DateType.Hours_12);
+    this.config.hours = has12 ? '12' : has24 ? '24' : 'off';
+
     this.config.minutes = types.includes(DateType.Minutes);
+    this.config.seconds = types.includes(DateType.Seconds);
+    this.config.dayPeriod = this.config.hours === '12';
   }
 
   private readDays() {
@@ -144,6 +154,7 @@ export class PopupComponent implements OnInit, OnDestroy {
   private onInputTouch = () => {
     document.removeEventListener('pointerdown', this.onFocusOut);
 
+    this.pendingCommit = false;
     this.realVal = this.getClosestAllowedDate(this.ngDateDirective.readValue().dtValue);
     this.val = this.realVal;
 
@@ -180,9 +191,44 @@ export class PopupComponent implements OnInit, OnDestroy {
     }
 
     document.removeEventListener('pointerdown', this.onFocusOut);
-    this.isOpen = false;
+
+    if (this.showActionButtons && this.pendingCommit) {
+      this.closePopup();
+    } else {
+      this.isOpen = false;
+    }
+
     this.ngDateDirective.onTouched();
   };
+
+  private commitOrStage(): void {
+    if (this.showActionButtons) {
+      this.pendingCommit = true;
+      // keep calendar highlight / inputs in sync with the staged value even though nothing is committed yet
+      this.realVal = new Date(this.val.getTime());
+    } else {
+      this.ngDateDirective.changeValue(this.val);
+      this.realVal = this.ngDateDirective.readValue().dtValue;
+      this.val = this.realVal;
+    }
+  }
+
+  apply(): void {
+    if (this.pendingCommit) {
+      this.ngDateDirective.changeValue(this.val);
+      this.realVal = this.ngDateDirective.readValue().dtValue;
+      this.val = this.realVal;
+      this.pendingCommit = false;
+    }
+    this.isOpen = false;
+  }
+
+  closePopup(): void {
+    this.pendingCommit = false;
+    this.realVal = this.getClosestAllowedDate(this.ngDateDirective.readValue().dtValue);
+    this.val = this.realVal;
+    this.isOpen = false;
+  }
 
   /// ///////////////////////////////////
   // Handle user interaction with popup
@@ -206,12 +252,9 @@ export class PopupComponent implements OnInit, OnDestroy {
     this.val = new Date($event.getTime());
     this.val.setFullYear($event.getFullYear());
 
-    this.ngDateDirective.changeValue(this.val);
+    this.commitOrStage();
 
-    this.realVal = this.ngDateDirective.readValue().dtValue;
-    this.val = this.realVal;
-
-    if (!this.keepOpen && !(this.config.minutes || this.config.hours !== 'off')) {
+    if (!this.keepOpen && !this.showActionButtons && !(this.config.minutes || this.config.hours !== 'off')) {
       this.isOpen = false;
     }
 
@@ -251,7 +294,7 @@ export class PopupComponent implements OnInit, OnDestroy {
     }
 
     this.val.setHours($event);
-    this.ngDateDirective.changeValue(this.val);
+    this.commitOrStage();
     this.readDays();
   }
 
@@ -272,7 +315,69 @@ export class PopupComponent implements OnInit, OnDestroy {
     }
 
     this.val.setMinutes($event);
-    this.ngDateDirective.changeValue(this.val);
+    this.commitOrStage();
+    this.readDays();
+  }
+
+  setSeconds($event: any, ngModelSecond: NgModel) {
+    if (this.minDate || this.maxDate) {
+      const tmp = new Date(this.val);
+      tmp.setSeconds($event);
+
+      if (this.isOutOfBounds(tmp)) {
+        const v = formatDate(this.val, 'ss', this.locale);
+        ngModelSecond.reset(v);
+        return;
+      }
+    }
+
+    this.val.setSeconds($event);
+    this.commitOrStage();
+    this.readDays();
+  }
+
+  get displayHour(): number {
+    const h24 = this.val.getHours();
+    if (this.config.hours !== '12') return h24;
+    const h12 = h24 % 12;
+    return h12 === 0 ? 12 : h12;
+  }
+
+  get isPm(): boolean {
+    return this.val.getHours() >= 12;
+  }
+
+  setHours12($event: any, ngModelHour: NgModel) {
+    let displayed = parseInt($event, 10);
+    if (displayed === 12) displayed = 0;
+    const newHour24 = this.isPm ? (displayed % 12) + 12 : displayed % 12;
+    this.applyHourChange(newHour24, ngModelHour);
+  }
+
+  setDayPeriod(period: 'AM' | 'PM'): void {
+    const current = this.val.getHours();
+    const isCurrentlyPm = current >= 12;
+
+    if ((period === 'PM') === isCurrentlyPm) return; // already in the requested period
+
+    this.applyHourChange(period === 'PM' ? current + 12 : current - 12);
+  }
+
+  private applyHourChange(newHour24: number, ngModelHour?: NgModel): void {
+    if (this.minDate || this.maxDate) {
+      const tmp = new Date(this.val);
+      tmp.setHours(newHour24);
+
+      if (this.isOutOfBounds(tmp)) {
+        if (ngModelHour) {
+          ngModelHour.reset(`${this.displayHour}`);
+        }
+        return;
+      }
+    }
+
+    this.val.setHours(newHour24);
+    this.commitOrStage();
     this.readDays();
   }
 

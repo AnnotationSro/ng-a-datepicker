@@ -64,6 +64,7 @@ export class NgDateDirective implements ControlValueAccessor, HasNgDateConf, NgD
   @Input() disableSelectOnFocus: boolean = false;
   @Input() keepOpen: boolean = false;
   @Input() timeStep: number = 1;
+  @Input() showActionButtons: boolean = false;
 
   private _minDate: any;
   @Input() set minDate(val: any) {
@@ -143,6 +144,7 @@ export class NgDateDirective implements ControlValueAccessor, HasNgDateConf, NgD
 
       this.popupComponent.instance.keepOpen = this.keepOpen;
       this.popupComponent.instance.timeStep = this.timeStep;
+      this.popupComponent.instance.showActionButtons = this.showActionButtons;
 
       if (this.minDate) {
         this.popupComponent.instance.minDate = this.minDate;

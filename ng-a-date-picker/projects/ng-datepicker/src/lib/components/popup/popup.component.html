@@ -47,19 +47,29 @@
     <!-- TODO - mfilo - 27.01.2021 - toto je iba specialny pripad - datetime... spravit poriadne!!-->
     <hr *ngIf="config.minutes && config.year" />
 
-    <div class="ng-date-popup--time" *ngIf="config.minutes && config.hours">
+    <div class="ng-date-popup--time" *ngIf="config.minutes || config.hours !== 'off' || config.seconds">
       <div class="ng-date-popup--time-row">
-        <!-- TODO - mfilo - 11.02.2021 - AM/PM-->
         <input
           type="number"
           class="form-control"
-          *ngIf="config.hours != 'off'"
+          *ngIf="config.hours === '24'"
           [ngModel]="val.getHours()"
           (ngModelChange)="setHours($event, ngModelHour)"
           #ngModelHour="ngModel"
           maxlength="2"
           min="-24"
           max="24"
+        />
+        <input
+          type="number"
+          class="form-control"
+          *ngIf="config.hours === '12'"
+          [ngModel]="displayHour"
+          (ngModelChange)="setHours12($event, ngModelHour)"
+          #ngModelHour="ngModel"
+          maxlength="2"
+          min="1"
+          max="12"
         />
         &nbsp;:&nbsp;
         <input
@@ -77,7 +87,46 @@
           max="60"
           step="{{ timeStep }}"
         />
+        <ng-container *ngIf="config.seconds">
+          &nbsp;:&nbsp;
+          <input
+            type="number"
+            class="form-control"
+            #secondsInputElement
+            [ngModel]="val.getSeconds().toString().padStart(2, '0')"
+            (click)="secondsInputElement.select()"
+            (blur)="setSeconds(secondsInputElement.value, ngModelSecond)"
+            (change)="setSeconds(secondsInputElement.value, ngModelSecond)"
+            #ngModelSecond="ngModel"
+            maxlength="2"
+            min="0"
+            max="59"
+          />
+        </ng-container>
+        <div class="ng-date-popup--dayperiod" *ngIf="config.dayPeriod">
+          <button
+            type="button"
+            class="ng-date-popup--dayperiod-btn"
+            [class.ng-date-popup--dayperiod-btn-active]="!isPm"
+            (click)="setDayPeriod('AM')"
+          >
+            AM
+          </button>
+          <button
+            type="button"
+            class="ng-date-popup--dayperiod-btn"
+            [class.ng-date-popup--dayperiod-btn-active]="isPm"
+            (click)="setDayPeriod('PM')"
+          >
+            PM
+          </button>
+        </div>
       </div>
+    </div>
+
+    <div class="ng-date-popup--footer" *ngIf="showActionButtons">
+      <button type="button" class="ng-date-popup--btn ng-date-popup--btn-close" (click)="closePopup()">Close</button>
+      <button type="button" class="ng-date-popup--btn ng-date-popup--btn-apply" (click)="apply()">Apply</button>
     </div>
   </div>
 </div>
