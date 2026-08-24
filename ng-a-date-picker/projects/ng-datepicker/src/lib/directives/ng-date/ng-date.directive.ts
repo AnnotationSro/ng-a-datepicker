@@ -66,9 +66,11 @@ export class NgDateDirective implements ControlValueAccessor, HasNgDateConf, NgD
   @Input() timeStep: number = 1;
   @Input() showActionButtons: boolean = false;
   @Input() appendTo: string;
+  @Input() clearable: boolean = false;
 
   private static idCounter = 0;
   private popupId = `ng-date-popup-${NgDateDirective.idCounter++}`;
+  private clearBtnEl: HTMLElement | null = null;
 
   private _minDate: any;
   @Input() set minDate(val: any) {
@@ -165,6 +167,10 @@ export class NgDateDirective implements ControlValueAccessor, HasNgDateConf, NgD
         this.popupComponent.instance.maxDate = this.maxDate;
       }
     }
+
+    if (this.clearable) {
+      this.setupClearButton();
+    }
   }
 
   ngOnChanges(changes: SimpleChanges) {
@@ -229,6 +235,51 @@ export class NgDateDirective implements ControlValueAccessor, HasNgDateConf, NgD
     }
   }
 
+  private setupClearButton(): void {
+    const inputEl = this.elementRef.nativeElement;
+    const parent = this._renderer.parentNode(inputEl);
+    const wrapper = this._renderer.createElement('span');
+    this._renderer.addClass(wrapper, 'ng-date-clear-wrapper');
+    this._renderer.insertBefore(parent, wrapper, inputEl);
+    this._renderer.appendChild(wrapper, inputEl);
+    this._renderer.addClass(inputEl, 'ng-date-clear-input');
+
+    const clearBtn = this._renderer.createElement('button');
+    this._renderer.setAttribute(clearBtn, 'type', 'button');
+    this._renderer.setAttribute(clearBtn, 'aria-label', 'Clear');
+    this._renderer.addClass(clearBtn, 'ng-date-clear-btn');
+    this._renderer.setProperty(clearBtn, 'textContent', '×');
+    this._renderer.listen(clearBtn, 'click', (e: Event) => {
+      e.stopPropagation();
+      this.clearValue();
+    });
+    this._renderer.appendChild(wrapper, clearBtn);
+
+    this.clearBtnEl = clearBtn;
+    this.updateClearButtonVisibility();
+  }
+
+  private updateClearButtonVisibility(): void {
+    if (!this.clearBtnEl) return;
+
+    const hasValue = !!(this.elementRef.nativeElement as HTMLInputElement).value;
+    this._renderer.setStyle(this.clearBtnEl, 'display', hasValue ? '' : 'none');
+  }
+
+  private clearValue(): void {
+    this.writeValue(null);
+    this.dtValue = null;
+    this.ngValue = null;
+    this.onChange(this.ngValue);
+    this.onTouched();
+
+    if (this.popupComponent?.instance) {
+      this.popupComponent.instance.isOpen = false;
+    }
+
+    this.elementRef.nativeElement.focus();
+  }
+
   // registration for ControlValueAccessor
   registerOnChange(fn: (_: any) => void): void {
     this.onChange = fn;
@@ -259,10 +310,20 @@ export class NgDateDirective implements ControlValueAccessor, HasNgDateConf, NgD
     if (this.popupComponent?.instance) {
       this.popupComponent.instance.val = this.readValue().dtValue;
     }
+
+    this.updateClearButtonVisibility();
   }
 
   setDisabledState(isDisabled: boolean): void {
     this._renderer.setProperty(this.elementRef.nativeElement, 'disabled', isDisabled);
+
+    if (this.clearBtnEl) {
+      this._renderer.setProperty(this.clearBtnEl, 'disabled', isDisabled);
+      this._renderer.setStyle(this.clearBtnEl, 'display', isDisabled ? 'none' : '');
+      if (!isDisabled) {
+        this.updateClearButtonVisibility();
+      }
+    }
   }
 
   @HostListener('focus', ['$event.target.value'])

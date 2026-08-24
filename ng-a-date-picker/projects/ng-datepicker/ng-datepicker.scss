@@ -221,3 +221,30 @@ $border-color-shadow: #3facf5 !default;
 .ng-date-popup--appended.position-top {
   bottom: auto;
 }
+
+.ng-date-clear-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.ng-date-clear-input {
+  padding-right: 28px;
+}
+
+.ng-date-clear-btn {
+  position: absolute;
+  top: 50%;
+  right: 6px;
+  transform: translateY(-50%);
+  border: none;
+  background: transparent;
+  color: $text-lighter;
+  font-size: 16px;
+  line-height: 1;
+  padding: 2px 4px;
+  cursor: pointer;
+
+  &:hover {
+    color: $text-dark;
+  }
+}
