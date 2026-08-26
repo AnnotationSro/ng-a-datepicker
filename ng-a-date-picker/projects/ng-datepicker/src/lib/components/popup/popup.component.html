@@ -1,9 +1,9 @@
 <div class="ng-date-popup--relative-wrapper">
   <div
+    #popupRoot
     class="ng-date-popup position-{{ position }}"
-    [class.ng-date-popup--appended]="appendTo"
-    [style.left.px]="appendTo ? appendedLeft : null"
-    [style.top.px]="appendTo ? appendedTop : null"
+    [style.left.px]="popupLeft"
+    [style.top.px]="popupTop"
     role="dialog"
     aria-label="Choose date"
     *ngIf="isOpen"
