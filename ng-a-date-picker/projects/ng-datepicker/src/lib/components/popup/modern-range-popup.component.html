@@ -1,0 +1,61 @@
+<div class="ng-date-popup--relative-wrapper">
+  <div
+    #popupRoot
+    class="ng-date-popup ng-date-popup--modern-panel position-{{ position }}"
+    [style.left.px]="popupLeft"
+    [style.top.px]="popupTop"
+    role="dialog"
+    aria-label="Choose date range"
+    *ngIf="isOpen"
+  >
+    <div class="ng-date-popup--modern-header">
+      <button (click)="removeMonth()" type="button" class="btn ng-date-popup--modern-nav-btn" [disabled]="wouldBeOutOfBounds(false)">
+        <span class="fas fa-chevron-left"></span>
+      </button>
+
+      <span class="ng-date-popup--modern-month">{{ viewDate | date: 'LLLL y' }}</span>
+
+      <button (click)="addMonth()" type="button" class="btn ng-date-popup--modern-nav-btn" [disabled]="wouldBeOutOfBounds(true)">
+        <span class="fas fa-chevron-right"></span>
+      </button>
+    </div>
+
+    <div class="ng-date-popup--modern-weekdays">
+      <span *ngFor="let day of localizedDays">{{ day }}</span>
+    </div>
+
+    <div class="ng-date-popup--modern-grid" role="grid">
+      <div
+        *ngFor="let day of days"
+        class="ng-date-popup--modern-day-cell"
+        [class.ng-date-popup--modern-day-cell-in-range]="isInRange(day.date)"
+        [class.ng-date-popup--modern-day-cell-range-start]="isRangeEdgeStart(day.date)"
+        [class.ng-date-popup--modern-day-cell-range-end]="isRangeEdgeEnd(day.date)"
+      >
+        <button
+          type="button"
+          [id]="popupId + '-day-' + day.date.getTime()"
+          class="btn ng-date-popup--modern-day"
+          [class.btn-primary]="isRangeStart(day.date) || isRangeEnd(day.date)"
+          [class.ng-date-popup--date-active]="isRangeStart(day.date) || isRangeEnd(day.date)"
+          [class.ng-date-popup--modern-day-outside]="!day.currentMonth"
+          [class.ng-date-popup--modern-day-focused]="isFocused(day.date)"
+          role="gridcell"
+          [attr.aria-selected]="isRangeStart(day.date) || isRangeEnd(day.date)"
+          [attr.aria-disabled]="isOutOfBounds(day.date)"
+          [attr.aria-label]="day.date | date: 'fullDate'"
+          [disabled]="isOutOfBounds(day.date)"
+          (click)="setDate(day.date)"
+          (mouseenter)="onDayHover(day.date)"
+        >
+          {{ day.day }}
+        </button>
+      </div>
+    </div>
+
+    <div class="ng-date-popup--modern-footer" *ngIf="showActionButtons">
+      <button type="button" class="btn btn-sm ng-date-popup--modern-btn-secondary" (click)="closePopup()">Close</button>
+      <button type="button" class="btn btn-sm ng-date-popup--modern-btn-primary" (click)="apply()">Apply</button>
+    </div>
+  </div>
+</div>
