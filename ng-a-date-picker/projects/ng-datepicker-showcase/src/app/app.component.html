@@ -59,7 +59,7 @@
   </section>
 
   <section class="card">
-    <h2 class="card__title">Time only</h2>
+    <h2 class="card__title">Time only <span class="card__badge">action buttons always on</span></h2>
     <pre class="card__code">ngDateConf2: NgDateConfig = {{ ngDateConf2 | json }}</pre>
 
     <div class="example">
@@ -182,6 +182,87 @@
 
     <div class="example__status">
       <span class="status-pill">value: {{ currentDateTime8 }}</span>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2 class="card__title">Modern theme <span class="card__badge">[modernTheme]="true" - requires Bootstrap CSS</span></h2>
+    <pre class="card__code">displayFormat: 'dd.MM.yyyy hh:mm a', modernTheme: true, showActionButtons: true</pre>
+
+    <div class="example">
+      <input
+        type="text"
+        class="example__input"
+        [(ngModel)]="currentDateTime9"
+        [ngDate]="ngDateConfModern"
+        [modernTheme]="true"
+        [showActionButtons]="true"
+        [clearable]="true"
+        #ngm10="ngModel"
+      />
+    </div>
+
+    <div class="example__status">
+      <span class="status-pill">value: {{ currentDateTime9 }}</span>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2 class="card__title">Min / max date <span class="card__badge">[minDate] + [maxDate]</span></h2>
+    <pre class="card__code">minDate: {{ minDate10 | date: 'dd.MM.yyyy' }}, maxDate: {{ maxDate10 | date: 'dd.MM.yyyy' }}</pre>
+
+    <div class="example">
+      <input
+        type="text"
+        class="example__input"
+        [(ngModel)]="currentDateTime10"
+        [ngDate]="ngDateConfMinMax"
+        [minDate]="minDate10"
+        [maxDate]="maxDate10"
+        #ngm13="ngModel"
+      />
+    </div>
+
+    <div class="example__status">
+      <span class="status-pill">value: {{ currentDateTime10 }}</span>
+      <span class="status-pill" [class.status-pill--on]="ngm13.control.valid">valid</span>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2 class="card__title">Date range <span class="card__badge">[ngDateRange]</span></h2>
+    <pre class="card__code">displayFormat: 'dd.MM.yyyy'</pre>
+
+    <div class="example">
+      <input type="text" class="example__input" [(ngModel)]="dateRange" [ngDateRange]="ngDateRangeConf" [clearable]="true" #ngm11="ngModel" />
+    </div>
+
+    <div class="example__status">
+      <span class="status-pill">start: {{ dateRange?.start }}</span>
+      <span class="status-pill">end: {{ dateRange?.end }}</span>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2 class="card__title">Date range - modern theme <span class="card__badge">[ngDateRange] + [modernTheme]="true"</span></h2>
+    <pre class="card__code">displayFormat: 'dd.MM.yyyy', modernTheme: true, showActionButtons: true</pre>
+
+    <div class="example">
+      <input
+        type="text"
+        class="example__input"
+        [(ngModel)]="dateRangeModern"
+        [ngDateRange]="ngDateRangeConf"
+        [modernTheme]="true"
+        [showActionButtons]="true"
+        [clearable]="true"
+        #ngm12="ngModel"
+      />
+    </div>
+
+    <div class="example__status">
+      <span class="status-pill">start: {{ dateRangeModern?.start }}</span>
+      <span class="status-pill">end: {{ dateRangeModern?.end }}</span>
     </div>
   </section>
 </div>

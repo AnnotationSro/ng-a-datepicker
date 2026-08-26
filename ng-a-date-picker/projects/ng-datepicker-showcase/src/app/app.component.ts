@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { NgDateConfig } from '../../../ng-datepicker/src/lib/model/ng-date-public.model';
+import { DateRange } from '../../../ng-datepicker/src/lib/model/ng-date-range-public.model';
 
 @Component({
   selector: 'a-date-app-root',
@@ -55,6 +56,26 @@ export class AppComponent {
   ngDateConfClearable: NgDateConfig = {
     displayFormat: 'dd.MM.yyyy',
     modelConverter: 'string-iso-date',
+  };
+
+  currentDateTime9 = new Date();
+  ngDateConfModern: NgDateConfig = {
+    displayFormat: 'dd.MM.yyyy hh:mm a',
+    modelConverter: 'string-iso-datetime',
+  };
+
+  currentDateTime10 = new Date();
+  ngDateConfMinMax: NgDateConfig = {
+    displayFormat: 'dd.MM.yyyy HH:mm',
+    modelConverter: 'string-iso-datetime',
+  };
+  minDate10 = new Date(new Date().setDate(new Date().getDate() - 7));
+  maxDate10 = new Date(new Date().setDate(new Date().getDate() + 7));
+
+  dateRange: DateRange = { start: null, end: null };
+  dateRangeModern: DateRange = { start: null, end: null };
+  ngDateRangeConf: NgDateConfig = {
+    displayFormat: 'dd.MM.yyyy',
   };
 
   log($event: Event) {
