@@ -56,6 +56,11 @@ $border-color-shadow: #3facf5; // !default
 * Website: www.annotation.sk
 * Github: [@Chiff](https://github.com/Chiff)
 
+## How to make a release
+
+1. in root project run `yarn libProd`
+2. `cd` to `dist/ng-datepicker` and run `npm publish`
+
 ## Show your support
 
 Give a ⭐️ if this project helped you!
