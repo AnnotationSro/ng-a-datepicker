@@ -232,7 +232,7 @@ export class NgDateDirective implements ControlValueAccessor, HasNgDateConf, NgD
     this._renderer.setAttribute(this.elementRef.nativeElement, 'aria-expanded', String(expanded));
   }
 
-  setActiveDescendant(id: string | null): void {
+  setAriaActiveDescendant(id: string | null): void {
     if (id) {
       this._renderer.setAttribute(this.elementRef.nativeElement, 'aria-activedescendant', id);
     } else {
@@ -256,9 +256,7 @@ export class NgDateDirective implements ControlValueAccessor, HasNgDateConf, NgD
     this.onChange(this.ngValue);
     this.onTouched();
 
-    if (this.popupComponent?.instance) {
-      this.popupComponent.instance.isOpen = false;
-    }
+    this.popupComponent?.instance?.closePopup();
 
     this.elementRef.nativeElement.focus();
   }

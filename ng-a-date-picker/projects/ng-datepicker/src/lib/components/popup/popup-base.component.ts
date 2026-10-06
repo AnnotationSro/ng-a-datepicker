@@ -81,6 +81,7 @@ export abstract class PopupBaseComponent extends PositionedPopupBase<NgDateDirec
   ngOnDestroy() {
     this.ngDateDirective.removeEventListenerFromInput('pointerup', this.onInputTouch);
     this.ngDateDirective.removeEventListenerFromInput('keydown', this.onInputKeydown);
+    document.removeEventListener('pointerdown', this.onFocusOut);
     super.ngOnDestroy();
   }
 
@@ -180,7 +181,7 @@ export abstract class PopupBaseComponent extends PositionedPopupBase<NgDateDirec
     this.readDays();
     this.isOpen = true;
     this.ngDateDirective.setAriaExpanded(true);
-    this.updateActiveDescendant();
+    this.updateAriaActiveDescendant();
 
     // Position is always computed from the input's real getBoundingClientRect() rather than
     // relying on `.ng-date-popup--relative-wrapper` being laid out at the input's location by CSS
@@ -200,17 +201,19 @@ export abstract class PopupBaseComponent extends PositionedPopupBase<NgDateDirec
   private closePopupInternal(): void {
     this.isOpen = false;
     this.ngDateDirective.setAriaExpanded(false);
-    this.ngDateDirective.setActiveDescendant(null);
+    this.ngDateDirective.setAriaActiveDescendant(null);
     this.removePositionListeners();
+    document.removeEventListener('pointerdown', this.onFocusOut);
+    this.ngDateDirective.onTouched();
   }
 
-  private updateActiveDescendant(): void {
+  private updateAriaActiveDescendant(): void {
     if (!this.focusedDate || !this.popupId) {
-      this.ngDateDirective.setActiveDescendant(null);
+      this.ngDateDirective.setAriaActiveDescendant(null);
       return;
     }
 
-    this.ngDateDirective.setActiveDescendant(`${this.popupId}-day-${calendarUtils.dayCellId(this.focusedDate)}`);
+    this.ngDateDirective.setAriaActiveDescendant(`${this.popupId}-day-${calendarUtils.dayCellId(this.focusedDate)}`);
   }
 
   private getClosestAllowedDate = (date: Date) => {
@@ -233,15 +236,11 @@ export abstract class PopupBaseComponent extends PositionedPopupBase<NgDateDirec
       return;
     }
 
-    document.removeEventListener('pointerdown', this.onFocusOut);
-
     if (this.showActionButtons && this.pendingCommit) {
       this.closePopup();
     } else {
       this.closePopupInternal();
     }
-
-    this.ngDateDirective.onTouched();
   };
 
   private commitOrStage(): void {
@@ -517,7 +516,7 @@ export abstract class PopupBaseComponent extends PositionedPopupBase<NgDateDirec
       this.readDays();
     }
 
-    this.updateActiveDescendant();
+    this.updateAriaActiveDescendant();
   }
 
   private clampFocusedDateIntoView(): void {
@@ -525,7 +524,7 @@ export abstract class PopupBaseComponent extends PositionedPopupBase<NgDateDirec
     const day = Math.min(this.focusedDate.getDate(), lastDayOfMonth);
 
     this.focusedDate = new Date(this.val.getFullYear(), this.val.getMonth(), day);
-    this.updateActiveDescendant();
+    this.updateAriaActiveDescendant();
   }
 
   isOutOfBounds(date: Date) {

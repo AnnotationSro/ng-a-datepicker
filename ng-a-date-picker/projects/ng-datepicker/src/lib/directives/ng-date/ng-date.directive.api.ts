@@ -29,5 +29,5 @@ export interface NgDateDirectiveApi extends HasNgDateConf {
 
   setAriaExpanded(expanded: boolean): void;
 
-  setActiveDescendant(id: string | null): void;
+  setAriaActiveDescendant(id: string | null): void;
 }

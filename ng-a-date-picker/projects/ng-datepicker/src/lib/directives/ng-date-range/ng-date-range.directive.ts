@@ -20,7 +20,7 @@ import { COMPOSITION_BUFFER_MODE, ControlValueAccessor, NG_VALUE_ACCESSOR } from
 import { BasicDateFormat } from '@annotation/ng-parse';
 import { NG_DATEPICKER_CONF } from '../../conf/ng-datepicker.conf.token';
 import { NgDatepickerConf } from '../../conf/ng-datepicker.conf';
-import { NgDateConfig } from '../../model/ng-date-public.model';
+import { HtmlValueConfig, NgDateConfig } from '../../model/ng-date-public.model';
 import { ApiNgDateRangeModelValueConverter, DateRange, StandardRangeModelValueConverters } from '../../model/ng-date-range-public.model';
 import { DefaultDateRangeModelValueConverter } from '../../converters/DefaultDateRangeModelValueConverter';
 import { DefaultFormattedRangeModelValueConverter } from '../../converters/DefaultFormattedRangeModelValueConverter';
@@ -209,7 +209,7 @@ export class NgDateRangeDirective implements ControlValueAccessor, HasNgDateConf
     this._renderer.setAttribute(this.elementRef.nativeElement, 'aria-expanded', String(expanded));
   }
 
-  setActiveDescendant(id: string | null): void {
+  setAriaActiveDescendant(id: string | null): void {
     if (id) {
       this._renderer.setAttribute(this.elementRef.nativeElement, 'aria-activedescendant', id);
     } else {
@@ -233,9 +233,7 @@ export class NgDateRangeDirective implements ControlValueAccessor, HasNgDateConf
     this.onChange(this.ngValue);
     this.onTouched();
 
-    if (this.popupComponent?.instance) {
-      this.popupComponent.instance.isOpen = false;
-    }
+    this.popupComponent?.instance?.closePopup();
 
     this.elementRef.nativeElement.focus();
   }
@@ -353,7 +351,7 @@ export class NgDateRangeDirective implements ControlValueAccessor, HasNgDateConf
 
   private convertHtmlValueToDtValue(htmlValue: string, dtValue: DateRange): DateRange {
     const htmlValueConfig = NgDateConfigUtil.resolveHtmlValueConfig(this);
-    const [startText = '', endText = ''] = this.splitRangeText(htmlValue);
+    const [startText, endText] = this.splitRangeText(htmlValue, htmlValueConfig);
 
     return {
       start: startText ? this.parse.parseDate(startText, htmlValueConfig.displayFormat, htmlValueConfig.locale, dtValue?.start) : null,
@@ -361,17 +359,38 @@ export class NgDateRangeDirective implements ControlValueAccessor, HasNgDateConf
     };
   }
 
-  // `changeValue()` trims the formatted html value before parsing it back (matching the
-  // single-date directive), which can eat the trailing half of `rangeSeparator` when only the
-  // start date has been picked so far (e.g. "01.01.2026 - " -> "01.01.2026 -"). Try the exact
-  // separator first (safest when a displayFormat itself contains e.g. '-'), and only fall back to
-  // the trimmed separator if that didn't split anything.
-  private splitRangeText(htmlValue: string): [string, string] {
-    let parts = htmlValue.split(this.rangeSeparator);
-    if (parts.length < 2) {
-      parts = htmlValue.split(this.rangeSeparator.trim());
+  // The trimmed separator has to be accepted too: `changeValue()` trims the formatted html value
+  // (matching the single-date directive), which eats the separator's whitespace when only one end
+  // has been picked (e.g. "2026-01-01 - " -> "2026-01-01 -"), and users may type it without spaces
+  // (e.g. "1.1.2026-2.1.2026"). But if formatted dates can contain the trimmed separator
+  // (e.g. '-' in 'yyyy-MM-dd'), splitting on it mid-string would cut a date apart, so it is then
+  // only accepted at the edges.
+  private splitRangeText(htmlValue: string, htmlValueConfig: HtmlValueConfig): [string, string] {
+    const text = htmlValue.trim();
+    const trimmedSeparator = this.rangeSeparator.trim();
+
+    let separator = this.rangeSeparator;
+    let separatorIndex = text.indexOf(separator);
+    if (separatorIndex < 0 && trimmedSeparator) {
+      separator = trimmedSeparator;
+      if (!this.isTextInFormattedDate(trimmedSeparator, htmlValueConfig)) {
+        separatorIndex = text.indexOf(trimmedSeparator);
+      } else if (text.endsWith(trimmedSeparator)) {
+        separatorIndex = text.length - trimmedSeparator.length;
+      } else if (text.startsWith(trimmedSeparator)) {
+        separatorIndex = 0;
+      }
     }
-    return [(parts[0] || '').trim(), (parts[1] || '').trim()];
+
+    if (separatorIndex < 0) {
+      return [text, ''];
+    }
+    return [text.slice(0, separatorIndex).trim(), text.slice(separatorIndex + separator.length).trim()];
+  }
+
+  private isTextInFormattedDate(text: string, htmlValueConfig: HtmlValueConfig): boolean {
+    const sampleDate = new Date(2000, 11, 31, 23, 59, 59);
+    return formatDate(sampleDate, htmlValueConfig.displayFormat, htmlValueConfig.locale, htmlValueConfig.timezone).includes(text);
   }
 
   private convertDtValueToNgModel(dtValue: DateRange, ngValue: any): any {

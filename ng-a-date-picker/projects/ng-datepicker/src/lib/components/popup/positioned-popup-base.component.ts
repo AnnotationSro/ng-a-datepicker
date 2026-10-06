@@ -24,7 +24,7 @@ export interface PopupHostApi {
 
   setAriaExpanded(expanded: boolean): void;
 
-  setActiveDescendant(id: string | null): void;
+  setAriaActiveDescendant(id: string | null): void;
 
   onTouched: () => void;
 }
