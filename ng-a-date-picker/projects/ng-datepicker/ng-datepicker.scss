@@ -11,15 +11,15 @@ $border-color-active: #9fd6fa !default;
 $border-color-shadow: #3facf5 !default;
 
 
-
 .ng-date-popup {
-  position: absolute;
+  // Position is always computed in JS from the input's real getBoundingClientRect() (see
+  // PopupBaseComponent.recomputePosition) and applied via inline `top`/`left` styles - this is
+  // what lets the popup line up with the input regardless of the input's surrounding layout
+  // (block, flex, grid, inline, ...), rather than relying on `.ng-date-popup--relative-wrapper`
+  // being positioned there by CSS alone, which only worked by coincidence in plain block layouts.
+  position: fixed;
   z-index: 99;
 
-  left: 0;
-  right: 0;
-  bottom: -5px;
-  transform: translateY(100%);
   padding: 10px;
 
   background: $bg-light;
@@ -33,16 +33,12 @@ $border-color-shadow: #3facf5 !default;
   &.position-bottom-hidden {
     opacity: 0;
   }
-
-  &.position-top {
-    top: initial;
-    bottom: 100%
-  }
 }
 
 .ng-date-popup--header {
   display: flex;
   align-items: center;
+  justify-content: space-between;
 }
 
 .ng-date-popup--prev,
@@ -55,6 +51,7 @@ $border-color-shadow: #3facf5 !default;
   border: 2px solid transparent;
   border-radius: $border-radius;
 }
+
 .ng-date-popup--prev[disabled],
 .ng-date-popup--next[disabled] {
   color: $text-lighter;
@@ -129,7 +126,7 @@ $border-color-shadow: #3facf5 !default;
 
 .ng-date-popup--date-disabled {
   background: rgba($border-color, 0.25);
-  color: $text-dark;
+  color: rgba($text-dark, .5);
 }
 
 .ng-date-popup--date-active {
@@ -137,11 +134,530 @@ $border-color-shadow: #3facf5 !default;
   color: $text-light;
 }
 
+.ng-date-popup--date-focused {
+  outline: 2px solid $border-color-shadow;
+  outline-offset: -1px;
+}
+
+.ng-date-popup--date-range-in-range {
+  background: rgba($bg-active, 0.2);
+
+  &.ng-date-popup--date-active {
+    background: $bg-active;
+  }
+}
+
 .ng-date-popup--relative-wrapper {
-  position: relative;
+  // The popup itself is always `position: fixed` with JS-computed coordinates, so this wrapper no
+  // longer needs to be a positioned ancestor - `display: contents` keeps it from generating any
+  // box of its own, so it can't be mistaken for a layout item (e.g. a flex/grid child) next to the
+  // input it's a sibling of.
+  display: contents;
 }
 
 .ng-date-popup--time-row {
   display: flex;
   align-items: center;
+}
+
+.ng-date-popup--dayperiod {
+  margin-left: 8px;
+  display: flex;
+  border: 2px solid $border-color;
+  border-radius: $border-radius;
+}
+
+.ng-date-popup--dayperiod-btn {
+  min-width: 36px;
+  padding: 4px 8px;
+  color: $text-dark;
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+
+  &:hover {
+    background: rgba($bg-active, 0.15);
+  }
+}
+
+.ng-date-popup--dayperiod-btn-active {
+  color: $text-light;
+  background-color: $bg-active;
+
+  &:hover {
+    background-color: $bg-active;
+  }
+}
+
+.ng-date-popup--footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid $border-color;
+}
+
+.ng-date-popup--btn {
+  padding: 4px 12px;
+  border: 2px solid $border-color;
+  border-radius: $border-radius;
+  background-color: transparent;
+  cursor: pointer;
+
+  &:hover {
+    border-color: $border-color-active;
+  }
+}
+
+.ng-date-popup--btn-apply {
+  color: $text-light;
+  background-color: $bg-active;
+  border-color: $bg-active;
+}
+
+.ng-date-clear-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.ng-date-clear-input.ng-date-clear-input {
+  padding-right: 28px;
+}
+
+.ng-date-clear-btn {
+  position: absolute;
+  top: 50%;
+  right: .75rem;
+  transform: translateY(-50%);
+  border: none;
+  background: transparent;
+  color: $text-lighter;
+  font-size: 16px;
+  line-height: 1;
+  padding: 2px 4px;
+  cursor: pointer;
+
+  &:hover {
+    color: $text-dark;
+  }
+}
+
+.ng-date-clear-btn--modern {
+  position: absolute;
+  top: 50%;
+  right: 1rem;
+  font-size: .5rem;
+  transform: translateY(-50%);
+}
+
+// ---------------------------------------------------------------------------
+// modernTheme
+// ---------------------------------------------------------------------------
+
+$ng-a-datepicker-modern-primary: #0d6efd !default;
+$ng-a-datepicker-modern-secondary: #8b90a0 !default;
+$ng-a-datepicker-modern-text: #212529 !default;
+$ng-a-datepicker-modern-text-muted: #6c7280 !default;
+$ng-a-datepicker-modern-border-color: #ced4da !default;
+
+$ng-a-datepicker-modern-panel-width: 20rem !default;
+$ng-a-datepicker-modern-panel-bg: #ffffff !default;
+$ng-a-datepicker-modern-panel-radius: 1rem !default;
+$ng-a-datepicker-modern-panel-shadow: 0 .5rem 1.5rem rgba(15, 15, 20, 0.1) !default;
+
+$ng-a-datepicker-modern-panel-border-width: 1px !default;
+$ng-a-datepicker-modern-panel-border-style: solid !default;
+$ng-a-datepicker-modern-panel-border-color: $ng-a-datepicker-modern-border-color !default;
+
+$ng-a-datepicker-modern-panel-spacing: 1rem !default;
+
+$ng-a-datepicker-modern-calendar-grid-gap: 2px 0 !default;
+
+$ng-a-datepicker-modern-day-size: 2.55rem !default;
+$ng-a-datepicker-modern-day-radius: 50% !default;
+
+$ng-a-datepicker-modern-nav-size: 2rem !default;
+$ng-a-datepicker-modern-nav-border-radius: 50% !default;
+
+$ng-a-datepicker-modern-time-input-width: 3.25rem !default;
+
+$ng-a-datepicker-modern-weekday-font-size: .675rem !default;
+$ng-a-datepicker-modern-weekday-font-weight: 700 !default;
+$ng-a-datepicker-modern-weekday-text-color: $ng-a-datepicker-modern-text-muted !default;
+
+$ng-a-datepicker-modern-day-font-size: .775rem !default;
+$ng-a-datepicker-modern-day-font-weight: 500 !default;
+$ng-a-datepicker-modern-day-text-color: $ng-a-datepicker-modern-text !default;
+
+$ng-a-datepicker-modern-month-font-size: .975rem !default;
+$ng-a-datepicker-modern-month-font-weight: 800 !default;
+$ng-a-datepicker-modern-month-text-color: $ng-a-datepicker-modern-text !default;
+
+$ng-a-datepicker-modern-hover-bg: rgba($ng-a-datepicker-modern-primary, 0.05) !default;
+$ng-a-datepicker-modern-hover-text-color: $ng-a-datepicker-modern-text !default;
+$ng-a-datepicker-modern-active-bg: $ng-a-datepicker-modern-primary !default;
+$ng-a-datepicker-modern-active-bg-hover: mix(#000, $ng-a-datepicker-modern-active-bg, 10%) !default;
+$ng-a-datepicker-modern-active-text-color: #ffffff !default;
+$ng-a-datepicker-modern-active-font-weight: 800 !default;
+
+$ng-a-datepicker-modern-disabled-bg: $ng-a-datepicker-modern-text-muted !default;
+$ng-a-datepicker-modern-disabled-bg-opacity: .4 !default;
+
+$ng-a-datepicker-modern-focus-border-width: 1px !default;
+$ng-a-datepicker-modern-focus-border-style: solid !default;
+$ng-a-datepicker-modern-focus-border-color: $ng-a-datepicker-modern-primary !default;
+$ng-a-datepicker-modern-focus-bg: transparent !default;
+$ng-a-datepicker-modern-focus-text-color: inherit !default;
+
+$ng-a-datepicker-separator-width: 1px !default;
+$ng-a-datepicker-separator-style: solid !default;
+$ng-a-datepicker-separator-color: rgba(0, 0, 0, 0.08) !default;
+
+$ng-a-datepicker-modern-in-range-bg: $ng-a-datepicker-modern-active-bg !default;
+$ng-a-datepicker-modern-in-range-active-text-color: $ng-a-datepicker-modern-active-text-color !default;
+$ng-a-datepicker-modern-in-range-active-font-weight: 800 !default;
+$ng-a-datepicker-modern-in-range-bg-transparency: .12 !default;
+
+
+$ng-a-datepicker-btn-radius: .25rem !default;
+$ng-a-datepicker-btn-padding: .350rem .75rem !default;
+$ng-a-datepicker-btn-border-width: 1px !default;
+$ng-a-datepicker-btn-border-style: solid !default;
+$ng-a-datepicker-btn-border-color: $ng-a-datepicker-modern-active-bg !default;
+$ng-a-datepicker-btn-font-size: .875rem !default;
+$ng-a-datepicker-btn-font-weight: 600 !default;
+
+$ng-a-datepicker-modern-input-border-radius: .25rem !default;
+$ng-a-datepicker-modern-input-border-width: 1px !default;
+$ng-a-datepicker-modern-input-border-style: solid !default;
+$ng-a-datepicker-modern-input-border-color: $ng-a-datepicker-modern-border-color !default;
+$ng-a-datepicker-modern-input-padding: .350rem .75rem !default;
+
+
+
+.ng-date-popup.ng-date-popup--modern-panel {
+  background: $ng-a-datepicker-modern-panel-bg;
+  border: $ng-a-datepicker-modern-panel-border-width $ng-a-datepicker-modern-panel-border-style $ng-a-datepicker-modern-panel-border-color;
+  border-radius: $ng-a-datepicker-modern-panel-radius;
+  box-shadow: $ng-a-datepicker-modern-panel-shadow;
+  padding: $ng-a-datepicker-modern-panel-spacing;
+  width: $ng-a-datepicker-modern-panel-width;
+
+  .ng-date-popup--modern-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: $ng-a-datepicker-modern-panel-spacing;
+    padding-bottom: $ng-a-datepicker-modern-panel-spacing;
+    border-bottom: $ng-a-datepicker-separator-width $ng-a-datepicker-separator-style $ng-a-datepicker-separator-color;
+    gap: 1rem;
+  }
+
+  .ng-date-popup--modern-month {
+    font-weight: $ng-a-datepicker-modern-month-font-weight;
+    font-size: $ng-a-datepicker-modern-month-font-size;
+    text-transform: capitalize;
+    color: $ng-a-datepicker-modern-month-text-color;
+    flex: 1;
+    text-align: center;
+
+    &:has(+ .ng-date-popup--modern-year-input) {
+      text-align: left;
+    }
+  }
+
+  .ng-date-popup--modern-year-input {
+    max-width: 30%;
+    flex: 1;
+  }
+
+  .ng-date-popup--modern-nav-btn {
+    &.btn {
+      width: $ng-a-datepicker-modern-nav-size;
+      height: $ng-a-datepicker-modern-nav-size;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: none;
+      border-radius: $ng-a-datepicker-modern-nav-border-radius;
+      background: transparent;
+      color: $ng-a-datepicker-modern-weekday-text-color;
+
+      &:hover:not(:disabled) {
+        background: $ng-a-datepicker-modern-hover-bg;
+        color: $ng-a-datepicker-modern-hover-text-color;
+      }
+
+      &:focus-visible {
+        outline: $ng-a-datepicker-modern-focus-border-width $ng-a-datepicker-modern-focus-border-style $ng-a-datepicker-modern-focus-border-color;
+      }
+
+      &:disabled {
+        opacity: 0.35;
+      }
+    }
+  }
+
+  .ng-date-popup--modern-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    text-align: center;
+    font-size: $ng-a-datepicker-modern-weekday-font-size;
+    font-weight: $ng-a-datepicker-modern-weekday-font-weight;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: $ng-a-datepicker-modern-weekday-text-color;
+    margin-bottom: .5rem;
+  }
+
+  .ng-date-popup--modern-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: $ng-a-datepicker-modern-calendar-grid-gap;
+  }
+
+  .ng-date-popup--modern-day {
+    &.btn {
+      width: $ng-a-datepicker-modern-day-size;
+      height: $ng-a-datepicker-modern-day-size;
+      border-radius: $ng-a-datepicker-modern-day-radius;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: none;
+      background: transparent;
+      color: $ng-a-datepicker-modern-day-text-color;
+      font-size: $ng-a-datepicker-modern-day-font-size;
+      font-weight: $ng-a-datepicker-modern-day-font-weight;
+
+      &:hover:not(:disabled) {
+        background: $ng-a-datepicker-modern-hover-bg;
+      }
+
+      &:disabled {
+        color: $ng-a-datepicker-modern-disabled-bg;
+        opacity: $ng-a-datepicker-modern-disabled-bg-opacity;
+      }
+    }
+
+    &.ng-date-popup--date-active {
+      .btn {
+        background: $ng-a-datepicker-modern-active-bg;
+        color: $ng-a-datepicker-modern-active-text-color;
+        font-weight: $ng-a-datepicker-modern-active-font-weight;
+
+        &:not(:disabled):hover {
+          background: $ng-a-datepicker-modern-active-bg-hover;
+        }
+      }
+    }
+  }
+
+  .ng-date-popup--modern-day-outside {
+    &.btn {
+      color: $ng-a-datepicker-modern-disabled-bg;
+    }
+  }
+
+  .ng-date-popup--modern-day-focused {
+    &.btn {
+      border: $ng-a-datepicker-modern-focus-border-width $ng-a-datepicker-modern-focus-border-style $ng-a-datepicker-modern-focus-border-color;
+      background: $ng-a-datepicker-modern-focus-bg;
+      color: $ng-a-datepicker-modern-focus-text-color;
+    }
+  }
+
+  .ng-date-popup--modern-day-cell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .ng-date-popup--modern-day-cell-in-range {
+    .btn {
+      border-radius: 0;
+      background: rgba($ng-a-datepicker-modern-in-range-bg, $ng-a-datepicker-modern-in-range-bg-transparency);
+    }
+
+    &.ng-date-popup--modern-day-cell-range-start {
+      .btn {
+        border-radius: $ng-a-datepicker-modern-day-radius 0 0 $ng-a-datepicker-modern-day-radius;
+        background: $ng-a-datepicker-modern-in-range-bg;
+        color: $ng-a-datepicker-modern-in-range-active-text-color;
+        font-weight: $ng-a-datepicker-modern-in-range-active-font-weight;
+
+        &:hover {
+          background: $ng-a-datepicker-modern-active-bg-hover;
+        }
+      }
+
+      &.ng-date-popup--modern-day-cell-range-end {
+        .btn {
+          border-radius: $ng-a-datepicker-modern-day-radius;
+        }
+      }
+    }
+
+    &.ng-date-popup--modern-day-cell-range-end {
+      .btn {
+        border-radius: 0 $ng-a-datepicker-modern-day-radius $ng-a-datepicker-modern-day-radius 0;
+        background: $ng-a-datepicker-modern-in-range-bg;
+        color: $ng-a-datepicker-modern-in-range-active-text-color;
+        font-weight: $ng-a-datepicker-modern-in-range-active-font-weight;
+
+
+        &:hover {
+          background: $ng-a-datepicker-modern-active-bg-hover;
+        }
+      }
+    }
+
+    &:nth-child(7n+1) {
+      .btn {
+        border-radius: $ng-a-datepicker-modern-day-radius 0 0 $ng-a-datepicker-modern-day-radius;
+      }
+
+      &.ng-date-popup--modern-day-cell-range-end {
+        .btn {
+          border-radius: $ng-a-datepicker-modern-day-radius;
+        }
+      }
+    }
+
+    &:nth-child(7n) {
+      .btn {
+        border-radius: 0 $ng-a-datepicker-modern-day-radius $ng-a-datepicker-modern-day-radius 0;
+      }
+
+      &.ng-date-popup--modern-day-cell-range-start {
+        .btn {
+          border-radius: $ng-a-datepicker-modern-day-radius;
+        }
+      }
+    }
+
+  }
+
+  .ng-date-popup--modern-separator {
+    border-top: $ng-a-datepicker-separator-width $ng-a-datepicker-separator-style $ng-a-datepicker-separator-color;
+    margin: $ng-a-datepicker-modern-panel-spacing 0;
+  }
+
+  .ng-date-popup--modern-time {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+  }
+
+  .ng-date-popup--modern-time-input {
+    width: $ng-a-datepicker-modern-time-input-width;
+    text-align: center;
+    flex: 1 0;
+  }
+
+  .ng-date-popup--modern-time-sep {
+    color: $ng-a-datepicker-modern-text-muted;
+  }
+
+  .ng-date-popup--modern-dayperiod {
+    margin-left: .5rem;
+
+    .btn {
+      & + .btn {
+        border-radius: 0 $ng-a-datepicker-btn-radius $ng-a-datepicker-btn-radius 0;
+        margin-left: -$ng-a-datepicker-modern-focus-border-width;
+      }
+
+      &:has(+ .btn) {
+        border-radius: $ng-a-datepicker-btn-radius 0 0 $ng-a-datepicker-btn-radius;
+      }
+
+      &:hover:not(:disabled),
+      &:focus:not(:disabled) {
+        background: $ng-a-datepicker-modern-hover-bg;
+        color: inherit;
+      }
+    }
+  }
+
+  .ng-date-popup--modern-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: $ng-a-datepicker-modern-panel-spacing;
+    padding-top: $ng-a-datepicker-modern-panel-spacing;
+    border-top: $ng-a-datepicker-separator-width $ng-a-datepicker-separator-style $ng-a-datepicker-separator-color;
+  }
+
+  .btn {
+    border-radius: $ng-a-datepicker-btn-radius;
+    padding: $ng-a-datepicker-btn-padding;
+    font-size: $ng-a-datepicker-btn-font-size;
+    font-weight: $ng-a-datepicker-btn-font-weight;
+    border: $ng-a-datepicker-btn-border-width $ng-a-datepicker-btn-border-style $ng-a-datepicker-btn-border-color;
+
+    &.btn-active {
+      background: $ng-a-datepicker-modern-active-bg;
+      color: $ng-a-datepicker-modern-active-text-color;
+
+      &:hover:not(:disabled),
+      &:focus:not(:disabled) {
+        background: $ng-a-datepicker-modern-active-bg-hover;
+        border-color: $ng-a-datepicker-modern-active-bg-hover;
+        color: $ng-a-datepicker-modern-active-text-color;
+      }
+    }
+
+    &.btn-secondary-outline {
+      background: transparent;
+      color: $ng-a-datepicker-modern-secondary;
+      border: $ng-a-datepicker-btn-border-width $ng-a-datepicker-btn-border-style $ng-a-datepicker-modern-border-color;
+
+      &:hover:not(:disabled),
+      &:focus:not(:disabled) {
+        background: $ng-a-datepicker-modern-active-bg;
+        border-color: $ng-a-datepicker-modern-active-bg;
+        color: $ng-a-datepicker-modern-active-text-color;
+      }
+    }
+
+    &:not(:disabled) {
+      cursor: pointer;
+    }
+  }
+
+  .ng-date-popup--modern-btn-secondary {
+    border: none;
+    background: transparent;
+    color: $ng-a-datepicker-modern-text-muted;
+
+    &:hover {
+      background: $ng-a-datepicker-modern-hover-bg;
+      color: $ng-a-datepicker-modern-text;
+    }
+  }
+
+  .ng-date-popup--modern-btn-primary {
+    border: none;
+    background: $ng-a-datepicker-modern-active-bg;
+    color: $ng-a-datepicker-modern-active-text-color;
+    border: $ng-a-datepicker-btn-border-width $ng-a-datepicker-btn-border-style $ng-a-datepicker-btn-border-color;
+
+    &:hover {
+      background: $ng-a-datepicker-modern-active-bg-hover;
+    }
+  }
+
+  input:not([type="button"]) {
+    border-radius: $ng-a-datepicker-modern-input-border-radius;
+    border: $ng-a-datepicker-modern-input-border-width $ng-a-datepicker-modern-input-border-style $ng-a-datepicker-modern-border-color;
+    padding: $ng-a-datepicker-modern-input-padding;
+
+    &:focus-visible {
+      outline: $ng-a-datepicker-modern-focus-border-width $ng-a-datepicker-modern-focus-border-style $ng-a-datepicker-modern-focus-border-color;
+    }
+  }
 }

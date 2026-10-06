@@ -1,0 +1,158 @@
+<div class="ng-date-popup--relative-wrapper">
+  <div
+    #popupRoot
+    class="ng-date-popup ng-date-popup--modern-panel position-{{ position }}"
+    [style.left.px]="popupLeft"
+    [style.top.px]="popupTop"
+    role="dialog"
+    aria-label="Choose date"
+    *ngIf="isOpen"
+  >
+    <div class="ng-date-popup--modern-header" *ngIf="config.month || config.year">
+      <button
+        *ngIf="config.month"
+        (click)="removeMonth()"
+        type="button"
+        class="btn ng-date-popup--modern-nav-btn"
+        [disabled]="wouldBeOutOfBounds(false)"
+      >
+        <span class="fas fa-chevron-left"></span>
+      </button>
+
+      <span class="ng-date-popup--modern-month" *ngIf="config.month">{{ val | date: 'LLLL' }}</span>
+
+      <input
+        type="number"
+        class="form-control form-control-sm ng-date-popup--modern-year-input"
+        *ngIf="config.year"
+        [ngModel]="val.getFullYear()"
+        (ngModelChange)="setYear($event)"
+      />
+
+      <button
+        *ngIf="config.month"
+        (click)="addMonth()"
+        type="button"
+        class="btn ng-date-popup--modern-nav-btn"
+        [disabled]="wouldBeOutOfBounds(true)"
+      >
+        <span class="fas fa-chevron-right"></span>
+      </button>
+    </div>
+
+    <ng-container *ngIf="config.date">
+      <div class="ng-date-popup--modern-weekdays">
+        <span *ngFor="let day of localizedDays">{{ day }}</span>
+      </div>
+
+      <div class="ng-date-popup--modern-grid" role="grid">
+        <button
+          *ngFor="let day of days"
+          type="button"
+          [id]="popupId + '-day-' + day.date.getTime()"
+          class="btn ng-date-popup--modern-day"
+          [class.btn-active]="compareDate(day.date)"
+          [class.ng-date-popup--date-active]="compareDate(day.date)"
+          [class.ng-date-popup--modern-day-outside]="!day.currentMonth"
+          [class.ng-date-popup--modern-day-focused]="isFocused(day.date)"
+          role="gridcell"
+          [attr.aria-selected]="compareDate(day.date)"
+          [attr.aria-disabled]="isOutOfBounds(day.date)"
+          [attr.aria-label]="day.date | date: 'fullDate'"
+          [disabled]="isOutOfBounds(day.date)"
+          (click)="setDate(day.date)"
+        >
+          {{ day.day }}
+        </button>
+      </div>
+    </ng-container>
+
+    <div class="ng-date-popup--modern-separator" *ngIf="config.date && (config.minutes || config.hours !== 'off' || config.seconds)"></div>
+
+    <div class="ng-date-popup--modern-time" *ngIf="config.minutes || config.hours !== 'off' || config.seconds">
+      <input
+        type="number"
+        class="form-control form-control-sm ng-date-popup--modern-time-input"
+        *ngIf="config.hours === '24'"
+        [ngModel]="val.getHours()"
+        (ngModelChange)="setHours($event, ngModelHour)"
+        #ngModelHour="ngModel"
+        maxlength="2"
+        min="-24"
+        max="24"
+      />
+      <input
+        type="number"
+        class="form-control form-control-sm ng-date-popup--modern-time-input"
+        *ngIf="config.hours === '12'"
+        [ngModel]="displayHour"
+        (ngModelChange)="setHours12($event, ngModelHour)"
+        #ngModelHour="ngModel"
+        maxlength="2"
+        min="1"
+        max="12"
+      />
+
+      <span class="ng-date-popup--modern-time-sep" *ngIf="config.hours !== 'off'">:</span>
+
+      <input
+        type="number"
+        class="form-control form-control-sm ng-date-popup--modern-time-input"
+        *ngIf="config.minutes"
+        #inputElement
+        [ngModel]="val.getMinutes().toString().padStart(2, '0')"
+        (click)="inputElement.select()"
+        (blur)="setMinutes(inputElement.value, ngModelMinute)"
+        (change)="setMinutes(inputElement.value, ngModelMinute)"
+        #ngModelMinute="ngModel"
+        maxlength="2"
+        min="-60"
+        max="60"
+        step="{{ timeStep }}"
+      />
+
+      <ng-container *ngIf="config.seconds">
+        <span class="ng-date-popup--modern-time-sep">:</span>
+        <input
+          type="number"
+          class="form-control form-control-sm ng-date-popup--modern-time-input"
+          #secondsInputElement
+          [ngModel]="val.getSeconds().toString().padStart(2, '0')"
+          (click)="secondsInputElement.select()"
+          (blur)="setSeconds(secondsInputElement.value, ngModelSecond)"
+          (change)="setSeconds(secondsInputElement.value, ngModelSecond)"
+          #ngModelSecond="ngModel"
+          maxlength="2"
+          min="0"
+          max="59"
+        />
+      </ng-container>
+
+      <div class="ng-date-popup--modern-dayperiod" *ngIf="config.dayPeriod" role="group">
+        <button
+          type="button"
+          class="btn btn-sm"
+          [class.btn-active]="!isPm"
+          [class.btn-secondary-outline]="isPm"
+          (click)="setDayPeriod('AM')"
+        >
+          AM
+        </button>
+        <button
+          type="button"
+          class="btn btn-sm"
+          [class.btn-active]="isPm"
+          [class.btn-secondary-outline]="!isPm"
+          (click)="setDayPeriod('PM')"
+        >
+          PM
+        </button>
+      </div>
+    </div>
+
+    <div class="ng-date-popup--modern-footer" *ngIf="showActionButtons">
+      <button type="button" class="btn btn-sm ng-date-popup--modern-btn-secondary" (click)="closePopup()">Close</button>
+      <button type="button" class="btn btn-sm ng-date-popup--modern-btn-primary" (click)="apply()">Apply</button>
+    </div>
+  </div>
+</div>

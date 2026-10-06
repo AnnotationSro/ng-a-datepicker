@@ -20,15 +20,18 @@ import { COMPOSITION_BUFFER_MODE, ControlValueAccessor, NG_VALUE_ACCESSOR } from
 import { BasicDateFormat } from '@annotation/ng-parse';
 import { NG_DATEPICKER_CONF } from '../../conf/ng-datepicker.conf.token';
 import { NgDatepickerConf } from '../../conf/ng-datepicker.conf';
-import { ApiNgDateModelValueConverter, NgDateConfig, StandardModelValueConverters } from '../../model/ng-date-public.model';
-import { PopupComponent } from '../../components/popup/popup.component';
-import { ModernPopupComponent } from '../../components/popup/modern-popup.component';
-import { PopupBaseComponent } from '../../components/popup/popup-base.component';
+import { HtmlValueConfig, NgDateConfig } from '../../model/ng-date-public.model';
+import { ApiNgDateRangeModelValueConverter, DateRange, StandardRangeModelValueConverters } from '../../model/ng-date-range-public.model';
+import { DefaultDateRangeModelValueConverter } from '../../converters/DefaultDateRangeModelValueConverter';
+import { DefaultFormattedRangeModelValueConverter } from '../../converters/DefaultFormattedRangeModelValueConverter';
+import { RangePopupComponent } from '../../components/popup/range-popup.component';
+import { ModernRangePopupComponent } from '../../components/popup/modern-range-popup.component';
+import { RangePopupBaseComponent } from '../../components/popup/range-popup-base.component';
 import { NgDateConfigUtil } from '../../conf/ng-date.config.util';
 import { HasNgDateConf } from '../../conf/has-ng-date-conf';
-import { NgDateDirectiveApi, NgDateValue } from './ng-date.directive.api';
+import { NgDateRangeDirectiveApi, NgDateRangeValue } from './ng-date-range.directive.api';
 import { ParseService } from '../../services/parse.service';
-import { createClearButton, updateClearButtonVisibility } from './clear-button.util';
+import { createClearButton, updateClearButtonVisibility } from '../ng-date/clear-button.util';
 
 /**
  * We must check whether the agent is Android because composition events
@@ -39,41 +42,31 @@ function isAndroid(): boolean {
   return /android (\d+)/.test(userAgent.toLowerCase());
 }
 
-// TODO - mfilo - 15.01.2021 - checklist
-//  - timezones
-//  - time-step - napr cas bude zaokruhleny na 15min, ovplyvni aj kalendar popup
-
 @Directive({
-  selector: '[ngDate]',
-  exportAs: 'ngDate',
+  selector: '[ngDateRange]',
+  exportAs: 'ngDateRange',
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,
-      useExisting: forwardRef(() => NgDateDirective),
+      useExisting: forwardRef(() => NgDateRangeDirective),
       multi: true,
     },
   ],
-  // host: {
-  //   '(input)': '$any(this)._handleInput($event.target.value)',
-  //   '(blur)': '$any(this)._handleBlur()',
-  //   '(compositionstart)': '$any(this)._compositionStart()',
-  //   '(compositionend)': '$any(this)._compositionEnd($event.target.value)',
-  // },
 })
-export class NgDateDirective implements ControlValueAccessor, HasNgDateConf, NgDateDirectiveApi, OnInit, OnDestroy, OnChanges {
+export class NgDateRangeDirective implements ControlValueAccessor, HasNgDateConf, NgDateRangeDirectiveApi, OnInit, OnDestroy, OnChanges {
   @Input() disabled: boolean;
 
   @Input() disablePopup: boolean = false;
   @Input() disableSelectOnFocus: boolean = false;
   @Input() keepOpen: boolean = false;
-  @Input() timeStep: number = 1;
   @Input() showActionButtons: boolean = false;
   @Input() appendTo: string;
   @Input() clearable: boolean = false;
   @Input() modernTheme: boolean = false;
+  @Input() rangeSeparator: string = ' - ';
 
   private static idCounter = 0;
-  private popupId = `ng-date-popup-${NgDateDirective.idCounter++}`;
+  private popupId = `ng-date-range-popup-${NgDateRangeDirective.idCounter++}`;
   private clearBtnEl: HTMLElement | null = null;
 
   private _minDate: any;
@@ -81,7 +74,7 @@ export class NgDateDirective implements ControlValueAccessor, HasNgDateConf, NgD
     this._minDate = val;
 
     if (this.popupComponent) {
-      this.popupComponent.instance.minDate = this.convertNgValueToDtValue(val, undefined);
+      this.popupComponent.instance.minDate = val ? this.parse.toDate(val) : undefined;
     }
   }
 
@@ -94,7 +87,7 @@ export class NgDateDirective implements ControlValueAccessor, HasNgDateConf, NgD
     this._maxDate = val;
 
     if (this.popupComponent) {
-      this.popupComponent.instance.maxDate = this.convertNgValueToDtValue(val, undefined);
+      this.popupComponent.instance.maxDate = val ? this.parse.toDate(val) : undefined;
     }
   }
 
@@ -102,33 +95,22 @@ export class NgDateDirective implements ControlValueAccessor, HasNgDateConf, NgD
     return this._maxDate;
   }
 
-  private popupComponent: ComponentRef<PopupBaseComponent> | null = null;
+  private popupComponent: ComponentRef<RangePopupBaseComponent> | null = null;
 
-  @Input('ngDate')
+  // displayFormat for each endpoint reuses the exact same resolution as the single-date directive
+  @Input('ngDateRange')
   ngDateConfig: NgDateConfig | BasicDateFormat = null;
 
-  @Input('ngDateModelConverter')
-  ngDateModelConverterConfig: StandardModelValueConverters | ApiNgDateModelValueConverter<any> = null;
+  @Input('ngDateRangeModelConverter')
+  rangeModelConverterConfig: StandardRangeModelValueConverters | ApiNgDateRangeModelValueConverter<any> = null;
 
-  dtValue: Date | null = null; // internal variable with date value
+  dtValue: DateRange = { start: null, end: null };
   private ngValue: any = null;
 
-  onChange: (value: any) => void; // Called on a value change
-  onTouched: () => void; // Called if you care if the form was touched
+  onChange: (value: any) => void;
+  onTouched: () => void;
 
   private _composing = false;
-
-  // get ngValue() {
-  //   return this._ngValue;
-  // }
-  //
-  // set ngValue(v: any) {
-  //   // ignore if null - user is typing
-  //   if (v == null) return;
-  //
-  //   this._ngValue = v;
-  //   this.onChange(this._ngValue);
-  // }
 
   constructor(
     private _renderer: Renderer2,
@@ -146,15 +128,14 @@ export class NgDateDirective implements ControlValueAccessor, HasNgDateConf, NgD
 
   ngOnInit() {
     if (!this.disablePopup) {
-      const popupCtor = this.modernTheme ? ModernPopupComponent : PopupComponent;
+      const popupCtor = this.modernTheme ? ModernRangePopupComponent : RangePopupComponent;
       this.popupComponent = this._viewContainerRef.createComponent(popupCtor);
-      this.popupComponent.instance.ngDateDirective = this;
+      this.popupComponent.instance.ngDateRangeDirective = this;
 
       // browser autocomplete would overlay popup
       this._renderer.setProperty(this.elementRef.nativeElement, 'autocomplete', 'off');
 
       this.popupComponent.instance.keepOpen = this.keepOpen;
-      this.popupComponent.instance.timeStep = this.timeStep;
       this.popupComponent.instance.showActionButtons = this.showActionButtons;
       this.popupComponent.instance.appendTo = this.appendTo;
       this.popupComponent.instance.popupId = this.popupId;
@@ -165,11 +146,11 @@ export class NgDateDirective implements ControlValueAccessor, HasNgDateConf, NgD
       this._renderer.setAttribute(this.popupComponent.location.nativeElement, 'id', this.popupId);
 
       if (this.minDate) {
-        this.popupComponent.instance.minDate = this.minDate;
+        this.popupComponent.instance.minDate = this.parse.toDate(this.minDate);
       }
 
       if (this.maxDate) {
-        this.popupComponent.instance.maxDate = this.maxDate;
+        this.popupComponent.instance.maxDate = this.parse.toDate(this.maxDate);
       }
     }
 
@@ -182,14 +163,10 @@ export class NgDateDirective implements ControlValueAccessor, HasNgDateConf, NgD
     if (this.popupComponent && changes.disabled?.previousValue !== changes.disabled?.currentValue) {
       if (`${this.disabled}` === 'true') {
         this.popupComponent.instance.ngOnDestroy();
-        // alternative
-        // this.removeEventListenerFromInput('pointerup', this.popupComponent.instance.onInputTouch);
       }
 
       if (`${this.disabled}` === 'false') {
         this.popupComponent.instance.ngOnInit();
-        // alternative
-        // this.addEventListenerToInput('pointerup', this.popupComponent.instance.onInputTouch);
       }
     }
   }
@@ -251,7 +228,7 @@ export class NgDateDirective implements ControlValueAccessor, HasNgDateConf, NgD
 
   private clearValue(): void {
     this.writeValue(null);
-    this.dtValue = null;
+    this.dtValue = { start: null, end: null };
     this.ngValue = null;
     this.onChange(this.ngValue);
     this.onTouched();
@@ -261,35 +238,19 @@ export class NgDateDirective implements ControlValueAccessor, HasNgDateConf, NgD
     this.elementRef.nativeElement.focus();
   }
 
-  // registration for ControlValueAccessor
   registerOnChange(fn: (_: any) => void): void {
     this.onChange = fn;
   }
 
-  // registration for ControlValueAccessor
   registerOnTouched(fn: () => void): void {
     this.onTouched = fn;
   }
 
-  /**
-   * Writes a new value to the element.
-   * This method is called by the forms API to write to the view when programmatic changes from model to view are requested.
-   * Write a value to the element
-   * The following example writes a value to the native DOM element.
-   * writeValue(value: any): void {
-   *   this._renderer.setProperty(this.elementRef.nativeElement, 'value', value);
-   * }
-   * Params:
-   * obj – The new value for the element
-   * @description
-   *
-   * @usageNotes
-   */
   writeValue(value: any): void {
     this._renderer.setProperty(this.elementRef.nativeElement, 'value', this.valueFormatter(value));
 
     if (this.popupComponent?.instance) {
-      this.popupComponent.instance.val = this.readValue().dtValue;
+      this.popupComponent.instance.rangeValue = this.readValue().dtValue;
     }
 
     this.updateClearButtonVisibility();
@@ -320,28 +281,20 @@ export class NgDateDirective implements ControlValueAccessor, HasNgDateConf, NgD
       this.onTouched();
     }
 
-    // toto chceme zavolat 'on blur' aby sme opravili format napr: 1.1.2020 -> 01.01.2020
     const parsedDate = this.valueParser(value);
     this.dtValue = parsedDate.dtValue;
     this.ngValue = parsedDate.ngValue;
 
-    if (!this.dtValue) {
+    if (!this.dtValue.start && !this.dtValue.end) {
       this.writeValue(null);
-      this.onChange(this.ngValue); // ngValue should be null
+      this.onChange(this.ngValue);
       return;
     }
 
     this.onChange(this.ngValue);
-    const val = NgDateConfigUtil.resolveModelConverter(this).toModel(this.dtValue, this.ngValue);
+    const val = this.resolveRangeModelConverter().toModel(this.dtValue, this.ngValue, NgDateConfigUtil.resolveHtmlValueConfig(this));
     this.writeValue(val);
   }
-
-  // @HostListener('input', ['$event.target.value'])
-  // _handleInput(value: any): void {
-  //   if (!this._compositionMode || (this._compositionMode && !this._composing)) {
-  //     // this.onChange(this.valueParser(value));
-  //   }
-  // }
 
   /** @internal */
   @HostListener('compositionstart')
@@ -358,80 +311,125 @@ export class NgDateDirective implements ControlValueAccessor, HasNgDateConf, NgD
 
   /// /////////////////////////////////////////////////////////////////////////////////////////////////////////////
   /// Converters only
-  // 1) convert(ngValue, dtValue/old) => dtValue/new
-  private convertNgValueToDtValue(newNgValue: any, dtValue: Date): Date | null {
-    if (!newNgValue) {
-      return null;
+  private resolveRangeModelConverter(): ApiNgDateRangeModelValueConverter<any> {
+    const converterConfig = this.rangeModelConverterConfig;
+    if (!converterConfig) return DefaultDateRangeModelValueConverter.INSTANCE;
+
+    if (NgDateConfigUtil.isStringConstant(converterConfig)) {
+      switch (converterConfig) {
+        case 'date-range':
+          return DefaultDateRangeModelValueConverter.INSTANCE;
+        case 'string-iso-date-range':
+          return DefaultFormattedRangeModelValueConverter.INSTANCE_ISO_YYYYMMDD;
+        default:
+          throw new Error(`Range converter ${converterConfig} is not implemented!`);
+      }
     }
 
-    return NgDateConfigUtil.resolveModelConverter(this).fromModel(
-      newNgValue,
-      dtValue,
-      NgDateConfigUtil.resolveHtmlValueConfig(this)
-    );
+    return converterConfig as ApiNgDateRangeModelValueConverter<any>;
   }
 
-  // 2) convert(dtValue) => htmlValue
-  private convertDtValueToHtmlValue(dtValue: Date): string {
-    if (dtValue == null) {
+  private convertNgValueToDtValue(newNgValue: any, dtValue: DateRange): DateRange {
+    if (!newNgValue) {
+      return { start: null, end: null };
+    }
+
+    return this.resolveRangeModelConverter().fromModel(newNgValue, dtValue, NgDateConfigUtil.resolveHtmlValueConfig(this));
+  }
+
+  private convertDtValueToHtmlValue(dtValue: DateRange): string {
+    if (!dtValue || (!dtValue.start && !dtValue.end)) {
       return '';
     }
+
     const htmlValueConfig = NgDateConfigUtil.resolveHtmlValueConfig(this);
-    return formatDate(dtValue, htmlValueConfig.displayFormat, htmlValueConfig.locale, htmlValueConfig.timezone);
+    const startText = dtValue.start ? formatDate(dtValue.start, htmlValueConfig.displayFormat, htmlValueConfig.locale, htmlValueConfig.timezone) : '';
+    const endText = dtValue.end ? formatDate(dtValue.end, htmlValueConfig.displayFormat, htmlValueConfig.locale, htmlValueConfig.timezone) : '';
+
+    return `${startText}${this.rangeSeparator}${endText}`;
   }
 
-  // 3) convert(htmlValue, dtValue/old) => dtValue/new
-  private convertHtmlValueToDtValue(htmlValue: string, dtValue: Date): Date | null {
+  private convertHtmlValueToDtValue(htmlValue: string, dtValue: DateRange): DateRange {
     const htmlValueConfig = NgDateConfigUtil.resolveHtmlValueConfig(this);
-    return this.parse.parseDate(htmlValue, htmlValueConfig.displayFormat, htmlValueConfig.locale, dtValue);
+    const [startText, endText] = this.splitRangeText(htmlValue, htmlValueConfig);
+
+    return {
+      start: startText ? this.parse.parseDate(startText, htmlValueConfig.displayFormat, htmlValueConfig.locale, dtValue?.start) : null,
+      end: endText ? this.parse.parseDate(endText, htmlValueConfig.displayFormat, htmlValueConfig.locale, dtValue?.end) : null,
+    };
   }
 
-  // 4) convert(dtValue, ngValue/old) => ngValue/new
-  private convertDtValueToNgModel(dtValue: Date, ngValue: any): any {
-    return NgDateConfigUtil.resolveModelConverter(this).toModel(dtValue, ngValue, NgDateConfigUtil.resolveHtmlValueConfig(this));
+  // The trimmed separator has to be accepted too: `changeValue()` trims the formatted html value
+  // (matching the single-date directive), which eats the separator's whitespace when only one end
+  // has been picked (e.g. "2026-01-01 - " -> "2026-01-01 -"), and users may type it without spaces
+  // (e.g. "1.1.2026-2.1.2026"). But if formatted dates can contain the trimmed separator
+  // (e.g. '-' in 'yyyy-MM-dd'), splitting on it mid-string would cut a date apart, so it is then
+  // only accepted at the edges.
+  private splitRangeText(htmlValue: string, htmlValueConfig: HtmlValueConfig): [string, string] {
+    const text = htmlValue.trim();
+    const trimmedSeparator = this.rangeSeparator.trim();
+
+    let separator = this.rangeSeparator;
+    let separatorIndex = text.indexOf(separator);
+    if (separatorIndex < 0 && trimmedSeparator) {
+      separator = trimmedSeparator;
+      if (!this.isTextInFormattedDate(trimmedSeparator, htmlValueConfig)) {
+        separatorIndex = text.indexOf(trimmedSeparator);
+      } else if (text.endsWith(trimmedSeparator)) {
+        separatorIndex = text.length - trimmedSeparator.length;
+      } else if (text.startsWith(trimmedSeparator)) {
+        separatorIndex = 0;
+      }
+    }
+
+    if (separatorIndex < 0) {
+      return [text, ''];
+    }
+    return [text.slice(0, separatorIndex).trim(), text.slice(separatorIndex + separator.length).trim()];
+  }
+
+  private isTextInFormattedDate(text: string, htmlValueConfig: HtmlValueConfig): boolean {
+    const sampleDate = new Date(2000, 11, 31, 23, 59, 59);
+    return formatDate(sampleDate, htmlValueConfig.displayFormat, htmlValueConfig.locale, htmlValueConfig.timezone).includes(text);
+  }
+
+  private convertDtValueToNgModel(dtValue: DateRange, ngValue: any): any {
+    return this.resolveRangeModelConverter().toModel(dtValue, ngValue, NgDateConfigUtil.resolveHtmlValueConfig(this));
   }
 
   /// /////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  /// Customization behavior & config
-
   private valueFormatter(ngValue: any): string {
     this.ngValue = ngValue;
-    // 1) (newNgValue, dtValue/old) => dtValue
     this.dtValue = this.convertNgValueToDtValue(this.ngValue, this.dtValue);
-
-    // 2) dtValue => htmlValue
     return this.convertDtValueToHtmlValue(this.dtValue);
   }
 
-  private valueParser(htmlValue: string): { dtValue: Date; ngValue: string } {
-    // TODO - mfilo - 27.01.2021 - @psl - check me - bez tohto prazdny string je 1.1.1970
+  private valueParser(htmlValue: string): { dtValue: DateRange; ngValue: any } {
     if (!htmlValue.trim()) {
-      return { dtValue: null, ngValue: '' };
+      return { dtValue: { start: null, end: null }, ngValue: null };
     }
 
-    // 1) (htmlValue, dtValue) => dtValue
     const dtValue = this.convertHtmlValueToDtValue(htmlValue, this.dtValue);
-    dtValue?.setMinutes(Math.round(dtValue.getMinutes() / this.timeStep) * this.timeStep);
-
-    // 2) (dtValue, ngValue) => ngValue
     const ngValue = this.convertDtValueToNgModel(dtValue, this.ngValue);
     return { ngValue, dtValue };
   }
 
-  public readValue(): NgDateValue {
+  public readValue(): NgDateRangeValue {
     return {
       dtValue: this.dtValue,
       ngValue: this.ngValue,
     };
   }
 
-  public changeValue(value: Date) {
-    // 1) dtValue => htmlValue (update view)
+  public getLocale(): string {
+    return NgDateConfigUtil.resolveHtmlValueConfig(this).locale;
+  }
+
+  public changeValue(value: DateRange) {
     const newHtmlValue = (this.convertDtValueToHtmlValue(value) || '').trim();
     const oldHtmlValue = (this.elementRef.nativeElement.value || '').trim();
-    if (newHtmlValue === oldHtmlValue) return; // no change is there
+    if (newHtmlValue === oldHtmlValue) return;
 
-    // 2) update values
     const parsed = this.valueParser(newHtmlValue);
     this.dtValue = parsed.dtValue;
     this.ngValue = parsed.ngValue;

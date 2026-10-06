@@ -1,0 +1,57 @@
+<div class="ng-date-popup--relative-wrapper">
+  <div
+    #popupRoot
+    class="ng-date-popup position-{{ position }}"
+    [style.left.px]="popupLeft"
+    [style.top.px]="popupTop"
+    role="dialog"
+    aria-label="Choose date range"
+    *ngIf="isOpen"
+  >
+    <div class="ng-date-popup--header">
+      <button (click)="removeMonth()" type="button" class="ng-date-popup--prev" [disabled]="wouldBeOutOfBounds(false)">
+        <span class="fas fa-chevron-left"></span>
+      </button>
+      <span class="ng-date-popup--month">{{ viewDate | date: 'LLLL y' }}</span>
+      <button (click)="addMonth()" type="button" class="ng-date-popup--next" [disabled]="wouldBeOutOfBounds(true)">
+        <span class="fas fa-chevron-right"></span>
+      </button>
+    </div>
+
+    <div class="ng-date-popup--date">
+      <div class="ng-date-popup--days">
+        <div *ngFor="let day of localizedDays">{{ day }}</div>
+      </div>
+
+      <div class="ng-date-popup--date-row" role="grid">
+        <ng-container *ngFor="let day of days">
+          <div
+            [id]="popupId + '-day-' + day.date.getTime()"
+            class="ng-date-popup--date-day"
+            role="gridcell"
+            [attr.aria-selected]="isRangeStart(day.date) || isRangeEnd(day.date)"
+            [attr.aria-disabled]="isOutOfBounds(day.date)"
+            [attr.aria-label]="day.date | date: 'fullDate'"
+            [ngClass]="{
+              'ng-date-popup--date-weekend': !day.currentMonth,
+              'ng-date-popup--date-disabled': isOutOfBounds(day.date),
+              'ng-date-popup--date-active': isRangeStart(day.date) || isRangeEnd(day.date),
+              'ng-date-popup--date-range-in-range': isInRange(day.date),
+              'ng-date-popup--date-focused': isFocused(day.date)
+            }"
+            (click)="!isOutOfBounds(day.date) && setDate(day.date)"
+            (mouseenter)="onDayHover(day.date)"
+          >
+            {{ day.day }}
+          </div>
+          <div class="ng-date-popup--date-row-separator" *ngIf="day.dayOfWeek === 6"></div>
+        </ng-container>
+      </div>
+    </div>
+
+    <div class="ng-date-popup--footer" *ngIf="showActionButtons">
+      <button type="button" class="ng-date-popup--btn ng-date-popup--btn-close" (click)="closePopup()">Close</button>
+      <button type="button" class="ng-date-popup--btn ng-date-popup--btn-apply" (click)="apply()">Apply</button>
+    </div>
+  </div>
+</div>
