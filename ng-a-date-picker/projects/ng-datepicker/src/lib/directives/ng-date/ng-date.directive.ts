@@ -22,10 +22,13 @@ import { NG_DATEPICKER_CONF } from '../../conf/ng-datepicker.conf.token';
 import { NgDatepickerConf } from '../../conf/ng-datepicker.conf';
 import { ApiNgDateModelValueConverter, NgDateConfig, StandardModelValueConverters } from '../../model/ng-date-public.model';
 import { PopupComponent } from '../../components/popup/popup.component';
+import { ModernPopupComponent } from '../../components/popup/modern-popup.component';
+import { PopupBaseComponent } from '../../components/popup/popup-base.component';
 import { NgDateConfigUtil } from '../../conf/ng-date.config.util';
 import { HasNgDateConf } from '../../conf/has-ng-date-conf';
 import { NgDateDirectiveApi, NgDateValue } from './ng-date.directive.api';
 import { ParseService } from '../../services/parse.service';
+import { createClearButton, updateClearButtonVisibility } from './clear-button.util';
 
 /**
  * We must check whether the agent is Android because composition events
@@ -64,6 +67,14 @@ export class NgDateDirective implements ControlValueAccessor, HasNgDateConf, NgD
   @Input() disableSelectOnFocus: boolean = false;
   @Input() keepOpen: boolean = false;
   @Input() timeStep: number = 1;
+  @Input() showActionButtons: boolean = false;
+  @Input() appendTo: string;
+  @Input() clearable: boolean = false;
+  @Input() modernTheme: boolean = false;
+
+  private static idCounter = 0;
+  private popupId = `ng-date-popup-${NgDateDirective.idCounter++}`;
+  private clearBtnEl: HTMLElement | null = null;
 
   private _minDate: any;
   @Input() set minDate(val: any) {
@@ -91,7 +102,7 @@ export class NgDateDirective implements ControlValueAccessor, HasNgDateConf, NgD
     return this._maxDate;
   }
 
-  private popupComponent: ComponentRef<PopupComponent> | null = null;
+  private popupComponent: ComponentRef<PopupBaseComponent> | null = null;
 
   @Input('ngDate')
   ngDateConfig: NgDateConfig | BasicDateFormat = null;
@@ -135,7 +146,8 @@ export class NgDateDirective implements ControlValueAccessor, HasNgDateConf, NgD
 
   ngOnInit() {
     if (!this.disablePopup) {
-      this.popupComponent = this._viewContainerRef.createComponent(PopupComponent);
+      const popupCtor = this.modernTheme ? ModernPopupComponent : PopupComponent;
+      this.popupComponent = this._viewContainerRef.createComponent(popupCtor);
       this.popupComponent.instance.ngDateDirective = this;
 
       // browser autocomplete would overlay popup
@@ -143,6 +155,14 @@ export class NgDateDirective implements ControlValueAccessor, HasNgDateConf, NgD
 
       this.popupComponent.instance.keepOpen = this.keepOpen;
       this.popupComponent.instance.timeStep = this.timeStep;
+      this.popupComponent.instance.showActionButtons = this.showActionButtons;
+      this.popupComponent.instance.appendTo = this.appendTo;
+      this.popupComponent.instance.popupId = this.popupId;
+
+      this._renderer.setAttribute(this.elementRef.nativeElement, 'aria-haspopup', 'dialog');
+      this._renderer.setAttribute(this.elementRef.nativeElement, 'aria-controls', this.popupId);
+      this._renderer.setAttribute(this.elementRef.nativeElement, 'aria-expanded', 'false');
+      this._renderer.setAttribute(this.popupComponent.location.nativeElement, 'id', this.popupId);
 
       if (this.minDate) {
         this.popupComponent.instance.minDate = this.minDate;
@@ -151,6 +171,10 @@ export class NgDateDirective implements ControlValueAccessor, HasNgDateConf, NgD
       if (this.maxDate) {
         this.popupComponent.instance.maxDate = this.maxDate;
       }
+    }
+
+    if (this.clearable) {
+      this.setupClearButton();
     }
   }
 
@@ -200,6 +224,43 @@ export class NgDateDirective implements ControlValueAccessor, HasNgDateConf, NgD
     return (this.elementRef.nativeElement as HTMLElement).getBoundingClientRect().height;
   }
 
+  getInputRect(): DOMRect {
+    return (this.elementRef.nativeElement as HTMLElement).getBoundingClientRect();
+  }
+
+  setAriaExpanded(expanded: boolean): void {
+    this._renderer.setAttribute(this.elementRef.nativeElement, 'aria-expanded', String(expanded));
+  }
+
+  setAriaActiveDescendant(id: string | null): void {
+    if (id) {
+      this._renderer.setAttribute(this.elementRef.nativeElement, 'aria-activedescendant', id);
+    } else {
+      this._renderer.removeAttribute(this.elementRef.nativeElement, 'aria-activedescendant');
+    }
+  }
+
+  private setupClearButton(): void {
+    this.clearBtnEl = createClearButton(this._renderer, this.elementRef.nativeElement, this.modernTheme, () => this.clearValue());
+    this.updateClearButtonVisibility();
+  }
+
+  private updateClearButtonVisibility(): void {
+    updateClearButtonVisibility(this._renderer, this.clearBtnEl, this.elementRef.nativeElement as HTMLInputElement);
+  }
+
+  private clearValue(): void {
+    this.writeValue(null);
+    this.dtValue = null;
+    this.ngValue = null;
+    this.onChange(this.ngValue);
+    this.onTouched();
+
+    this.popupComponent?.instance?.closePopup();
+
+    this.elementRef.nativeElement.focus();
+  }
+
   // registration for ControlValueAccessor
   registerOnChange(fn: (_: any) => void): void {
     this.onChange = fn;
@@ -230,10 +291,20 @@ export class NgDateDirective implements ControlValueAccessor, HasNgDateConf, NgD
     if (this.popupComponent?.instance) {
       this.popupComponent.instance.val = this.readValue().dtValue;
     }
+
+    this.updateClearButtonVisibility();
   }
 
   setDisabledState(isDisabled: boolean): void {
     this._renderer.setProperty(this.elementRef.nativeElement, 'disabled', isDisabled);
+
+    if (this.clearBtnEl) {
+      this._renderer.setProperty(this.clearBtnEl, 'disabled', isDisabled);
+      this._renderer.setStyle(this.clearBtnEl, 'display', isDisabled ? 'none' : '');
+      if (!isDisabled) {
+        this.updateClearButtonVisibility();
+      }
+    }
   }
 
   @HostListener('focus', ['$event.target.value'])
